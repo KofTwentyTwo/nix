@@ -26,11 +26,6 @@ in
   };
 
   config = {
-    modules = {
-      terminals = {
-        wezterm.enable = true;
-      };
-    };
 
     ###############################################################
     ## Home Manager needs a bit of information about you and the ##
@@ -39,7 +34,7 @@ in
     home = {
       sessionVariables = {
         VISUAL = "nvim";
-        PAGER = "less";
+        PAGER  = "less";
       };
 
       packages = with pkgs; let
@@ -96,7 +91,6 @@ in
       ++ (workPackages);
     };
 
-    fonts.fontconfig.enable = cfg.includeFonts;
     programs.nix-index.enable = true;
   };
 
