@@ -1,13 +1,25 @@
 local config = {}
 
+local wezterm = require 'wezterm'
 -------------------------------------
 -- Highlevel WezTerm configuration --
 -------------------------------------
 config.front_end = "WebGpu" 
+
+----------------------------------------------------------------------------------------
+-- To get this to work - we had to manually add the terminfo to the local machine ;-( 
+-- tempfile=$(mktemp) \
+--  && curl -o $tempfile https://raw.githubusercontent.com/wez/wezterm/main/termwiz/data/wezterm.terminfo \
+--  && tic -x -o ~/.terminfo $tempfile \
+--  && rm $tempfile
+----------------------------------------------------------------------------------------
 config.term = "wezterm"
 config.font_size = 14.0
 config.default_prog = { "zsh" }
 
+--------------------------------------
+-- Startup and New Windows Handling --
+--------------------------------------
 wezterm.on("gui-startup", function(cmd)
    local screen = wezterm.gui.screens().main
    local ratio = 0.7
@@ -29,12 +41,12 @@ wezterm.on("gui-attached", function(cmd)
 end)
 
 
+
 --------------------------------------------------------------------------------
 -- Custom Key Bindings                                                        --
 -- see https://wezfurlong.org/wezterm/config/key-tables.html fot more options --
 --------------------------------------------------------------------------------
 config.keys = {
-
    ----------------------------------------------------
    -- Panel spliting and window handling and closing --
    ----------------------------------------------------

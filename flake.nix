@@ -40,9 +40,13 @@
       ## Options here - https://daiderd.com/nix-darwin/manual/index.html ##
       #####################################################################
       security.pam.enableSudoTouchIdAuth = true;
+      system.defaults.NSGlobalDomain.InitialKeyRepeat = 15;
+      system.defaults.NSGlobalDomain.KeyRepeat = 2;
       system.defaults.finder.ShowStatusBar = true;
       system.defaults.finder.ShowPathbar = true;
       system.defaults.finder.FXPreferredViewStyle = "clmv";
+      system.defaults.finder.AppleShowAllFiles = true;
+      system.defaults.finder._FXShowPosixPathInTitle = true;
       system.defaults.dock.tilesize = 48;
       system.defaults.dock.show-recents = false; 
       system.defaults.dock.show-process-indicators = true;
@@ -65,6 +69,7 @@
       system.defaults.CustomUserPreferences.com.apple.SoftwareUpdate.ScheduleFrequency = 1;
       system.defaults.CustomUserPreferences.com.apple.SoftwareUpdate.AutomaticDownload =  1;
       system.defaults.CustomUserPreferences.com.apple.SoftwareUpdate.CriticalUpdateInstall = 1;
+      system.defaults.CustomUserPreferences.com.apple.LSSharedFileList.FavoriteItems = ["/Applications"];
 
 
       system.defaults.dock.persistent-others = [
@@ -83,6 +88,7 @@
          "/Applications/OmniGraffle.app"
          "/Applications/OmniPlan.app"
          "/Applications/Slack.app"
+         "/Applications/WezTerm.app"
          "/Applications/zoom.us.app"
       ];
 
@@ -103,7 +109,8 @@
 
          taps = [];
          masApps = {
-            airmail-lightning-fast-email = 918858936;
+            airmail-lightning-fast-email  = 918858936;
+            Xcode                         = 497799835;
          };
          brews = [ ];
          casks = [
@@ -123,6 +130,7 @@
             "omniplan"
             "omnigraffle"
             "fantastical"
+            "wezterm"
          ];
       };
    };
@@ -131,8 +139,9 @@
    homeconfig = {pkgs, ...}: {
       home.stateVersion = "23.05";
       programs.home-manager.enable = true;
+
       programs.git = {
-      enable = true;
+         enable = true;
          userName = "James Maes";
          userEmail = "james@kof22.com";
          ignores = [ ".DS_Store" ];
@@ -142,17 +151,33 @@
          };
       };
       programs.zsh = {
-         enable = true;
+         enable   = true;
+         enableCompletion = true;
+         syntaxHighlighting.enable = true;
+         enableVteIntegration = true;
+         autosuggestion.strategy = "completion";
+         initExtra = "export TERM=wezterm";
+
+
          shellAliases = {
             switch   = "clear;darwin-rebuild switch --flake ~/.config/nix";
             hist     = "history";
             ping     = "gping";
          };
+
+         history = {
+            size = 10000;
+            save = 100000;
+         };
+
       };
 
-    imports = [
-       ./home
-    ];
+      #############################################################
+      ## Bring in the brokenup sub sections of our configuration ##
+      #############################################################
+      imports = [
+         ./home
+      ];
 
       #########################
       ## Packages to install ##
@@ -161,11 +186,6 @@
          fastfetch 
          gping 
       ];
-
-      ################################################################
-      ## Home "dotfiles and configs" that are handled by homeconfig ##
-      ################################################################
-      home.file.".vimrc".source = ./vim_configuration;
    };
    in
    {
