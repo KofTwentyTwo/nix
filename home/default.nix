@@ -6,25 +6,22 @@ in
 {
 
   imports = [
+    ./nvim
+    ./wez
+
     # ./kitty
     #./zsh
     #./starship
     #./git
-    # ./nvim
     #./tmux
     #./direnv
     #./games
     #./gh
-    ./wez
   ];
-
-
-
 
 
   options.my-home = {
     includeFonts = lib.mkEnableOption "fonts";
-    useNeovim = lib.mkEnableOption "neovim";
   };
 
   config = {
@@ -53,7 +50,7 @@ in
           ack
           curl
           htop
-	       btop
+          btop
           fastfetch
           tldr
           wget
