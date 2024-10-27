@@ -15,7 +15,12 @@ in
     #./direnv
     #./games
     #./gh
+    ./wez
   ];
+
+
+
+
 
   options.my-home = {
     includeFonts = lib.mkEnableOption "fonts";
@@ -23,39 +28,54 @@ in
   };
 
   config = {
-    # Home Manager needs a bit of information about you and the
-    # paths it should manage.
+    modules = {
+      terminals = {
+        wezterm.enable = true;
+      };
+    };
+
+    ###############################################################
+    ## Home Manager needs a bit of information about you and the ##
+    ## paths it should manage.                                   ##
+    ###############################################################
     home = {
       sessionVariables = {
-        EDITOR = "vim";
-        VISUAL = "vim";
+        VISUAL = "nvim";
         PAGER = "less";
       };
 
       packages = with pkgs; let
+
+        ############################
+        ## command line utilities ##
+        ############################
         commonPackages = [
-          # command line utilities
           ack
           curl
           htop
-          # fastfetch
+	       btop
+          fastfetch
           tldr
           wget
           comma
-          nix-cleanup
         ];
+
+        ###################################
+        ## Fonts that we want everywhere ##
+        ###################################
         fontPackages = [
-          # Fonts
           nerdfonts
           cozette
           scientifica
           monocraft
         ];
-        vimPackage = [ vim ];
+
+        ##############################################
+        ## Work / Development packages that we want ##
+        ##############################################
         workPackages = [
-          # Work packages
           #postgresql
-          #awscli2
+          awscli2
           #oktoast
           #toast-services
           #pizzabox
@@ -68,26 +88,18 @@ in
           #autossh
           #gh
         ];
+
+      ##################################################################
+      ## add all of the above to our list of packages to ensure exist ##
+      ##################################################################
       in
       commonPackages
-      ++ (lib.optionals cfg.includeFonts fontPackages)
-      ++ (lib.optionals (!cfg.useNeovim) vimPackage)
-      ++ (lib.optionals cfg.isWork workPackages);
+      ++ (fontPackages)
+      ++ (workPackages);
     };
 
     fonts.fontconfig.enable = cfg.includeFonts;
-
     programs.nix-index.enable = true;
-
-    # This value determines the Home Manager release that your
-    # configuration is compatible with. This helps avoid breakage
-    # when a new Home Manager release introduces backwards
-    # incompatible changes.
-    #
-    # You can update Home Manager without changing this value. See
-    # the Home Manager release notes for a list of state version
-    # changes in each release.
-    home.stateVersion = "21.05";
   };
 
 }
