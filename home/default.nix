@@ -8,10 +8,11 @@ in
   imports = [
     ./nvim
     ./wez
+    ./starship
+    ./ohmyzsh
 
     # ./kitty
     #./zsh
-    #./starship
     #./git
     #./tmux
     #./direnv
