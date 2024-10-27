@@ -58,13 +58,13 @@
     homeconfig = {pkgs, ...}: {
       home.stateVersion = "23.05";
       programs.home-manager.enable = true;
-      programs.neovim = {
-         enable = true;
-         defaultEditor = true;
-         viAlias = true;
-         vimAlias = true;
-         vimdiffAlias = true;
-      };
+#      programs.neovim = {
+#         enable = true;
+#         defaultEditor = true;
+#         viAlias = true;
+#         vimAlias = true;
+#         vimdiffAlias = true;
+#      };
       programs.git = {
          enable = true;
          userName = "James Maes";
