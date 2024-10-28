@@ -125,6 +125,7 @@
             "alfred"
             "arc"
             "aws-vpn-client"
+            "bettertouchtool"
             "elgato-stream-deck"
             "fantastical"
             "github"
