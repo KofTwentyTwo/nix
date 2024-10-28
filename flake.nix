@@ -78,13 +78,13 @@
       ];
       system.defaults.dock.persistent-apps = [
          "/Applications/1Password.app"
+         "/Applications/AWS VPN Client/AWS VPN Client.app"
          "/Applications/Airmail.app"
          "/Applications/Arc.app"
+         "/Applications/Elgato Stream Deck.app"
          "/Applications/Fantastical.app"
          "/Applications/GitHub Desktop.app"
          "/Applications/IntelliJ IDEA.app"
-         "/System/Applications/Messages.app"
-         "/System/Applications/Music.app"
          "/Applications/Obsidian.app"
          "/Applications/OmniFocus.app"
          "/Applications/OmniGraffle.app"
@@ -93,6 +93,8 @@
          "/Applications/WezTerm.app"
          "/Applications/Xcode.app"
          "/Applications/zoom.us.app"
+         "/System/Applications/Messages.app"
+         "/System/Applications/Music.app"
       ];
 
       system.defaults.dock.wvous-tl-corner = 1;    ## Disabled 
@@ -103,7 +105,6 @@
       #############################################################
       ## Create /etc/zshrc that loads the nix-darwin environment ##
       #############################################################
-      programs.zsh.enable = true;
       environment.systemPackages = [ ];
 
       homebrew = {
@@ -119,21 +120,23 @@
          casks = [
             "1password"
             "1password-cli"
-            "alfred"
-            "github"
-            "keyboard-maestro"
-            "slack"
-            "zoom"
-            "intellij-idea"
-            "arc"
-            "obsidian"
             "adobe-creative-cloud"
+            "alfred"
+            "arc"
             "aws-vpn-client"
-            "omnifocus"
-            "omniplan"
-            "omnigraffle"
+            "elgato-stream-deck"
             "fantastical"
+            "github"
+            "intellij-idea"
+            "keyboard-maestro"
+            "loopback"
+            "obsidian"
+            "omnifocus"
+            "omnigraffle"
+            "omniplan"
+            "slack"
             "wezterm"
+            "zoom"
          ];
       };
    };
@@ -152,27 +155,6 @@
             init.defaultBranch = "main";
             push.autoSetupRemote = true;
          };
-      };
-      programs.zsh = {
-         enable   = true;
-         enableCompletion = true;
-         syntaxHighlighting.enable = true;
-         enableVteIntegration = true;
-         autosuggestion.strategy = "completion";
-         initExtra = "export TERM=wezterm";
-
-
-         shellAliases = {
-            switch   = "clear;darwin-rebuild switch --flake ~/.config/nix";
-            hist     = "history";
-            ping     = "gping";
-         };
-
-         history = {
-            size = 10000;
-            save = 100000;
-         };
-
       };
 
       #############################################################
