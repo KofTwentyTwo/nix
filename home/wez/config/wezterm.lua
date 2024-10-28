@@ -53,10 +53,16 @@ config.keys = {
    {  key = 'd',           mods = 'SUPER|SHIFT',   action = wezterm.action.SplitVertical                 { domain = 'CurrentPaneDomain' },   },
    {  key = 'd',           mods = 'SUPER',         action = wezterm.action.SplitHorizontal               { domain = 'CurrentPaneDomain' },   },
    {  key = 'w',           mods = 'SUPER',         action = wezterm.action.CloseCurrentPane              { confirm = true },                 },
+
    {  key = 'DownArrow',   mods = 'SUPER',         action = wezterm.action.ActivatePaneDirection 'Down'  },
    {  key = 'UpArrow',     mods = 'SUPER',         action = wezterm.action.ActivatePaneDirection 'Up'    },
    {  key = 'LeftArrow',   mods = 'SUPER',         action = wezterm.action.ActivatePaneDirection 'Left'  },
    {  key = 'RightArrow',  mods = 'SUPER',         action = wezterm.action.ActivatePaneDirection 'Right' },
+
+   {  key = 'j',           mods = 'SUPER',         action = wezterm.action.ActivatePaneDirection 'Down'  },
+   {  key = 'k',           mods = 'SUPER',         action = wezterm.action.ActivatePaneDirection 'Up'    },
+   {  key = 'h',           mods = 'SUPER',         action = wezterm.action.ActivatePaneDirection 'Left'  },
+   {  key = 'l',           mods = 'SUPER',         action = wezterm.action.ActivatePaneDirection 'Right' },
 }
 
 
