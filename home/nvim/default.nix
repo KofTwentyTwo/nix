@@ -14,11 +14,6 @@
       vimdiffAlias = true;
       plugins = with pkgs.vimPlugins; [
          vim-sensible
-         nvim-lspconfig
-         nvim-treesitter.withAllGrammars
-         plenary-nvim
-         gruvbox-material
-         mini-nvim
       ];
 
       extraPackages = with pkgs; [ ];
