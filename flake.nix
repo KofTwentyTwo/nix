@@ -125,6 +125,7 @@
             "alfred"
             "arc"
             "aws-vpn-client"
+            "backblaze"
             "bettertouchtool"
             "elgato-stream-deck"
             "fantastical"
