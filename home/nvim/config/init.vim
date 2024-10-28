@@ -10,6 +10,8 @@ set ignorecase              " case insensitive
 set mouse=v                 " middle-click paste with 
 set hlsearch                " highlight search 
 set incsearch
+nnoremap Y Y                " Make Shift-Y yank the current line old school style
+
 
 set wildmode=longest,list   " get bash-like tab completions
 set cc=200                  " set an 120 column border for good coding style

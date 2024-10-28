@@ -10,6 +10,7 @@ in
     ./wez
     ./starship
     ./ohmyzsh
+    ./zsh
 
     # ./kitty
     #./zsh
