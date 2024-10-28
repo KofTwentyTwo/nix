@@ -1,0 +1,2 @@
+# nix
+Personal Nix Setup
