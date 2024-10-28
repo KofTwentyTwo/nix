@@ -12,11 +12,11 @@ set hlsearch                " highlight search
 set incsearch
 
 set wildmode=longest,list   " get bash-like tab completions
-set cc=120                  " set an 120 column border for good coding style
+set cc=200                  " set an 120 column border for good coding style
 filetype plugin indent on   " allow auto-indenting depending on file type
 syntax on                   " syntax highlighting
-set mouse=a                 " enable mouse click
-set clipboard=unnamedplus   " using system clipboard
+set mouse=                  " Turn off neovim mouse - work like a normal terminal 
+set clipboard=unnamedplus   " Just use the global clipboard - works between terms 
 
 filetype plugin on
 set cursorline              " highlight current cursorline
