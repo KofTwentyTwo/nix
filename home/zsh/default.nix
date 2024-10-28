@@ -13,19 +13,12 @@
             switch   = "clear;darwin-rebuild switch --flake ~/.config/nix";
             hist     = "history";
             ping     = "gping";
-            gc       = "git commit -m ";
-            ga       = "git add ";
-            gr       = "git rm ";
-            gp       = "git push ";
-            gs       = "git status ";
-            gd       = "git diff ";
          };
 
          history = {
             size = 10000;
             save = 100000;
          };
-
       };
    };
 }
