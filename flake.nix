@@ -83,12 +83,15 @@
          "/Applications/Fantastical.app"
          "/Applications/GitHub Desktop.app"
          "/Applications/IntelliJ IDEA.app"
+         "/System/Applications/Messages.app"
+         "/System/Applications/Music.app"
          "/Applications/Obsidian.app"
          "/Applications/OmniFocus.app"
          "/Applications/OmniGraffle.app"
          "/Applications/OmniPlan.app"
          "/Applications/Slack.app"
          "/Applications/WezTerm.app"
+         "/Applications/Xcode.app"
          "/Applications/zoom.us.app"
       ];
 
