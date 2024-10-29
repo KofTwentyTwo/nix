@@ -1,8 +1,4 @@
-{ config, pkgs, lib, ... }:
-with lib;
-let
-  cfg = config.my-home;
-in
+{ config, pkgs, lib, inputs, ... }:
 {
 
   imports = [
@@ -12,20 +8,10 @@ in
     ./ohmyzsh
     ./zsh
     ./ssh
-
-    # ./kitty
-    #./zsh
-    #./git
-    #./tmux
-    #./direnv
-    #./games
-    #./gh
+    ./1password
   ];
 
 
-  options.my-home = {
-    includeFonts = lib.mkEnableOption "fonts";
-  };
 
   config = {
 
