@@ -11,6 +11,7 @@ in
     ./starship
     ./ohmyzsh
     ./zsh
+    ./ssh
 
     # ./kitty
     #./zsh
