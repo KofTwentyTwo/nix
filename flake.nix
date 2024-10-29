@@ -2,18 +2,21 @@
    description = "My system configuration";
 
    inputs = {
+
       nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+
       nix-darwin = {
          url = "github:LnL7/nix-darwin";
          inputs.nixpkgs.follows = "nixpkgs";
       };
+
       home-manager = {
          url = "github:nix-community/home-manager";
          inputs.nixpkgs.follows = "nixpkgs";
       };
    };
 
-   outputs = inputs@{ self, nix-darwin, nixpkgs, home-manager }:
+   outputs = inputs@{ self, nix-darwin, nixpkgs, home-manager, ...}:
    let
    configuration = {pkgs, ... }: {
       #############################
@@ -179,6 +182,17 @@
    };
    in
    {
+      darwinConfigurations."Darth" = nix-darwin.lib.darwinSystem {
+         modules = [
+            configuration
+               home-manager.darwinModules.home-manager  {
+                  home-manager.useGlobalPkgs = true;
+                  home-manager.useUserPackages = true;
+                  home-manager.verbose = true;
+                  home-manager.users."james.maes" = homeconfig;
+               }
+         ];
+      };
       darwinConfigurations."Grogu" = nix-darwin.lib.darwinSystem {
          modules = [
             configuration
