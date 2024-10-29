@@ -33,7 +33,6 @@
 
       extraPackages = with pkgs; [ ];
 
-
       extraLuaConfig = ''
          ${builtins.readFile ./config/options.lua}
       '';
