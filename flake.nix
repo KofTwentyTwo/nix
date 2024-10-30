@@ -99,6 +99,8 @@
          "/Applications/zoom.us.app"
          "/System/Applications/Messages.app"
          "/System/Applications/Music.app"
+         "/Applications/WhatsApp.app"
+         "/Applications/Parcel.app"
       ];
 
       system.defaults.dock.wvous-tl-corner = 1;    ## Disabled 
@@ -120,6 +122,10 @@
          masApps = {
             airmail-lightning-fast-email  = 918858936;
             Xcode                         = 497799835;
+            parcel-delivery-tracking      = 639968404;
+            whatsapp-messenger            = 310633997;
+            numbers                       = 409203825;
+            pages                         = 409201541;
          };
          brews = [ ];
          casks = [
@@ -131,6 +137,7 @@
             "aws-vpn-client"
             "backblaze"
             "bettertouchtool"
+            "cleanshot"
             "ecamm-live"
             "elgato-stream-deck"
             "fantastical"
