@@ -82,10 +82,12 @@
       system.defaults.dock.persistent-apps = [
          "/Applications/1Password.app"
          "/Applications/AWS VPN Client/AWS VPN Client.app"
+         "/Applications/Adobe Lightroom Classic/Adobe Lightroom Classic.app"
          "/Applications/Airmail.app"
          "/Applications/Arc.app"
          "/Applications/Ecamm Live.app"
          "/Applications/Elgato Stream Deck.app"
+         "/Applications/Ember.app"
          "/Applications/Fantastical.app"
          "/Applications/GitHub Desktop.app"
          "/Applications/IntelliJ IDEA.app"
@@ -93,14 +95,14 @@
          "/Applications/OmniFocus.app"
          "/Applications/OmniGraffle.app"
          "/Applications/OmniPlan.app"
+         "/Applications/Parcel.app"
          "/Applications/Slack.app"
          "/Applications/WezTerm.app"
+         "/Applications/WhatsApp.app"
          "/Applications/Xcode.app"
          "/Applications/zoom.us.app"
          "/System/Applications/Messages.app"
          "/System/Applications/Music.app"
-         "/Applications/WhatsApp.app"
-         "/Applications/Parcel.app"
       ];
 
       system.defaults.dock.wvous-tl-corner = 1;    ## Disabled 
@@ -126,6 +128,8 @@
             whatsapp-messenger            = 310633997;
             numbers                       = 409203825;
             pages                         = 409201541;
+            blackmagic-disk-speed-test    = 425264550;
+            ## ember-temperature-control     = 1147470931;     ## New version will not auto install?
          };
          brews = [ ];
          casks = [
@@ -185,6 +189,8 @@
       home.packages = with pkgs; [ 
          fastfetch 
          gping 
+         iperf3llsop222lt
+
       ];
    };
    in
