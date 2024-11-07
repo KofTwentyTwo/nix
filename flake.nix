@@ -153,6 +153,7 @@
             "omnifocus"
             "omnigraffle"
             "omniplan"
+            "openwebstart"
             "slack"
             "wezterm"
             "zoom"
@@ -189,8 +190,8 @@
       home.packages = with pkgs; [ 
          fastfetch 
          gping 
-         iperf3llsop222lt
-
+         iperf3
+         nmap
       ];
    };
    in
