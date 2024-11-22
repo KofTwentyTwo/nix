@@ -85,16 +85,21 @@
          "/Applications/Adobe Lightroom Classic/Adobe Lightroom Classic.app"
          "/Applications/Airmail.app"
          "/Applications/Arc.app"
+         "/Applications/DEVONthink 3.app"
          "/Applications/Ecamm Live.app"
          "/Applications/Elgato Stream Deck.app"
          "/Applications/Ember.app"
          "/Applications/Fantastical.app"
          "/Applications/GitHub Desktop.app"
          "/Applications/IntelliJ IDEA.app"
+         "/Applications/Ivory.app"
+         "/Applications/Keynote.app"
+         "/Applications/Numbers.app"
          "/Applications/Obsidian.app"
          "/Applications/OmniFocus.app"
          "/Applications/OmniGraffle.app"
          "/Applications/OmniPlan.app"
+         "/Applications/Pages.app"
          "/Applications/Parcel.app"
          "/Applications/Slack.app"
          "/Applications/WezTerm.app"
@@ -122,14 +127,18 @@
 
          taps = [];
          masApps = {
-            airmail-lightning-fast-email  = 918858936;
+            ## ember-temperature-control     = 1147470931;     ## New version will not auto install?
             Xcode                         = 497799835;
-            parcel-delivery-tracking      = 639968404;
-            whatsapp-messenger            = 310633997;
+            airmail-lightning-fast-email  = 918858936;
+            blackmagic-disk-speed-test    = 425264550;
+            ivory-for-mastodon-by-tapbots = 6444602274;
+            keynote                       = 409183694;
+            lanscan                       = 472226235;
             numbers                       = 409203825;
             pages                         = 409201541;
-            blackmagic-disk-speed-test    = 425264550;
-            ## ember-temperature-control     = 1147470931;     ## New version will not auto install?
+            pagesi                        = 409201541;
+            parcel-delivery-tracking      = 639968404;
+            whatsapp-messenger            = 310633997;
          };
          brews = [ ];
          casks = [
@@ -140,9 +149,12 @@
             "arc"
             "aws-vpn-client"
             "backblaze"
+            "balenaetcher"
             "bettertouchtool"
             "cleanshot"
+            "devonthink"
             "ecamm-live"
+            "elgato-camera-hub"
             "elgato-stream-deck"
             "fantastical"
             "github"
