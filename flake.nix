@@ -165,6 +165,7 @@
             "omnifocus"
             "omnigraffle"
             "omniplan"
+            "openldap"
             "openwebstart"
             "slack"
             "wezterm"
