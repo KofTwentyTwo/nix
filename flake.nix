@@ -14,6 +14,11 @@
          url = "github:nix-community/home-manager";
          inputs.nixpkgs.follows = "nixpkgs";
       };
+
+      devbox = {
+         url = "github:jetify-com/devbox/latest";
+         inputs.nixpkgs.follows = "nixpkgs";
+      };
    };
 
    outputs = inputs@{ self, nix-darwin, nixpkgs, home-manager, ...}:
@@ -203,10 +208,11 @@
       #########################
       home.packages = with pkgs; [ 
          fastfetch 
+         go-task
          gping 
          iperf3
-         nmap
          ncdu
+         nmap
       ];
    };
    in
