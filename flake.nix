@@ -86,6 +86,7 @@
          "/Applications/Airmail.app"
          "/Applications/Arc.app"
          "/Applications/DEVONthink 3.app"
+         "/Applications/Docker.app"
          "/Applications/Ecamm Live.app"
          "/Applications/Elgato Stream Deck.app"
          "/Applications/Ember.app"
@@ -153,6 +154,7 @@
             "bettertouchtool"
             "cleanshot"
             "devonthink"
+            "docker"
             "ecamm-live"
             "elgato-camera-hub"
             "elgato-stream-deck"
@@ -165,7 +167,6 @@
             "omnifocus"
             "omnigraffle"
             "omniplan"
-            "openldap"
             "openwebstart"
             "slack"
             "wezterm"
@@ -205,6 +206,7 @@
          gping 
          iperf3
          nmap
+         ncdu
       ];
    };
    in
