@@ -90,6 +90,7 @@
          "/Applications/Adobe Lightroom Classic/Adobe Lightroom Classic.app"
          "/Applications/Airmail.app"
          "/Applications/Arc.app"
+         "/Applications/DBeaver.app"
          "/Applications/DEVONthink 3.app"
          "/Applications/Docker.app"
          "/Applications/Ecamm Live.app"
@@ -108,9 +109,11 @@
          "/Applications/Pages.app"
          "/Applications/Parcel.app"
          "/Applications/Slack.app"
+         "/Applications/Visual Studio Code.app"
          "/Applications/WezTerm.app"
          "/Applications/WhatsApp.app"
          "/Applications/Xcode.app"
+         "/Applications/draw.io.app"
          "/Applications/zoom.us.app"
          "/System/Applications/Messages.app"
          "/System/Applications/Music.app"
@@ -146,7 +149,11 @@
             parcel-delivery-tracking      = 639968404;
             whatsapp-messenger            = 310633997;
          };
-         brews = [ ];
+
+         brews = [ 
+            "pdns" 
+
+         ];
          casks = [
             "1password"
             "1password-cli"
@@ -158,8 +165,10 @@
             "balenaetcher"
             "bettertouchtool"
             "cleanshot"
+            "dbeaver-community"
             "devonthink"
             "docker"
+            "drawio"
             "ecamm-live"
             "elgato-camera-hub"
             "elgato-stream-deck"
@@ -174,6 +183,7 @@
             "omniplan"
             "openwebstart"
             "slack"
+            "visual-studio-code"
             "wezterm"
             "zoom"
          ];
@@ -207,12 +217,14 @@
       ## Packages to install ##
       #########################
       home.packages = with pkgs; [ 
+         ansible
          fastfetch 
          go-task
          gping 
          iperf3
          ncdu
          nmap
+         sshpass
       ];
    };
    in
