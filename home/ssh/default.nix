@@ -83,15 +83,18 @@
             pmg = { port = 10022; hostname = "pmg.galaxy.lan"; user = "local_admin"; };
             pbs = { port = 10022; hostname = "pbs.galaxy.lan"; user = "local_admin"; };
 
+            ##########################
+            ## Galaxy Network Hosts ##
+            ##########################
+            cr-100-1  = { port = 22; hostname = "cr-100-1.galaxy.lan";  user = "root"; };
+
             ####################
             ## Galaxy.Lan VMs ##  
             ####################
             ansible-controller   = { port = 10022; hostname = "ansible-controller.galaxy.lan";  user = "local_admin"; };
             checkmk              = { port = 10022; hostname = "checkmk.galaxy.lan";  user = "local_admin"; };
             graylog              = { port = 10022; hostname = "graylog.galaxy.lan";  user = "local_admin"; };
-            homepage             = { port = 10022; hostname = "homepage.galaxy.lan";  user = "local_admin"; };
             influx-db1           = { port = 10022; hostname = "influx-db1.galaxy.lan";  user = "local_admin"; };
-            lancache             = { port = 10022; hostname = "lancache.galaxy.lan";  user = "local_admin"; };
             logs                 = { port = 10022; hostname = "logs.galaxy.lan";  user = "local_admin"; };
             nagios               = { port = 10022; hostname = "nagios.galaxy.lan";  user = "local_admin"; };
             prod-db1             = { port = 10022; hostname = "prod-db1.galaxy.lan";  user = "local_admin"; };
