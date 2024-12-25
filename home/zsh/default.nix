@@ -9,10 +9,15 @@
          autosuggestion.strategy = "completion";
          initExtra = "export TERM=wezterm";
 
+         initExtraBeforeCompInit = "eval \"$(task --completion zsh)\" ";
+
          shellAliases = {
             switch   = "clear;darwin-rebuild switch --flake ~/.config/nix";
             hist     = "history";
             ping     = "gping";
+            tl       = "task --list-all";
+            t        = "task";
+            k        = "kubectl";
          };
 
          history = {
