@@ -45,18 +45,17 @@
         ## Fonts that we want everywhere ##
         ###################################
         fontPackages = [
-          nerdfonts
           cozette
           scientifica
           monocraft
-        ];
+        ] ++ builtins.filter lib.attrsets.isDerivation (builtins.attrValues pkgs.nerd-fonts) ;
 
         ##############################################
         ## Work / Development packages that we want ##
         ##############################################
         workPackages = [
           #postgresql
-          awscli2
+          #awscli2
           #oktoast
           #toast-services
           #pizzabox
