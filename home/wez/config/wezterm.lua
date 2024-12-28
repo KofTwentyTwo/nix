@@ -54,6 +54,9 @@ config.keys = {
    {  key = 'd',           mods = 'SUPER',         action = wezterm.action.SplitHorizontal               { domain = 'CurrentPaneDomain' },   },
    {  key = 'w',           mods = 'SUPER',         action = wezterm.action.CloseCurrentPane              { confirm = true },                 },
 
+   ----------------------------
+   -- navigate to the panels --
+   ----------------------------
    {  key = 'DownArrow',   mods = 'SUPER',         action = wezterm.action.ActivatePaneDirection 'Down'  },
    {  key = 'UpArrow',     mods = 'SUPER',         action = wezterm.action.ActivatePaneDirection 'Up'    },
    {  key = 'LeftArrow',   mods = 'SUPER',         action = wezterm.action.ActivatePaneDirection 'Left'  },
@@ -63,6 +66,12 @@ config.keys = {
    {  key = 'k',           mods = 'SUPER',         action = wezterm.action.ActivatePaneDirection 'Up'    },
    {  key = 'h',           mods = 'SUPER',         action = wezterm.action.ActivatePaneDirection 'Left'  },
    {  key = 'l',           mods = 'SUPER',         action = wezterm.action.ActivatePaneDirection 'Right' },
+
+   --------------------------------------
+   -- Activate the next or last window --
+   --------------------------------------
+   {  key = '1',           mods = 'SUPER',         action = wezterm.action.ActivateWindowRelative(1)  },
+   {  key = '2',           mods = 'SUPER',         action = wezterm.action.ActivateWindowRelative(-1) },
 }
 
 
