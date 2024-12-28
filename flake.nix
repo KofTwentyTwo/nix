@@ -109,6 +109,7 @@
          "/Applications/Pages.app"
          "/Applications/Parcel.app"
          "/Applications/Slack.app"
+         "/Applications/Tunnelblick.app"
          "/Applications/Visual Studio Code.app"
          "/Applications/WezTerm.app"
          "/Applications/WhatsApp.app"
@@ -149,10 +150,8 @@
             parcel-delivery-tracking      = 639968404;
             whatsapp-messenger            = 310633997;
          };
-
          brews = [ 
             "pdns" 
-
          ];
          casks = [
             "1password"
@@ -183,6 +182,7 @@
             "omniplan"
             "openwebstart"
             "slack"
+            "tunnelblick"
             "visual-studio-code"
             "wezterm"
             "zoom"
