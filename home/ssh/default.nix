@@ -88,6 +88,16 @@
             ##########################
             cr-100-1  = { port = 22; hostname = "cr-100-1.galaxy.lan";  user = "root"; };
 
+            ############################
+            ## Galaxy Wordpress Hosts ##
+            ############################
+            wordpress-galaxy     = { port = 10022; hostname = "wordpress-galaxy.galaxy.lan";    user = "local_admin"; };
+            wordpress-queuedl    = { port = 10022; hostname = "wordpress-queuedl.galaxy.lan";   user = "local_admin"; };
+            wordpress-kof22      = { port = 10022; hostname = "wordpress-kof22.galaxy.lan";     user = "local_admin"; };
+            wordpress-kingsrook  = { port = 10022; hostname = "wordpress-kingsrook.galaxy.lan"; user = "local_admin"; };
+            wordpress-rcid       = { port = 10022; hostname = "wordpress-rcid.galaxy.lan";      user = "local_admin"; };
+            wordpress-mmlt       = { port = 10022; hostname = "wordpress-mmlt.galaxy.lan";      user = "local_admin"; };
+
             ####################
             ## Galaxy.Lan VMs ##  
             ####################
