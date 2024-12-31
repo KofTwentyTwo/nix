@@ -153,6 +153,7 @@
          };
          brews = [ 
             "pdns" 
+            "mc"
          ];
          casks = [
             "1password"
