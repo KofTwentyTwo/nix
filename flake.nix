@@ -149,6 +149,7 @@
             pagesi                        = 409201541;
             parcel-delivery-tracking      = 639968404;
             whatsapp-messenger            = 310633997;
+            wireguard                     = 1451685025;
          };
          brews = [ 
             "pdns" 
