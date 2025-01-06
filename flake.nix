@@ -153,7 +153,6 @@
          };
          brews = [ 
             "pdns" 
-            "mc"
          ];
          casks = [
             "1password"
@@ -220,10 +219,12 @@
       #########################
       home.packages = with pkgs; [ 
          ansible
+         dialog
          fastfetch 
          go-task
          gping 
          iperf3
+         mc
          ncdu
          nmap
          sshpass
