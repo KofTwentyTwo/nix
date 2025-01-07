@@ -12,12 +12,13 @@
          initExtraBeforeCompInit = "eval \"$(task --completion zsh)\" ";
 
          shellAliases = {
-            switch   = "clear;darwin-rebuild switch --flake ~/.config/nix";
-            hist     = "history";
-            ping     = "gping";
-            tl       = "task --list-all";
-            t        = "task";
-            k        = "kubectl";
+            switch      = "clear;darwin-rebuild switch --flake ~/.config/nix";
+            hist        = "history";
+            ping        = "gping";
+            tl          = "task --list-all";
+            t           = "task";
+            k           = "kubectl";
+            ssh-clean   = "ssh-keygen -R"
          };
 
          history = {
