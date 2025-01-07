@@ -18,7 +18,7 @@
             tl          = "task --list-all";
             t           = "task";
             k           = "kubectl";
-            ssh-clean   = "ssh-keygen -R"
+            ssh-clean   = "ssh-keygen -R";
          };
 
          history = {
