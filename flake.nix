@@ -88,7 +88,6 @@
          "/Applications/1Password.app"
          "/Applications/AWS VPN Client/AWS VPN Client.app"
          "/Applications/Adobe Lightroom Classic/Adobe Lightroom Classic.app"
-         "/Applications/Airmail.app"
          "/Applications/Arc.app"
          "/Applications/DBeaver.app"
          "/Applications/DEVONthink 3.app"
@@ -96,7 +95,6 @@
          "/Applications/Ecamm Live.app"
          "/Applications/Elgato Stream Deck.app"
          "/Applications/Ember.app"
-         "/Applications/Fantastical.app"
          "/Applications/GitHub Desktop.app"
          "/Applications/IntelliJ IDEA.app"
          "/Applications/Ivory.app"
@@ -116,6 +114,8 @@
          "/Applications/Xcode.app"
          "/Applications/draw.io.app"
          "/Applications/zoom.us.app"
+         "/System/Applications/Calendar.app"
+         "/System/Applications/Mail.app"
          "/System/Applications/Messages.app"
          "/System/Applications/Music.app"
       ];
@@ -137,7 +137,6 @@
 
          taps = [];
          masApps = {
-            ## ember-temperature-control     = 1147470931;     ## New version will not auto install?
             Xcode                         = 497799835;
             airmail-lightning-fast-email  = 918858936;
             blackmagic-disk-speed-test    = 425264550;
@@ -153,6 +152,8 @@
          };
          brews = [ 
             "pdns" 
+            "ldapvi"
+            "ansible-lint"
          ];
          casks = [
             "1password"
@@ -221,13 +222,16 @@
          ansible
          dialog
          fastfetch 
+         gnupg
          go-task
          gping 
          iperf3
          mc
          ncdu
          nmap
+         ripgrep
          sshpass
+         yamllint
       ];
    };
    in

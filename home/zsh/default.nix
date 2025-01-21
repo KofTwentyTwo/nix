@@ -9,7 +9,7 @@
          autosuggestion.strategy = "completion";
          initExtra = "export TERM=wezterm";
 
-         initExtraBeforeCompInit = "eval \"$(task --completion zsh)\" ";
+         initExtraBeforeCompInit = "eval \"$(task --completion zsh)\" ";         
 
          shellAliases = {
             switch      = "clear;darwin-rebuild switch --flake ~/.config/nix";

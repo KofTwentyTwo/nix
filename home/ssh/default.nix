@@ -77,9 +77,9 @@
             ##########################
             ## Galaxy Proxmox Hosts ##
             ##########################
-            p1  = { port = 10022; hostname = "p1.galaxy.lan";  user = "local_admin"; };
-            p2  = { port = 10022; hostname = "p2.galaxy.lan";  user = "local_admin"; };
-            p3  = { port = 10022; hostname = "p3.galaxy.lan";  user = "local_admin"; };
+            p1  = { port = 10022; hostname = "p1.galaxy.lan";  user = "james.maes"; };
+            p2  = { port = 10022; hostname = "p2.galaxy.lan";  user = "james.maes"; };
+            p3  = { port = 10022; hostname = "p3.galaxy.lan";  user = "james.maes"; };
             pmg = { port = 10022; hostname = "pmg.galaxy.lan"; user = "local_admin"; };
             pbs = { port = 10022; hostname = "pbs.galaxy.lan"; user = "local_admin"; };
 

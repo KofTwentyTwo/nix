@@ -25,6 +25,12 @@
         PAGER  = "less";
       };
 
+      sessionPath = [
+         "./bin/"
+         "/opt/homebrew/bin/"
+      ];
+
+
       packages = with pkgs; let
 
         ############################
@@ -54,19 +60,6 @@
         ## Work / Development packages that we want ##
         ##############################################
         workPackages = [
-          #postgresql
-          #awscli2
-          #oktoast
-          #toast-services
-          #pizzabox
-          #heroku
-          #colima
-          #docker
-          #docker-compose
-          #docker-credential-helpers
-          #android-tools
-          #autossh
-          #gh
         ];
 
       ##################################################################
