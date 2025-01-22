@@ -25,6 +25,10 @@
             size = 10000;
             save = 100000;
          };
+
+         sessionVariables = {
+            SSL_CERT_FILE="/Users/james.maes/.config/ca-certs.pem";
+         };
       };
    };
 }
