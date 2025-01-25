@@ -9,6 +9,7 @@
     ./zsh
     ./ssh
     ./1password
+    ./ca-certs
   ];
 
 

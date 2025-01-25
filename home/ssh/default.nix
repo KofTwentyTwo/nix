@@ -88,8 +88,16 @@
             ##########################
             cr-100-1  = { port = 22; hostname = "cr-100-1.galaxy.lan";  user = "root"; };
 
+            ##########################
+            ## galaxy k8s prod plan ##
+            ##########################
+            k8s-prod-controller-lb  = { port = 10022; hostname = "k8s-prod-controller-lb.k8s.galaxy.lan";   user = "james.maes"; };
+            k8s-prod-controller-a   = { port = 10022; hostname = "k8s-prod-controller-a.k8s.galaxy.lan";    user = "james.maes"; };
+            k8s-prod-controller-b   = { port = 10022; hostname = "k8s-prod-controller-b.k8s.galaxy.lan";    user = "james.maes"; };
+            k8s-prod-controller-c   = { port = 10022; hostname = "k8s-prod-controller-c.k8s.galaxy.lan";    user = "james.maes"; };
+
             ############################
-            ## Galaxy Wordpress Hosts ##
+            ## galaxy wordpress hosts ##
             ############################
             wordpress-galaxy     = { port = 10022; hostname = "wordpress-galaxy.galaxy.lan";    user = "local_admin"; };
             wordpress-queuedl    = { port = 10022; hostname = "wordpress-queuedl.galaxy.lan";   user = "local_admin"; };
