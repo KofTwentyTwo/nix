@@ -179,6 +179,7 @@
             "github"
             "intellij-idea"
             "keyboard-maestro"
+            "lens"
             "loopback"
             "obsidian"
             "omnifocus"
@@ -228,6 +229,7 @@
          go-task
          gping 
          iperf3
+         k9s
          mc
          ncdu
          nmap
