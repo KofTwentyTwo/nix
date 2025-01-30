@@ -230,6 +230,7 @@
          gping 
          iperf3
          k9s
+         kubernetes-helm
          mc
          ncdu
          nmap
