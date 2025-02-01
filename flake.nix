@@ -152,9 +152,10 @@
             wireguard                     = 1451685025;
          };
          brews = [ 
-            "pdns" 
-            "ldapvi"
             "ansible-lint"
+            "calicoctl"
+            "ldapvi"
+            "pdns" 
          ];
          casks = [
             "1password"
@@ -228,6 +229,7 @@
          gnupg
          go-task
          gping 
+         inetutils
          iperf3
          k9s
          kubernetes-helm
@@ -236,6 +238,7 @@
          nmap
          ripgrep
          sshpass
+         watch
          yamllint
       ];
    };
