@@ -7,7 +7,7 @@ n_keymap("Y", "Y")
 vim.o.tabstop=3
 vim.o.shiftwidth=3
 vim.o.expandtab = true
-vim.o.number = true
+vim.o.number = false
 vim.o.autoindent = true
 vim.o.showmatch = true     
 vim.o.ignorecase = true    
