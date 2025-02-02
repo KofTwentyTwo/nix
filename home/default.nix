@@ -2,14 +2,15 @@
 {
 
   imports = [
-    ./nvim
-    ./wez
-    ./starship
-    ./ohmyzsh
-    ./zsh
-    ./ssh
     ./1password
     ./ca-certs
+    ./k9s
+    ./nvim
+    ./ohmyzsh
+    ./ssh
+    ./starship
+    ./wez
+    ./zsh
   ];
 
 
