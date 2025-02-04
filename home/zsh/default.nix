@@ -9,16 +9,23 @@
          autosuggestion.strategy = "completion";
          initExtra = "export TERM=wezterm";
 
-         initExtraBeforeCompInit = "eval \"$(task --completion zsh)\" ";         
+         initExtraBeforeCompInit = "eval \"$(task --completion zsh)\"; source <(velero completion zsh) ";         
 
          shellAliases = {
             switch      = "clear;darwin-rebuild switch --flake ~/.config/nix";
             hist        = "history";
+            hi          = "history";
             ping        = "gping";
             tl          = "task --list-all";
             t           = "task";
+            h           = "helm";
+            v           = "velero";
+
+            kdns        = "kubectl run -i --tty dnsutils --image=infoblox/dnstools --restart=Never --rm";
             k           = "kubectl";
-            ssh-clean   = "ssh-keygen -R";
+            ka          = "kubectl apply -f ";
+
+            sshc        = "ssh-keygen -R";
          };
 
          history = {

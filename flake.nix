@@ -155,7 +155,9 @@
             "ansible-lint"
             "calicoctl"
             "ldapvi"
+            "minio-mc"
             "pdns" 
+            "velero"
          ];
          casks = [
             "1password"
@@ -233,7 +235,6 @@
          iperf3
          k9s
          kubernetes-helm
-         mc
          ncdu
          nmap
          ripgrep
