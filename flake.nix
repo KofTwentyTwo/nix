@@ -239,6 +239,7 @@
          nmap
          ripgrep
          sshpass
+         stuntman
          watch
          yamllint
       ];
