@@ -153,7 +153,10 @@
          };
          brews = [ 
             "ansible-lint"
+            "argocd"
             "calicoctl"
+            "coturn"
+            "glow"
             "ldapvi"
             "minio-mc"
             "pdns" 
@@ -181,6 +184,7 @@
             "fantastical"
             "github"
             "intellij-idea"
+            "karabiner-elements"
             "keyboard-maestro"
             "lens"
             "loopback"
@@ -226,9 +230,11 @@
       #########################
       home.packages = with pkgs; [ 
          ansible
+         cmctl
          dialog
          fastfetch 
          gnupg
+         go
          go-task
          gping 
          inetutils
