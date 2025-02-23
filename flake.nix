@@ -99,6 +99,7 @@
          "/Applications/GitHub Desktop.app"
          "/Applications/IntelliJ IDEA.app"
          "/Applications/Ivory.app"
+         "/Applications/Karabiner-Elements.app"
          "/Applications/Keynote.app"
          "/Applications/Numbers.app"
          "/Applications/Obsidian.app"
@@ -157,6 +158,7 @@
             "calicoctl"
             "coturn"
             "glow"
+            "k9s"
             "ldapvi"
             "minio-mc"
             "pdns" 
@@ -239,10 +241,10 @@
          gping 
          inetutils
          iperf3
-         k9s
          kubernetes-helm
          ncdu
          nmap
+         postgresql_16_jit.out
          ripgrep
          sshpass
          stuntman
