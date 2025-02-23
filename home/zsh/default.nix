@@ -25,7 +25,7 @@
             k           = "kubectl";
             ka          = "kubectl apply -f ";
             kns         = "kubectl config set-context --current --namespace ";
-            kshell      = "kubectl exec --stdin --tty "
+            kshell      = "kubectl exec --stdin --tty ";
 
             sshc        = "ssh-keygen -R";
          };
