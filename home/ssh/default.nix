@@ -17,7 +17,8 @@
             ####################
             ## External Sites ##
             ####################
-            "github.com" = { port = 22; hostname = "github.com"; user = "git"; };
+            "github.com"   = { port = 22; hostname = "github.com";   user = "git"; };
+            "git.qrun.io"  = { port = 22; hostname = "git.qrun.io";  user = "git"; };
 
 
 
