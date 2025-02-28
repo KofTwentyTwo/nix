@@ -111,6 +111,7 @@
          "/Applications/Slack.app"
          "/Applications/Tunnelblick.app"
          "/Applications/Visual Studio Code.app"
+         "/Applications/Warp.app"
          "/Applications/WezTerm.app"
          "/Applications/WhatsApp.app"
          "/Applications/Xcode.app"
@@ -162,6 +163,7 @@
             "ldapvi"
             "minio-mc"
             "pdns" 
+            "tailscale"
             "velero"
          ];
          casks = [
@@ -198,6 +200,7 @@
             "slack"
             "tunnelblick"
             "visual-studio-code"
+            "warp"
             "wezterm"
             "zoom"
          ];
