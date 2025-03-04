@@ -163,7 +163,6 @@
             "ldapvi"
             "minio-mc"
             "pdns" 
-            "tailscale"
             "velero"
          ];
          casks = [
@@ -188,6 +187,7 @@
             "fantastical"
             "github"
             "intellij-idea"
+            "jump"
             "karabiner-elements"
             "keyboard-maestro"
             "lens"
@@ -198,6 +198,7 @@
             "omniplan"
             "openwebstart"
             "slack"
+            "tailscale"
             "tunnelblick"
             "visual-studio-code"
             "warp"
