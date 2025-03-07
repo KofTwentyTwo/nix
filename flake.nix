@@ -27,13 +27,14 @@
       #############################
       ## defaults - do not touch ##
       #############################
-      services.nix-daemon.enable = true;
-
       nix.settings.experimental-features = "nix-command flakes";
       system.configurationRevision = self.rev or self.dirtyRev or null;
       system.stateVersion = 4;
       nixpkgs.hostPlatform = "aarch64-darwin";
       nixpkgs.config.allowUnfree = true;
+
+          # Set the build user group ID to 350, matching your current system setting.
+    ids.gids.nixbld = 350;
 
       #########################################################
       ## Declare the user that will be running `nix-darwin`. ##
@@ -42,12 +43,13 @@
          name = "james.maes";
          home = "/Users/james.maes";
       };
+      users.groups.nixbld.gid = pkgs.lib.mkForce 350;
 
       #####################################################################
       ## Apple / MacOS Configuration                                     ##
       ## Options here - https://daiderd.com/nix-darwin/manual/index.html ##
       #####################################################################
-      security.pam.enableSudoTouchIdAuth = true;
+      security.pam.services.sudo_local.touchIdAuth = true;
       system.defaults.NSGlobalDomain.InitialKeyRepeat = 15;
       system.defaults.NSGlobalDomain.KeyRepeat = 2;
       system.defaults.finder.ShowStatusBar = true;
@@ -162,6 +164,7 @@
             "k9s"
             "ldapvi"
             "minio-mc"
+            "opentofu"
             "pdns" 
             "velero"
          ];
