@@ -37,6 +37,7 @@
 
          sessionVariables = {
             SSL_CERT_FILE="/Users/james.maes/.config/ca-certs.pem";
+            KUBECONFIG="/Users/james.maes/Documents/Lens/k8s-prod.config:/Users/james.maes/Documents/Lens/k8s-secure.config";
          };
       };
    };
