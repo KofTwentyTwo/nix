@@ -149,6 +149,11 @@
             darth       = { host = "darth darth.galaxy.lan"; port = 10022; hostname = "darth.galaxy.lan";        user = "james.maes"; };
             grogu       = { host = "grogu grogu.galaxy.lan"; port = 10022; hostname = "grogu.galaxy.lan";        user = "james.maes"; };
             jakku       = { host = "jakku jakku.galaxy.lan"; port = 10022; hostname = "jakku.galaxy.lan";        user = "james.maes"; };
+            
+            #############################
+            ## Galaxy Dev Workstations ##
+            #############################
+            dev-workstation-1       = { host = "dev-workstation-1 dev-workstation-1.galaxy.lan"; port = 10022; hostname = "dev-workstation-1.galaxy.lan";   user = "james.maes"; };
          };
       };
    };

@@ -156,6 +156,7 @@
             wireguard                     = 1451685025;
          };
          brews = [ 
+            "ansible-creator"
             "ansible-lint"
             "argocd"
             "calicoctl"
@@ -226,6 +227,8 @@
          extraConfig = {
             init.defaultBranch = "main";
             push.autoSetupRemote = true;
+            http.postBuffer = "157286400";
+            core.compression = "0";
          };
       };
 
@@ -259,6 +262,15 @@
          stuntman
          watch
          yamllint
+      ];
+
+      ################
+      ## Path Setup ##
+      ################
+      home.sessionPath = [
+         "/Users/james.maes/.local/bin"
+         "/opt/ansible-virtual/bin/"
+         "/Users/james.maes/Library/Python/3.9/bin/"
       ];
    };
    in
