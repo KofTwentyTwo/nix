@@ -30,8 +30,10 @@
       nix.settings.experimental-features = "nix-command flakes";
       system.configurationRevision = self.rev or self.dirtyRev or null;
       system.stateVersion = 4;
+      system.primaryUser = "james.maes";
       nixpkgs.hostPlatform = "aarch64-darwin";
       nixpkgs.config.allowUnfree = true;
+      nixpkgs.config.allowBroken = true;
 
           # Set the build user group ID to 350, matching your current system setting.
     ids.gids.nixbld = 350;
@@ -164,6 +166,7 @@
             "glow"
             "k9s"
             "ldapvi"
+            "maven"
             "minio-mc"
             "mysql"
             "opentofu"
