@@ -169,6 +169,7 @@
             "maven"
             "minio-mc"
             "mysql"
+            "npm"
             "opentofu"
             "pdns" 
             "velero"

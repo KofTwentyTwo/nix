@@ -12,7 +12,7 @@
          initExtraBeforeCompInit = "eval \"$(task --completion zsh)\"; source <(velero completion zsh); . /Users/james.maes/Documents/Git/Kingsrook/qqq/qqq-dev-tools/lib/qqq-shell-functions.sh ";         
 
          shellAliases = {
-            switch      = "clear;darwin-rebuild switch --flake ~/.config/nix";
+            switch      = "clear;sudo darwin-rebuild switch --flake ~/.config/nix";
             hist        = "history";
             hi          = "history";
             ping        = "gping";
