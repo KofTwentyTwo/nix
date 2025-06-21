@@ -284,6 +284,7 @@
             configuration
                home-manager.darwinModules.home-manager  {
                   home-manager.useGlobalPkgs = true;
+                  nix.enable = false;
                   home-manager.useUserPackages = true;
                   home-manager.verbose = true;
                   home-manager.users."james.maes" = homeconfig;
