@@ -228,11 +228,16 @@
          userName = "James Maes";
          userEmail = "james@kof22.com";
          ignores = [ ".DS_Store" ];
+         signing = {
+            key = "62859E8ABE1FC2B7FCCB89080021767055740E6D";
+            signByDefault = true;         
+         };   
          extraConfig = {
             init.defaultBranch = "main";
             push.autoSetupRemote = true;
             http.postBuffer = "157286400";
             core.compression = "0";
+            gpg.program = "gpg";
          };
       };
 
