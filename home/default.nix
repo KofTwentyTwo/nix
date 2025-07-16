@@ -30,7 +30,7 @@
       sessionPath = [
          "./bin/"
          "/opt/homebrew/bin/"
-         "/Users/james.maes/Documents/Git/Kingsrook/qqq/qqq-dev-tools/bin/"
+         "/Users/james.maes/Git.Local/Kingsrook/qqq/qqq-dev-tools/bin/"
       ];
 
 

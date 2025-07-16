@@ -9,7 +9,7 @@
          autosuggestion.strategy = "completion";
          initExtra = "export TERM=wezterm";
 
-         initExtraBeforeCompInit = "eval \"$(task --completion zsh)\"; source <(velero completion zsh); . /Users/james.maes/Documents/Git/Kingsrook/qqq/qqq-dev-tools/lib/qqq-shell-functions.sh ";         
+         initExtraBeforeCompInit = "eval \"$(task --completion zsh)\"; source <(velero completion zsh); . /Users/james.maes/Git.Local/Kingsrook/qqq/qqq-dev-tools/lib/qqq-shell-functions.sh ";         
 
          shellAliases = {
             switch      = "clear;sudo darwin-rebuild switch --flake ~/.config/nix";
@@ -38,7 +38,7 @@
          sessionVariables = {
             SSL_CERT_FILE="/Users/james.maes/.config/ca-certs.pem";
             KUBECONFIG="/Users/james.maes/Documents/Lens/k8s-prod.config:/Users/james.maes/Documents/Lens/k8s-secure.config";
-            QQQ_DEV_TOOLS_DIR="/Users/james.maes/Documents/Git/Kingsrook/qqq/qqq-dev-tools";
+            QQQ_DEV_TOOLS_DIR="/Users/james.maes/Git.Local/Kingsrook/qqq/qqq-dev-tools";
          };
       };
    };
