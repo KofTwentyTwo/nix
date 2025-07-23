@@ -255,6 +255,7 @@
       #########################
       home.packages = with pkgs; [ 
          ansible
+         arping
          cmctl
          dialog
          fastfetch 
@@ -262,6 +263,7 @@
          go
          go-task
          gping 
+         helmfile
          inetutils
          iperf3
          kubernetes-helm

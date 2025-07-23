@@ -39,6 +39,7 @@
             SSL_CERT_FILE="/Users/james.maes/.config/ca-certs.pem";
             KUBECONFIG="/Users/james.maes/Documents/Lens/k8s-prod.config:/Users/james.maes/Documents/Lens/k8s-secure.config";
             QQQ_DEV_TOOLS_DIR="/Users/james.maes/Git.Local/Kingsrook/qqq/qqq-dev-tools";
+            NPM_TOKEN="7wgYGrYB24i!H94K8fZ2";
          };
       };
    };
