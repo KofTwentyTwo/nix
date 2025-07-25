@@ -161,6 +161,8 @@
             "ansible-creator"
             "ansible-lint"
             "argocd"
+            "bash"
+            "boxes"
             "calicoctl"
             "coturn"
             "glow"
@@ -172,6 +174,7 @@
             "mysql"
             "npm"
             "opentofu"
+            "pandoc"
             "pdns" 
             "pv"
             "velero"
@@ -210,7 +213,7 @@
             "omniplan"
             "openwebstart"
             "slack"
-            "tailscale"
+            ## "tailscale"
             "tunnelblick"
             "visual-studio-code"
             "warp"
@@ -273,6 +276,7 @@
          ripgrep
          sshpass
          stuntman
+         texliveFull
          watch
          yamllint
       ];
