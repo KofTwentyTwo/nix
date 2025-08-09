@@ -177,7 +177,9 @@
             "pandoc"
             "pdns" 
             "pv"
+            "pwgen"
             "velero"
+            "wimlib"
          ];
          casks = [
             "1password-cli"
