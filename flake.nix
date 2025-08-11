@@ -165,6 +165,7 @@
             "boxes"
             "calicoctl"
             "coturn"
+            "gh"
             "glow"
             "k9s"
             "ldapvi"
@@ -290,6 +291,7 @@
          "/Users/james.maes/.local/bin"
          "/opt/ansible-virtual/bin/"
          "/Users/james.maes/Library/Python/3.9/bin/"
+         "$JAVA_HOME/bin"
       ];
    };
    in
