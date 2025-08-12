@@ -177,6 +177,7 @@
             "opentofu"
             "pandoc"
             "pdns" 
+            "platformio"
             "pv"
             "pwgen"
             "velero"
