@@ -164,12 +164,15 @@
             "bash"
             "boxes"
             "calicoctl"
+            "clang-format"
+            "cmake"
             "coturn"
             "gh"
             "glow"
             "k9s"
             "ldapvi"
             "liquibase"
+            "llvm"
             "maven"
             "minio-mc"
             "mysql"
@@ -290,6 +293,7 @@
       ################
       home.sessionPath = [
          "/Users/james.maes/.local/bin"
+         "/opt/homebrew/opt/llvm/bin"
          "/opt/ansible-virtual/bin/"
          "/Users/james.maes/Library/Python/3.9/bin/"
          "$JAVA_HOME/bin"
