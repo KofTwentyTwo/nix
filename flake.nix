@@ -176,6 +176,7 @@
             "maven"
             "minio-mc"
             "mysql"
+            "ninja"
             "npm"
             "opentofu"
             "pandoc"
