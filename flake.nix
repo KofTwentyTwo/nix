@@ -164,6 +164,7 @@
             "bash"
             "boxes"
             "calicoctl"
+            "cargo"
             "clang-format"
             "cmake"
             "coturn"
