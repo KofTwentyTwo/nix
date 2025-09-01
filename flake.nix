@@ -164,7 +164,6 @@
             "bash"
             "boxes"
             "calicoctl"
-            "cargo"
             "clang-format"
             "cmake"
             "coturn"
@@ -185,6 +184,7 @@
             "platformio"
             "pv"
             "pwgen"
+            "rust"
             "velero"
             "wimlib"
          ];
