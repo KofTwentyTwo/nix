@@ -299,6 +299,7 @@
          "/opt/ansible-virtual/bin/"
          "/Users/james.maes/Library/Python/3.9/bin/"
          "$JAVA_HOME/bin"
+         "/Users/james.maes/.cargo/bin"
       ];
    };
    in
