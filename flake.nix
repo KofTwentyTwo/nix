@@ -158,6 +158,7 @@
             wireguard                     = 1451685025;
          };
          brews = [ 
+            "act"
             "ansible-creator"
             "ansible-lint"
             "argocd"
