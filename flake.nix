@@ -159,6 +159,7 @@
          };
          brews = [ 
             "act"
+            "aicommits"
             "ansible-creator"
             "ansible-lint"
             "argocd"
@@ -269,6 +270,7 @@
       home.packages = with pkgs; [ 
          ansible
          arping
+         cargo-spellcheck
          cmctl
          dialog
          fastfetch 
