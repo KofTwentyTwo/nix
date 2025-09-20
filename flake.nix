@@ -168,6 +168,7 @@
             "calicoctl"
             "clang-format"
             "cmake"
+            "commitizen"
             "coturn"
             "gh"
             "glow"
