@@ -13,8 +13,9 @@
          shellAliases = {
             switch      = "clear;sudo darwin-rebuild switch --flake ~/.config/nix";
             hist        = "history";
+            his         = "history";
             hi          = "history";
-            ping        = "gping";
+            ping        = "ping";
             tl          = "task --list-all";
             t           = "task";
             h           = "helm";
@@ -27,17 +28,20 @@
             kshell      = "kubectl exec --stdin --tty ";
 
             sshc        = "ssh-keygen -R";
+
+            ## overwrite some of the standard git aliases 
+            gc          = "git cz c";
          };
 
          history = {
-            size = 10000;
+            size = 100000;
             save = 100000;
          };
 
          sessionVariables = {
             AICOMMITS_PROMPT="$(cat /Users/james.maes/Documents/LLM/aic_prompt.txt)";
-            GRAALVM_HOME="/Library/Java/JavaVirtualMachines/graalvm-24.jdk/Contents/Home";
-            JAVA_HOME="/Library/Java/JavaVirtualMachines/graalvm-24.jdk/Contents/Home";
+            GRAALVM_HOME="/Library/Java/JavaVirtualMachines/graalvm-25.jdk/Contents/HOME";
+            JAVA_HOME="/Library/Java/JavaVirtualMachines/graalvm-25.jdk/Contents/HOME/";
             KUBECONFIG="/Users/james.maes/Documents/Lens/k8s-prod.config:/Users/james.maes/Documents/Lens/k8s-secure.config:/Users/james.maes/Documents/Lens/docker-desktop.config";
             NPM_TOKEN="7wgYGrYB24i!H94K8fZ2";
             QQQ_DEV_TOOLS_DIR="/Users/james.maes/Git.Local/Kingsrook/qqq/qqq-dev-tools";

@@ -255,6 +255,8 @@
             http.postBuffer = "157286400";
             core.compression = "0";
             gpg.program = "gpg";
+            alias.cz = "!cz";        # optional shortcut
+            alias.gc = "!cz";        # make git gc run commitizen
          };
       };
 
