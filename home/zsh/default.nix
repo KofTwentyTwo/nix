@@ -10,6 +10,11 @@
 
          initContent = lib.mkOrder 550 "export TERM=wezterm; eval \"$(task --completion zsh)\"; source <(velero completion zsh); . /Users/james.maes/Git.Local/Kingsrook/qqq/qqq-dev-tools/lib/qqq-shell-functions.sh ";         
 
+         initExtra = ''
+          . "$HOME/.cargo/env"
+         '';
+
+
          shellAliases = {
             switch      = "clear;sudo darwin-rebuild switch --flake ~/.config/nix";
             hist        = "history";
