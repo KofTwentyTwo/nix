@@ -306,6 +306,7 @@
          "/Users/james.maes/Library/Python/3.9/bin/"
          "$JAVA_HOME/bin"
          "/Users/james.maes/.cargo/bin"
+         "/Users/james.maes/Git.Local/Kingsrook/qqq/qqq-dev-tools/bin"
       ];
    };
    in

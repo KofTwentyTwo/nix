@@ -8,7 +8,7 @@
          enableVteIntegration = true;
          autosuggestion.strategy = "completion";
 
-         initContent = lib.mkOrder 550 "export TERM=wezterm; eval \"$(task --completion zsh)\"; source <(velero completion zsh); . /Users/james.maes/Git.Local/Kingsrook/qqq/qqq-dev-tools/lib/qqq-shell-functions.sh ";         
+         initContent = lib.mkOrder 550 "export TERM=wezterm; eval \"$(task --completion zsh)\"; source <(velero completion zsh); . /Users/james.maes/Git.Local/Kingsrook/qqq/qqq-dev-tools/lib/qqq-shell-functions.sh ";
 
          initExtra = ''
           . "$HOME/.cargo/env"
@@ -49,8 +49,8 @@
             JAVA_HOME="/Library/Java/JavaVirtualMachines/graalvm-25.jdk/Contents/HOME/";
             KUBECONFIG="/Users/james.maes/Documents/Lens/k8s-prod.config:/Users/james.maes/Documents/Lens/k8s-secure.config:/Users/james.maes/Documents/Lens/docker-desktop.config";
             NPM_TOKEN="7wgYGrYB24i!H94K8fZ2";
-            QQQ_DEV_TOOLS_DIR="/Users/james.maes/Git.Local/Kingsrook/qqq/qqq-dev-tools";
             SSL_CERT_FILE="/Users/james.maes/.config/ca-certs.pem";
+            QQQ_DEV_TOOLS_DIR="/Users/james.maes/Git.Local/Kingsrook/qqq/qqq-dev-tools";
          };
       };
    };
