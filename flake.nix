@@ -67,8 +67,6 @@
       system.defaults.dock.launchanim = false;
       system.defaults.dock.expose-animation-duration = -.01;
       system.defaults.dock.mouse-over-hilite-stack = true;
-      system.defaults.alf.loggingenabled = 1;
-      system.defaults.alf.globalstate = 1; 
       system.defaults.menuExtraClock.ShowDate = 1;
       system.defaults.menuExtraClock.ShowSeconds = true;
       system.defaults.screencapture.location = "/Users/james.maes/Documents/Screenshots";
@@ -82,7 +80,10 @@
       system.defaults.CustomUserPreferences.com.apple.SoftwareUpdate.AutomaticDownload =  1;
       system.defaults.CustomUserPreferences.com.apple.SoftwareUpdate.CriticalUpdateInstall = 1;
       system.defaults.CustomUserPreferences.com.apple.LSSharedFileList.FavoriteItems = ["/Applications"];
-
+      networking.applicationFirewall = {
+        enable = true;
+        blockAllIncoming = true;
+      };
 
       system.defaults.dock.persistent-others = [
          "/Users/james.maes/Downloads"
@@ -163,6 +164,7 @@
             "ansible-creator"
             "ansible-lint"
             "argocd"
+            "ast-grep"
             "bash"
             "boxes"
             "calicoctl"
@@ -170,9 +172,13 @@
             "cmake"
             "commitizen"
             "coturn"
+            "fd"
+            "fish"
+            "fzf"
             "gh"
             "glow"
             "k9s"
+            "lazygit"
             "ldapvi"
             "liquibase"
             "llvm"
@@ -206,7 +212,7 @@
             "connectmenow"
             "dbeaver-community"
             "devonthink"
-            "docker"
+            "docker-desktop"
             "drawio"
             "ecamm-live"
             "elgato-camera-hub"
@@ -214,7 +220,7 @@
             "fantastical"
             "github"
             "istat-menus"
-            "jump"
+            "jump-desktop"
             "karabiner-elements"
             "keyboard-maestro"
             "lens"
@@ -285,6 +291,8 @@
          inetutils
          iperf3
          kubernetes-helm
+         lua5_1
+         luarocks
          ncdu
          nmap
          postgresql_16_jit.out
