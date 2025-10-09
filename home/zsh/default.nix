@@ -8,7 +8,7 @@
          enableVteIntegration = true;
          autosuggestion.strategy = "completion";
 
-         initContent = lib.mkOrder 550 "export TERM=wezterm; eval \"$(task --completion zsh)\"; source <(velero completion zsh); . /Users/james.maes/Git.Local/Kingsrook/qqq/qqq-dev-tools/lib/qqq-shell-functions.sh; . $HOME/.cargo/env";
+         initContent = lib.mkOrder 550 "export TERM=wezterm; eval \"$(task --completion zsh)\"; source <(velero completion zsh); . /Users/james.maes/Git.Local/QRun-IO/qqq/qqq-dev-tools/lib/qqq-shell-functions.sh; . $HOME/.cargo/env";
 
 
          shellAliases = {
@@ -46,7 +46,7 @@
             KUBECONFIG="/Users/james.maes/Documents/Lens/k8s-prod.config:/Users/james.maes/Documents/Lens/k8s-secure.config:/Users/james.maes/Documents/Lens/docker-desktop.config";
             NPM_TOKEN="7wgYGrYB24i!H94K8fZ2";
             SSL_CERT_FILE="/Users/james.maes/.config/ca-certs.pem";
-            QQQ_DEV_TOOLS_DIR="/Users/james.maes/Git.Local/Kingsrook/qqq/qqq-dev-tools";
+            QQQ_DEV_TOOLS_DIR="/Users/james.maes/Git.Local/QRun-IO/qqq/qqq-dev-tools";
          };
       };
    };
