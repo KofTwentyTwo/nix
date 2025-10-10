@@ -160,6 +160,7 @@
          };
          brews = [ 
             "act"
+            "aerc"
             "aicommits"
             "ansible-creator"
             "ansible-lint"
@@ -177,6 +178,7 @@
             "fish"
             "fzf"
             "gh"
+            "git-crypt"
             "glow"
             "imagemagick"
             "julia"
@@ -196,10 +198,11 @@
             "php"
             "platformio"
             "pv"
-            "talosctl"
             "pwgen"
             "rust"
+            "talosctl"
             "velero"
+            "w3m"
             "wimlib"
          ];
          casks = [
