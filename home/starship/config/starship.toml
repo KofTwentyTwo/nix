@@ -6,7 +6,7 @@ add_newline = true
 command_timeout = 1000
 format ="""
 [┌───────────────────>](bold green)
-[│](bold green)$os$username$hostname$kubernetes$directory$git_branch$git_status
+[│](bold green)$os$username$hostname$kubernetes$directory$terraform$git_branch$git_status
 [└─>](bold green) """
 
 # Drop ugly default prompt characters
@@ -100,5 +100,5 @@ disabled = false
 #[ruby]
 #disabled = true
 
-#[terraform]
-#disabled = true
+[terraform]
+disabled = false

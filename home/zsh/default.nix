@@ -21,6 +21,8 @@
             t           = "task";
             h           = "helm";
             v           = "velero";
+            vi          = "nvim";
+            vim         = "nvim";
 
             kdns        = "kubectl run -i --tty dnsutils --image=infoblox/dnstools --restart=Never --rm";
             k           = "kubectl";
@@ -47,6 +49,7 @@
             NPM_TOKEN="7wgYGrYB24i!H94K8fZ2";
             SSL_CERT_FILE="/Users/james.maes/.config/ca-certs.pem";
             QQQ_DEV_TOOLS_DIR="/Users/james.maes/Git.Local/QRun-IO/qqq/qqq-dev-tools";
+            PAGER="cat";
          };
       };
    };

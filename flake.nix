@@ -193,6 +193,7 @@
             "mysql"
             "ninja"
             "npm"
+            "nvim"
             "opentofu"
             "pandoc"
             "php"
@@ -239,12 +240,12 @@
             "omniplan"
             "openwebstart"
             "slack"
-            ## "tailscale"
             "tunnelblick"
             "visual-studio-code"
             "warp"
             "wezterm"
             "zoom"
+            ## "tailscale"
          ];
       };
    };
