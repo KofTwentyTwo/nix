@@ -44,12 +44,12 @@ end)
 -- Enable Neovim to handle mouse input correctly (prevents copying line numbers) --
 -----------------------------------------------------------------------------------
 config.enable_wayland = false -- optional, depending on your system
-config.enable_mouse_reporting = true
+----  config.enable_mouse_reporting = true
 
 ---------------------------------------------------------------------------------
 -- Disable WezTerm's "copy on select" so the terminal doesn't grab text itself --
 ---------------------------------------------------------------------------------
-config.copy_on_select = false
+-- config.copy_on_select = false
 
 --------------------------------------------------------------------------------------
 -- Optional: custom mouse bindings so Shift+drag falls back to normal terminal copy --

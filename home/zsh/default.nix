@@ -43,13 +43,14 @@
 
          sessionVariables = {
             AICOMMITS_PROMPT="$(cat /Users/james.maes/Documents/LLM/aic_prompt.txt)";
+            GPG_TTY="$(tty)";
             GRAALVM_HOME="/Library/Java/JavaVirtualMachines/graalvm-25.jdk/Contents/HOME";
             JAVA_HOME="/Library/Java/JavaVirtualMachines/graalvm-25.jdk/Contents/HOME/";
-            KUBECONFIG="/Users/james.maes/Documents/Lens/k8s-prod.config:/Users/james.maes/Documents/Lens/k8s-secure.config:/Users/james.maes/Documents/Lens/docker-desktop.config";
+            KUBECONFIG="$(find ~/.kube/configs -type f | tr '\n' ':')";
             NPM_TOKEN="7wgYGrYB24i!H94K8fZ2";
-            SSL_CERT_FILE="/Users/james.maes/.config/ca-certs.pem";
-            QQQ_DEV_TOOLS_DIR="/Users/james.maes/Git.Local/QRun-IO/qqq/qqq-dev-tools";
             PAGER="cat";
+            QQQ_DEV_TOOLS_DIR="/Users/james.maes/Git.Local/QRun-IO/qqq/qqq-dev-tools";
+            SSL_CERT_FILE="/Users/james.maes/.config/ca-certs.pem";
          };
       };
    };

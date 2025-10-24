@@ -102,9 +102,7 @@
          "/Applications/Elgato Stream Deck.app"
          "/Applications/Ember.app"
          "/Applications/GitHub Desktop.app"
-         "/Applications/IntelliJ IDEA.app"
          "/Applications/Ivory.app"
-         "/Applications/Karabiner-Elements.app"
          "/Applications/Keynote.app"
          "/Applications/Numbers.app"
          "/Applications/Obsidian.app"
@@ -243,7 +241,7 @@
             "tunnelblick"
             "visual-studio-code"
             "warp"
-            "wezterm"
+            "wezterm@nightly"
             "zoom"
             ## "tailscale"
          ];
