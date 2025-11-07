@@ -47,6 +47,8 @@
             GRAALVM_HOME="/Library/Java/JavaVirtualMachines/graalvm-25.jdk/Contents/HOME";
             JAVA_HOME="/Library/Java/JavaVirtualMachines/graalvm-25.jdk/Contents/HOME/";
             KUBECONFIG="$(find ~/.kube/configs -type f | tr '\n' ':')";
+            KUBE_EDITOR="vi";
+            EDITOR="vi";
             NPM_TOKEN="7wgYGrYB24i!H94K8fZ2";
             PAGER="cat";
             QQQ_DEV_TOOLS_DIR="/Users/james.maes/Git.Local/QRun-IO/qqq/qqq-dev-tools";

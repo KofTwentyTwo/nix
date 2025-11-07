@@ -195,6 +195,7 @@
             "opentofu"
             "pandoc"
             "php"
+            "pinentry-mac"
             "platformio"
             "pv"
             "pwgen"
@@ -203,6 +204,7 @@
             "velero"
             "w3m"
             "wimlib"
+            "wireshark"
          ];
          casks = [
             "1password-cli"
@@ -242,6 +244,7 @@
             "visual-studio-code"
             "warp"
             "wezterm@nightly"
+            "wireshark-chmodbpf"
             "zoom"
             ## "tailscale"
          ];
