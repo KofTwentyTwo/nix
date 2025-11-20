@@ -12,12 +12,25 @@ Personal Nix configuration for macOS using nix-darwin and Home Manager.
 
 ## Quick Start
 
-### Prerequisites
+### Automated Setup (Recommended)
 
-- macOS (tested on Apple Silicon)
-- Nix installed via [Determinate Systems installer](https://github.com/DeterminateSystems/nix-installer)
+Run this one-liner on a fresh macOS machine:
 
-### Installation
+```bash
+curl -fsSL https://raw.githubusercontent.com/KofTwentyTwo/nix/main/bootstrap.sh | bash
+```
+
+This script will:
+- ✅ Check for macOS
+- ✅ Install Nix (if not present)
+- ✅ Clone the repository
+- ✅ Configure user settings interactively
+- ✅ Build and activate the configuration
+- ✅ Install WezTerm terminfo (if needed)
+
+### Manual Setup
+
+If you prefer manual setup:
 
 1. **Install Nix** (if not already installed):
    ```bash
