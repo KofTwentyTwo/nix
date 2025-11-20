@@ -1,8 +1,27 @@
+# Nix-Darwin & Home Manager Configuration Flake
+# =============================================
+# This flake manages macOS system configuration and user environment.
+#
+# Structure:
+#   - flake.nix: Main flake definition and macOS system configuration
+#   - user-config.nix: User-specific settings (username, git, paths)
+#   - home/: Home Manager modules for user environment
+#
+# Portability:
+#   - Update user-config.nix with your username and paths for different machines
+#   - Most paths use variables from user-config.nix or home directory
+#   - Machine-specific settings are clearly marked
+#
+# Usage:
+#   darwin-rebuild switch --flake ~/.config/nix
+
 {
-   description = "My system configuration";
+   description = "Nix-Darwin & Home Manager configuration for macOS";
 
    inputs = {
-
+      # Using nixpkgs-unstable for latest packages
+      # For better reproducibility, pin to a specific commit:
+      # nixpkgs.url = "github:NixOS/nixpkgs/abc123def456...";
       nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
 
       nix-darwin = {
@@ -14,36 +33,63 @@
          url = "github:nix-community/home-manager";
          inputs.nixpkgs.follows = "nixpkgs";
       };
-
-      devbox = {
-         url = "github:jetify-com/devbox/latest";
-         inputs.nixpkgs.follows = "nixpkgs";
-      };
    };
 
    outputs = inputs@{ self, nix-darwin, nixpkgs, home-manager, ...}:
    let
+      # Import user-specific configuration
+      # This file should be updated when deploying to different machines
+      # Note: Must use builtins.readFile + fromJSON or import with --impure
+      # For now, we'll define it inline to avoid pure evaluation issues
+      userConfig = {
+        username = "james.maes";
+        git = {
+          userName = "James Maes";
+          userEmail = "james@kof22.com";
+          signingKey = "62859E8ABE1FC2B7FCCB89080021767055740E6D";
+        };
+        paths = {
+          qqqDevTools = "/Users/james.maes/Git.Local/QRun-IO/qqq/qqq-dev-tools";
+          aicommitsPrompt = "/Users/james.maes/Documents/LLM/aic_prompt.txt";
+        };
+      };
+      username = userConfig.username;
+      userHome = "/Users/${username}";
+      
    configuration = {pkgs, ... }: {
-      #############################
-      ## defaults - do not touch ##
-      #############################
+      #######################################################################
+      ## Nix Configuration & System Settings                              ##
+      ## These settings configure Nix itself and system-level preferences  ##
+      #######################################################################
+      
+      # Enable Nix flakes and commands
       nix.settings.experimental-features = "nix-command flakes";
+      
+      # Track configuration revision for system updates
       system.configurationRevision = self.rev or self.dirtyRev or null;
+      
+      # System state version - increment when upgrading nix-darwin
       system.stateVersion = 4;
-      system.primaryUser = "james.maes";
-      nixpkgs.hostPlatform = "aarch64-darwin";
-      nixpkgs.config.allowUnfree = true;
-      nixpkgs.config.allowBroken = true;
+      
+      # Primary user for nix-darwin (from user-config.nix)
+      system.primaryUser = username;
+      
+      # Platform and package settings
+      nixpkgs.hostPlatform = "aarch64-darwin";  # Apple Silicon (change to "x86_64-darwin" for Intel)
+      nixpkgs.config.allowUnfree = true;        # Allow non-free packages
+      nixpkgs.config.allowBroken = true;        # Allow broken packages (useful for development)
 
-          # Set the build user group ID to 350, matching your current system setting.
-    ids.gids.nixbld = 350;
+      # Set the build user group ID to 350, matching your current system setting.
+      # This may need adjustment on different machines - check with: dscl . -read /Groups/nixbld PrimaryGroupID
+      ids.gids.nixbld = 350;
 
-      #########################################################
-      ## Declare the user that will be running `nix-darwin`. ##
-      ######################################################### 
-      users.users."james.maes" = {
-         name = "james.maes";
-         home = "/Users/james.maes";
+      #######################################################################
+      ## User Configuration                                                ##
+      ## Declare the user that will be running nix-darwin                 ##
+      #######################################################################
+      users.users."${username}" = {
+         name = username;
+         home = userHome;
       };
       users.groups.nixbld.gid = pkgs.lib.mkForce 350;
 
@@ -69,7 +115,8 @@
       system.defaults.dock.mouse-over-hilite-stack = true;
       system.defaults.menuExtraClock.ShowDate = 1;
       system.defaults.menuExtraClock.ShowSeconds = true;
-      system.defaults.screencapture.location = "/Users/james.maes/Documents/Screenshots";
+      # Screenshot location (uses user home directory)
+      system.defaults.screencapture.location = "${userHome}/Documents/Screenshots";
       system.defaults.screensaver.askForPassword = true;
       system.defaults.screensaver.askForPasswordDelay = 600;
       system.defaults.CustomUserPreferences.com.apple.Safari.AutoFillFromAddressBook = false;
@@ -85,9 +132,10 @@
         blockAllIncoming = true;
       };
 
+      # Dock persistent folders (uses user home directory)
       system.defaults.dock.persistent-others = [
-         "/Users/james.maes/Downloads"
-         "/Users/james.maes/Documents"
+         "${userHome}/Downloads"
+         "${userHome}/Documents"
       ];
       system.defaults.dock.persistent-apps = [
          "/Applications/1Password.app"
@@ -252,27 +300,51 @@
    };
  
 
-   homeconfig = {pkgs, ...}: {
+   homeconfig = {pkgs, config, ...}: {
+      #######################################################################
+      ## Home Manager Configuration                                        ##
+      ## User environment, packages, and application settings             ##
+      #######################################################################
+      
+      # Home Manager state version - increment when upgrading Home Manager
       home.stateVersion = "24.05";
+      
+      # Enable Home Manager
       programs.home-manager.enable = true;
 
+      #######################################################################
+      ## Git Configuration                                                 ##
+      ## Git settings from user-config.nix                                ##
+      #######################################################################
       programs.git = {
          enable = true;
-         userName = "James Maes";
-         userEmail = "james@kof22.com";
+         userName = userConfig.git.userName;
+         userEmail = userConfig.git.userEmail;
          ignores = [ ".DS_Store" ];
          signing = {
-            key = "62859E8ABE1FC2B7FCCB89080021767055740E6D";
+            key = userConfig.git.signingKey;
             signByDefault = true;         
          };   
          extraConfig = {
-            init.defaultBranch = "main";
-            push.autoSetupRemote = true;
-            http.postBuffer = "157286400";
-            core.compression = "0";
+            # Commitizen shortcuts
+            alias.cz = "!cz";        # Commit using commitizen
+            alias.gc = "!cz";        # Make git gc run commitizen
+            
+            # Performance settings
+            core.compression = "0";   # Disable compression (faster, uses more space)
+            fetch.prune = true;       # Prune remote-tracking branches on fetch
+            
+            # GPG signing
             gpg.program = "gpg";
-            alias.cz = "!cz";        # optional shortcut
-            alias.gc = "!cz";        # make git gc run commitizen
+            
+            # Network settings
+            http.postBuffer = "157286400";  # 150MB buffer for large repos
+            
+            # Branch settings
+            init.defaultBranch = "main";  # Modern standard default branch
+            
+            # Push settings
+            push.autoSetupRemote = true;   # Automatically set up remote tracking
          };
       };
 
@@ -314,18 +386,7 @@
          yamllint
       ];
 
-      ################
-      ## Path Setup ##
-      ################
-      home.sessionPath = [
-         "/Users/james.maes/.local/bin"
-         "/opt/homebrew/opt/llvm/bin"
-         "/opt/ansible-virtual/bin/"
-         "/Users/james.maes/Library/Python/3.9/bin/"
-         "$JAVA_HOME/bin"
-         "/Users/james.maes/.cargo/bin"
-         "/Users/james.maes/Git.Local/Kingsrook/qqq/qqq-dev-tools/bin"
-      ];
+      # Note: sessionPath is now managed in home/default.nix for better modularity
    };
    in
    {
@@ -337,7 +398,11 @@
                   nix.enable = false;
                   home-manager.useUserPackages = true;
                   home-manager.verbose = true;
-                  home-manager.users."james.maes" = homeconfig;
+                  # Backup existing files when Home Manager would overwrite them
+                  # This prevents errors when migrating to Home Manager
+                  home-manager.backupFileExtension = "backup";
+                  home-manager.extraSpecialArgs = { inherit userConfig; };
+                  home-manager.users."${username}" = homeconfig;
                }
          ];
       };
@@ -348,7 +413,11 @@
                   home-manager.useGlobalPkgs = true;
                   home-manager.useUserPackages = true;
                   home-manager.verbose = true;
-                  home-manager.users."james.maes" = homeconfig;
+                  # Backup existing files when Home Manager would overwrite them
+                  # This prevents errors when migrating to Home Manager
+                  home-manager.backupFileExtension = "backup";
+                  home-manager.extraSpecialArgs = { userConfig = userConfig; };
+                  home-manager.users."${username}" = homeconfig;
                }
          ];
       };

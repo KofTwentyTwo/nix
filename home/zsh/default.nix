@@ -1,4 +1,27 @@
-{ config, pkgs, lib, ... }:
+# Zsh Configuration Module
+# ========================
+# Configures zsh shell with:
+#   - Oh My Zsh integration (see ohmyzsh/default.nix)
+#   - Syntax highlighting and autosuggestions
+#   - Custom aliases and shell functions
+#   - Environment variables
+#   - Shell history settings
+#
+# Portability:
+#   - Uses ${config.home.homeDirectory} for user-specific paths
+#   - Optional paths are checked before sourcing
+
+{ config, pkgs, lib, userConfig, ... }:
+let
+  homeDir = config.home.homeDirectory;
+  # Optional paths from user-config (passed via extraSpecialArgs)
+  qqqDevTools = if userConfig ? paths && userConfig.paths ? qqqDevTools
+    then userConfig.paths.qqqDevTools
+    else "${homeDir}/Git.Local/QRun-IO/qqq/qqq-dev-tools";
+  aicommitsPrompt = if userConfig ? paths && userConfig.paths ? aicommitsPrompt
+    then userConfig.paths.aicommitsPrompt
+    else "${homeDir}/Documents/LLM/aic_prompt.txt";
+in
 {
    config = {
       programs.zsh = {
@@ -8,51 +31,102 @@
          enableVteIntegration = true;
          autosuggestion.strategy = "completion";
 
-         initContent = lib.mkOrder 550 "export TERM=wezterm; eval \"$(task --completion zsh)\"; source <(velero completion zsh); . /Users/james.maes/Git.Local/QRun-IO/qqq/qqq-dev-tools/lib/qqq-shell-functions.sh; . $HOME/.cargo/env";
+         # Shell initialization script (runs when zsh starts)
+         # Order 550 ensures it runs after other init scripts
+         initContent = lib.mkOrder 550 ''
+           # Terminal type
+           export TERM=wezterm
+           
+           # Load completions
+           eval "$(task --completion zsh)"
+           source <(velero completion zsh)
+           
+           # Load QQQ dev tools (if present)
+           if [[ -f "${qqqDevTools}/lib/qqq-shell-functions.sh" ]]; then
+             . "${qqqDevTools}/lib/qqq-shell-functions.sh"
+           fi
+           
+           # Load Cargo environment (Rust)
+           if [[ -f "$HOME/.cargo/env" ]]; then
+             . $HOME/.cargo/env
+           fi
+           
+           # Secrets are loaded via op-load-secrets function (see 1password module)
+         '';
 
 
+         # Shell aliases - shortcuts for common commands
          shellAliases = {
+            # Nix/Darwin management
             switch      = "clear;sudo darwin-rebuild switch --flake ~/.config/nix";
+            
+            # History shortcuts
             hist        = "history";
             his         = "history";
             hi          = "history";
-            ping        = "ping";
+            
+            # Task management
             tl          = "task --list-all";
             t           = "task";
-            h           = "helm";
-            v           = "velero";
-            vi          = "nvim";
-            vim         = "nvim";
-
+            
+            # Kubernetes shortcuts
             kdns        = "kubectl run -i --tty dnsutils --image=infoblox/dnstools --restart=Never --rm";
             k           = "kubectl";
             ka          = "kubectl apply -f ";
             kns         = "kubectl config set-context --current --namespace ";
             kshell      = "kubectl exec --stdin --tty ";
-
-            sshc        = "ssh-keygen -R";
-
-            ## overwrite some of the standard git aliases 
-            gc          = "git cz c";
+            
+            # Helm and Velero
+            h           = "helm";
+            v           = "velero";
+            
+            # Editors
+            vi          = "nvim";
+            vim         = "nvim";
+            
+            # SSH utilities
+            sshc        = "ssh-keygen -R";  # Remove host from known_hosts
+            
+            # Git shortcuts (overrides default)
+            gc          = "git cz c";  # Commit using commitizen
          };
 
+         # History configuration
          history = {
-            size = 100000;
-            save = 100000;
+            size = 100000;  # Maximum number of entries in memory
+            save = 100000;  # Maximum number of entries saved to file
          };
 
+         # Environment variables
          sessionVariables = {
-            AICOMMITS_PROMPT="$(cat /Users/james.maes/Documents/LLM/aic_prompt.txt)";
-            GPG_TTY="$(tty)";
-            GRAALVM_HOME="/Library/Java/JavaVirtualMachines/graalvm-25.jdk/Contents/HOME";
-            JAVA_HOME="/Library/Java/JavaVirtualMachines/graalvm-25.jdk/Contents/HOME/";
-            KUBECONFIG="$(find ~/.kube/configs -type f | tr '\n' ':')";
-            KUBE_EDITOR="vi";
-            EDITOR="vi";
-            NPM_TOKEN="7wgYGrYB24i!H94K8fZ2";
-            PAGER="cat";
-            QQQ_DEV_TOOLS_DIR="/Users/james.maes/Git.Local/QRun-IO/qqq/qqq-dev-tools";
-            SSL_CERT_FILE="/Users/james.maes/.config/ca-certs.pem";
+            # AI Commits prompt (optional - file checked at runtime)
+            # Uses user-config.nix path or defaults to ~/Documents/LLM/aic_prompt.txt
+            AICOMMITS_PROMPT = "$(cat ${aicommitsPrompt} 2>/dev/null || echo '')";
+            
+            # GPG configuration
+            GPG_TTY = "$(tty)";  # Required for GPG to work in terminal
+            
+            # Java/GraalVM configuration
+            # Note: These paths are system-wide and should work on all Macs
+            GRAALVM_HOME = "/Library/Java/JavaVirtualMachines/graalvm-25.jdk/Contents/HOME";
+            JAVA_HOME = "/Library/Java/JavaVirtualMachines/graalvm-25.jdk/Contents/HOME/";
+            
+            # Kubernetes configuration
+            KUBECONFIG = "$(find ~/.kube/configs -type f 2>/dev/null | tr '\n' ':' || echo '')";
+            KUBE_EDITOR = "vi";
+            
+            # Editor settings
+            EDITOR = "vi";
+            PAGER = "cat";
+            
+            # Development tools (uses portable paths)
+            QQQ_DEV_TOOLS_DIR = qqqDevTools;
+            
+            # SSL certificate bundle (managed by ca-certs module)
+            SSL_CERT_FILE = "${homeDir}/.config/ca-certs.pem";
+            
+            # Secrets are loaded via op-load-secrets function (see 1password module)
+            # See: op-load-secrets --help or ~/.config/nix/SECRETS.md
          };
       };
    };
