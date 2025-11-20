@@ -87,8 +87,9 @@ in
             # SSH utilities
             sshc        = "ssh-keygen -R";  # Remove host from known_hosts
             
-            # Git shortcuts (overrides default)
+            # Git shortcuts
             gc          = "git cz c";  # Commit using commitizen
+            gt          = "gitops-publish.sh";  # GitOps: publish feature branch tag
          };
 
          # History configuration

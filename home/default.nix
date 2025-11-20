@@ -30,6 +30,7 @@ in
     ./k9s
     ./nvim
     ./ohmyzsh
+    ./scripts
     ./ssh
     ./starship
     ./wez
