@@ -2,6 +2,8 @@
 
 Personal Nix configuration for macOS using nix-darwin and Home Manager.
 
+> **Note:** Currently macOS-only. Linux support is planned (see [TODO.md](./TODO.md)).
+
 ## Features
 
 - **macOS System Configuration**: Dock, Finder, keyboard, security settings
@@ -168,6 +170,23 @@ userConfig = {
 - [Nix-Darwin Guide](https://davi.sh/blog/2024/01/nix-darwin/)
 - [Home Manager Manual](https://nix-community.github.io/home-manager/)
 - [Nix-Darwin Manual](https://daiderd.com/nix-darwin/manual/index.html)
+
+## Linux Support
+
+Linux support is planned but not yet implemented. See:
+- [TODO.md](./TODO.md) - Planned improvements including Linux support
+- [LINUX.md](./LINUX.md) - Detailed Linux migration guide
+- [LINUX_SETUP.md](./LINUX_SETUP.md) - Quick Linux setup guide
+
+The Home Manager modules are mostly portable and will work on Linux with a Linux-compatible flake wrapper.
+
+## TODO / Future Improvements
+
+See [TODO.md](./TODO.md) for planned improvements, including:
+- Linux support
+- Additional tools and utilities
+- Configuration enhancements
+- Documentation improvements
 
 ## License
 

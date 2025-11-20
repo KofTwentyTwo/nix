@@ -1,0 +1,62 @@
+# Linux-Compatible Flake (Example)
+# =================================
+# This is an example of how to adapt your configuration for Linux.
+# Copy this to flake-linux.nix and customize for your Linux setup.
+#
+# Usage:
+#   home-manager switch --flake ~/.config/nix#your-username
+
+{
+  description = "Home Manager configuration for Linux";
+
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    home-manager = {
+      url = "github:nix-community/home-manager";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+  };
+
+  outputs = { self, nixpkgs, home-manager, ... }:
+  let
+    # User configuration (same structure as macOS version)
+    userConfig = {
+      username = "your-username";  # CHANGE THIS
+      git = {
+        userName = "Your Name";     # CHANGE THIS
+        userEmail = "your@email.com";  # CHANGE THIS
+        signingKey = "YOUR_GPG_KEY_ID";  # CHANGE THIS
+      };
+      paths = {
+        # Update paths for Linux (use /home/username instead of /Users/username)
+        qqqDevTools = "/home/your-username/Git.Local/QRun-IO/qqq/qqq-dev-tools";  # CHANGE THIS
+        aicommitsPrompt = "/home/your-username/Documents/LLM/aic_prompt.txt";  # CHANGE THIS
+      };
+    };
+    username = userConfig.username;
+    
+    # Detect system architecture
+    system = "x86_64-linux";  # Change to "aarch64-linux" for ARM Linux
+    
+    # Import nixpkgs
+    pkgs = import nixpkgs {
+      inherit system;
+      config.allowUnfree = true;
+      config.allowBroken = true;
+    };
+  in
+  {
+    homeConfigurations."${username}" = home-manager.lib.homeManagerConfiguration {
+      inherit pkgs;
+      
+      modules = [
+        ./home
+      ];
+      
+      extraSpecialArgs = {
+        userConfig = userConfig;
+      };
+    };
+  };
+}
+
