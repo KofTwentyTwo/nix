@@ -14,7 +14,7 @@
 { config, pkgs, lib, userConfig, ... }:
 let
   homeDir = config.home.homeDirectory;
-  # Optional paths from user-config (passed via extraSpecialArgs)
+  # Optional paths from userConfig (defined inline in flake.nix, passed via extraSpecialArgs)
   qqqDevTools = if userConfig ? paths && userConfig.paths ? qqqDevTools
     then userConfig.paths.qqqDevTools
     else "${homeDir}/Git.Local/QRun-IO/qqq/qqq-dev-tools";
@@ -84,6 +84,10 @@ in
             vi          = "nvim";
             vim         = "nvim";
             
+            # File utilities (using modern replacements)
+            cat         = "bat";  # Better cat with syntax highlighting
+            # Note: eza aliases (ls, ll, la, tree) are auto-added by programs.eza.enableAliases
+            
             # SSH utilities
             sshc        = "ssh-keygen -R";  # Remove host from known_hosts
             
@@ -101,7 +105,7 @@ in
          # Environment variables
          sessionVariables = {
             # AI Commits prompt (optional - file checked at runtime)
-            # Uses user-config.nix path or defaults to ~/Documents/LLM/aic_prompt.txt
+            # Uses userConfig.paths.aicommitsPrompt or defaults to ~/Documents/LLM/aic_prompt.txt
             AICOMMITS_PROMPT = "$(cat ${aicommitsPrompt} 2>/dev/null || echo '')";
             
             # GPG configuration
@@ -116,9 +120,9 @@ in
             KUBECONFIG = "$(find ~/.kube/configs -type f 2>/dev/null | tr '\n' ':' || echo '')";
             KUBE_EDITOR = "vi";
             
-            # Editor settings
-            EDITOR = "vi";
-            PAGER = "cat";
+            # Editor settings (vi aliases to nvim via shellAliases)
+            # EDITOR and VISUAL are set in home/default.nix with mkForce to override neovim module
+            PAGER = "less -FR";  # Pager with colors and no pause on exit
             
             # Development tools (uses portable paths)
             QQQ_DEV_TOOLS_DIR = qqqDevTools;

@@ -4,11 +4,12 @@
 #
 # Structure:
 #   - flake.nix: Main flake definition and macOS system configuration
-#   - user-config.nix: User-specific settings (username, git, paths)
+#   - userConfig (inline): User-specific settings (username, git, paths)
+#   - user-config.nix: Template/reference file (not directly imported)
 #   - home/: Home Manager modules for user environment
 #
 # Portability:
-#   - Update user-config.nix with your username and paths for different machines
+#   - Update userConfig in flake.nix with your username and paths for different machines
 #   - Most paths use variables from user-config.nix or home directory
 #   - Machine-specific settings are clearly marked
 #
@@ -314,7 +315,7 @@
 
       #######################################################################
       ## Git Configuration                                                 ##
-      ## Git settings from user-config.nix                                ##
+      ## Git settings from userConfig (defined inline above)              ##
       #######################################################################
       programs.git = {
          enable = true;
@@ -324,8 +325,19 @@
          signing = {
             key = userConfig.git.signingKey;
             signByDefault = true;         
-         };   
+         };
+         # Configure git to use delta for diffs
+         # Delta package is installed via home.default.nix packages
+         delta.enable = true;
+         delta.options = {
+           syntax-theme = "TwoDark";
+           line-numbers = true;
+           side-by-side = true;
+         };
          extraConfig = {
+            # Editor configuration
+            core.editor = "vi";       # Use vi (aliases to nvim) for git operations
+            
             # Commitizen shortcuts
             alias.cz = "!cz";        # Commit using commitizen
             alias.gc = "!cz";        # Make git gc run commitizen

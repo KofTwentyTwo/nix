@@ -5,12 +5,14 @@ This guide explains how to make this Nix configuration portable across different
 
 ## Quick Start
 
-1. **Update `user-config.nix`** with your username and paths
+1. **Edit `flake.nix`** and update the `userConfig` definition (around line 40) with your username and paths
 2. **Rebuild**: `darwin-rebuild switch --flake ~/.config/nix`
 
 ## User Configuration
 
-The `user-config.nix` file contains all user-specific settings:
+**Note:** The actual user configuration is defined inline in `flake.nix` (not in `user-config.nix`). The `user-config.nix` file is just a template/reference.
+
+The `userConfig` attribute set in `flake.nix` contains all user-specific settings:
 
 - **username**: Your macOS username (e.g., "james.maes")
 - **git**: Git user name, email, and signing key
@@ -39,7 +41,7 @@ The `user-config.nix` file contains all user-specific settings:
 
 ✅ **Automatically portable** (uses home directory or variables):
 - All Home Manager modules
-- SSH configuration (default user from user-config.nix)
+- SSH configuration (default user from `userConfig` in `flake.nix`)
 - Environment variables and paths
 - Package installations
 - Application configurations
@@ -84,7 +86,7 @@ nixpkgs.hostPlatform = "x86_64-darwin";  # For Intel Macs
 ## Testing Portability
 
 1. Clone the repo on a new machine
-2. Update `user-config.nix`
+2. Edit `flake.nix` and update the `userConfig` definition
 3. Run: `darwin-rebuild switch --flake ~/.config/nix`
 4. Check for any errors and adjust as needed
 
@@ -93,7 +95,7 @@ nixpkgs.hostPlatform = "x86_64-darwin";  # For Intel Macs
 ### Path Not Found Errors
 
 If you see errors about missing paths:
-- Check `user-config.nix` for optional paths
+- Check the `userConfig.paths` section in `flake.nix` for optional paths
 - Comment out paths that don't exist on the machine
 - Some paths are checked at runtime (won't cause build failures)
 
@@ -110,8 +112,9 @@ If applications in the dock list don't exist:
 
 ## Best Practices
 
-1. **Keep user-config.nix in version control** but update it per machine
-2. **Document machine-specific changes** in comments
+1. **Update `userConfig` in `flake.nix`** for each machine (it's inline, so changes are tracked per machine)
+2. **Document machine-specific changes** in comments within `flake.nix`
 3. **Test on a new machine** before relying on it
 4. **Use variables** instead of hardcoded paths where possible
+5. **Reference `user-config.nix`** as a template if you need to see the structure
 

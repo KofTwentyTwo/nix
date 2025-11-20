@@ -69,7 +69,7 @@ If you prefer manual setup:
 ```
 .
 ├── flake.nix              # Main flake definition and macOS system config
-├── user-config.nix        # Documentation template (actual config in flake.nix)
+├── user-config.nix        # Template/reference (actual config is inline in flake.nix)
 ├── PORTABILITY.md         # Guide for deploying to different machines
 ├── SECRETS.md            # Documentation for 1Password secret management
 ├── README.md             # This file
@@ -125,7 +125,7 @@ man configuration.nix  # For nix-darwin options
 
 - **[PORTABILITY.md](./PORTABILITY.md)**: Guide for deploying to different machines
 - **[SECRETS.md](./SECRETS.md)**: 1Password secret management documentation
-- **[user-config.nix](./user-config.nix)**: Template for user-specific configuration
+- **[user-config.nix](./user-config.nix)**: Template/reference for user-specific configuration (actual config is inline in `flake.nix`)
 
 ## Machine-Specific Configuration
 

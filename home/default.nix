@@ -10,14 +10,14 @@
 #
 # Portability:
 #   - Uses ${config.home.homeDirectory} for user-specific paths
-#   - Machine-specific paths can be overridden in user-config.nix
+#   - Machine-specific paths come from userConfig (defined inline in flake.nix)
 
 { config, pkgs, lib, inputs, userConfig, ... }:
 let
   homeDir = config.home.homeDirectory;
   
-  # Optional paths from user-config (with fallbacks)
-  # userConfig is passed via extraSpecialArgs from flake.nix
+  # Optional paths from userConfig (with fallbacks)
+  # userConfig is defined inline in flake.nix and passed via extraSpecialArgs
   qqqDevTools = if userConfig ? paths && userConfig.paths ? qqqDevTools
     then userConfig.paths.qqqDevTools
     else "${homeDir}/Git.Local/QRun-IO/qqq/qqq-dev-tools";
@@ -44,9 +44,11 @@ in
     #######################################################################
     home = {
       # Default editor and pager settings
+      # Using mkForce to override neovim module's defaultEditor setting
       sessionVariables = {
-        VISUAL = "nvim";  # Default editor
-        PAGER  = "less";  # Default pager
+        EDITOR = lib.mkForce "vi";    # Default editor (vi aliases to nvim)
+        VISUAL = lib.mkForce "vi";    # Visual editor (same as EDITOR)
+        PAGER  = "less -FR";  # Pager with colors and no pause on exit
       };
 
       # PATH configuration - paths are added to $PATH
@@ -60,7 +62,7 @@ in
          "${homeDir}/Library/Python/3.9/bin/"       # Python 3.9 user packages
          "$JAVA_HOME/bin"                            # Java (if JAVA_HOME is set)
          "${homeDir}/.cargo/bin"                     # Rust/Cargo binaries
-         "${qqqDevTools}/bin/"                       # QQQ dev tools (from user-config.nix)
+         "${qqqDevTools}/bin/"                       # QQQ dev tools (from userConfig in flake.nix)
       ];
 
 
@@ -74,6 +76,7 @@ in
         commonPackages = [
           ack          # Better grep alternative
           curl         # HTTP client
+          delta        # Better git diff viewer (configured via git.delta.enable)
           htop         # Interactive process viewer
           btop         # Modern system monitor
           fastfetch    # System information tool
@@ -107,6 +110,27 @@ in
     
     # Enable nix-index for command lookup (faster than nix-locate)
     programs.nix-index.enable = true;
+
+    # Better cat with syntax highlighting
+    programs.bat = {
+      enable = true;
+      config = {
+        theme = "TwoDark";
+        pager = "less -FR";  # Use less as pager (matches PAGER env var)
+      };
+    };
+
+    # Modern ls replacement with colors and git status
+    # Aliases (ls, ll, la, tree) are enabled by default when enable = true
+    programs.eza = {
+      enable = true;
+    };
+
+    # Smart cd that learns your habits
+    programs.zoxide = {
+      enable = true;
+      enableZshIntegration = true;
+    };
   };
 
 }
