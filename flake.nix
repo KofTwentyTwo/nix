@@ -292,7 +292,7 @@
             "tunnelblick"
             "visual-studio-code"
             "warp"
-            "wezterm@nightly"
+            "wezterm"
             "wireshark-chmodbpf"
             "zoom"
             ## "tailscale"
