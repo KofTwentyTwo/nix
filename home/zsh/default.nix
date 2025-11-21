@@ -52,6 +52,27 @@ in
            fi
            
            # Secrets are loaded via op-load-secrets function (see 1password module)
+           
+           # Check for available updates (similar to oh-my-zsh update notification)
+           if [[ -f "$HOME/.config/nix/.updates-available" ]]; then
+             echo ""
+             echo -e "\033[0;33m╭─────────────────────────────────────────────────────────╮\033[0m"
+             echo -e "\033[0;33m│\033[0m \033[1;33m⚠️  Updates Available\033[0m                                    \033[0;33m│\033[0m"
+             echo -e "\033[0;33m├─────────────────────────────────────────────────────────┤\033[0m"
+             # Display update messages (skip comment lines)
+             grep -v "^#" "$HOME/.config/nix/.updates-available" | while IFS= read -r line; do
+               if [[ -n "$line" ]]; then
+                 echo -e "\033[0;33m│\033[0m $line"
+               fi
+             done
+             echo -e "\033[0;33m│\033[0m                                                         \033[0;33m│\033[0m"
+             echo -e "\033[0;33m│\033[0m To update:                                            \033[0;33m│\033[0m"
+             echo -e "\033[0;33m│\033[0m   • Brew:    \033[0;36mbrew upgrade\033[0m                              \033[0;33m│\033[0m"
+             echo -e "\033[0;33m│\033[0m   • Nix:     \033[0;36mnix flake update ~/.config/nix && switch\033[0m     \033[0;33m│\033[0m"
+             echo -e "\033[0;33m│\033[0m   • Check:   \033[0;36mcheck-updates.sh\033[0m                           \033[0;33m│\033[0m"
+             echo -e "\033[0;33m╰─────────────────────────────────────────────────────────╯\033[0m"
+             echo ""
+           fi
          '';
 
 
@@ -97,6 +118,9 @@ in
             
             # Security
             secure      = "op-load-secrets";  # Load secrets from 1Password vault
+            
+            # Updates
+            check-updates = "check-updates.sh";  # Check for brew and nix updates
          };
 
          # History configuration

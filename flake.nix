@@ -298,6 +298,34 @@
             ## "tailscale"
          ];
       };
+
+      #############################################################
+      ## Launchd Agents                                            ##
+      ## User-level background services                            ##
+      #############################################################
+      # Update checker - runs daily at 9 AM to check for brew and nix updates
+      # Using system.activationScripts to install and load the plist
+      system.activationScripts.setupUpdateChecker.text = ''
+        USER_NAME="${username}"
+        USER_HOME="${userHome}"
+        USER_UID=$(id -u "$USER_NAME")
+        USER_GROUP=$(id -gn "$USER_NAME")
+
+        # Ensure log directory exists with correct ownership
+        install -d -m 755 -o "$USER_NAME" -g "$USER_GROUP" "$USER_HOME/.local/log"
+
+        PLIST_PATH="$USER_HOME/Library/LaunchAgents/com.jamesmaes.check-updates.plist"
+        if [ -f "$PLIST_PATH" ]; then
+          chown "$USER_NAME":"$USER_GROUP" "$PLIST_PATH"
+          chmod 644 "$PLIST_PATH"
+          # Unload if already loaded (try both old and new methods)
+          launchctl bootout "gui/$USER_UID/com.jamesmaes.check-updates" 2>/dev/null || \
+          launchctl unload "$PLIST_PATH" 2>/dev/null || true
+          # Load using modern bootstrap method (macOS 10.11+)
+          launchctl bootstrap "gui/$USER_UID" "$PLIST_PATH" 2>/dev/null || \
+          launchctl load "$PLIST_PATH" 2>/dev/null || true
+        fi
+      '';
    };
  
 

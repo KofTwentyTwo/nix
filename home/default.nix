@@ -33,6 +33,7 @@ in
     ./scripts
     ./ssh
     ./starship
+    ./updates
     ./wez
     ./zsh
   ];
