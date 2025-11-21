@@ -7,10 +7,9 @@
 # Features:
 #   - 1Password SSH agent configuration
 #   - op-load-secrets script for loading secrets as environment variables
-#   - Automatic secret loading on shell startup
 #
 # Usage:
-#   - Secrets are automatically loaded from "NixEnvironmentVariables" vault
+#   - Use the "secure" alias to load secrets from "NixEnvironmentVariables" vault
 #   - Run `op-load-secrets --help` for manual usage
 #   - See SECRETS.md for detailed documentation
 #
@@ -41,10 +40,6 @@
         if [[ -f "$HOME/.local/bin/op-load-secrets" ]]; then
           source "$HOME/.local/bin/op-load-secrets"
         fi
-        
-        # Auto-load secrets on shell startup
-        # Loads all API Credentials from "NixEnvironmentVariables" vault
-        op-load-secrets
       '';
    };
 }

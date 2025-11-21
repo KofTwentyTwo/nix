@@ -94,6 +94,9 @@ in
             # Git shortcuts
             gc          = "git cz c";  # Commit using commitizen
             gt          = "gitops-publish.sh";  # GitOps: publish feature branch tag
+            
+            # Security
+            secure      = "op-load-secrets";  # Load secrets from 1Password vault
          };
 
          # History configuration
