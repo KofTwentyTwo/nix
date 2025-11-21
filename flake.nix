@@ -254,6 +254,7 @@
             "w3m"
             "wimlib"
             "wireshark"
+            "yq"
          ];
          casks = [
             "1password-cli"
