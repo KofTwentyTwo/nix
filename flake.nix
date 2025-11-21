@@ -230,6 +230,7 @@
             "imagemagick"
             "julia"
             "k9s"
+            "kubeseal"
             "lazydocker"
             "lazygit"
             "ldapvi"
