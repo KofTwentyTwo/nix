@@ -140,8 +140,8 @@ in
             
             # Java/GraalVM configuration
             # Note: These paths are system-wide and should work on all Macs
-            GRAALVM_HOME = "/Library/Java/JavaVirtualMachines/graalvm-25.jdk/Contents/HOME";
-            JAVA_HOME = "/Library/Java/JavaVirtualMachines/graalvm-25.jdk/Contents/HOME/";
+            GRAALVM_HOME = "/opt/homebrew/Cellar/openjdk@21/21.0.9/libexec/openjdk.jdk/Contents/Home/";
+            JAVA_HOME = "/opt/homebrew/Cellar/openjdk@21/21.0.9/libexec/openjdk.jdk/Contents/Home/";
             
             # Kubernetes configuration
             KUBECONFIG = "$(find ~/.kube/configs -type f 2>/dev/null | tr '\n' ':' || echo '')";

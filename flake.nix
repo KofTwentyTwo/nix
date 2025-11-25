@@ -242,6 +242,7 @@
             "ninja"
             "npm"
             "nvim"
+            "openjdk@21"
             "opentofu"
             "pandoc"
             "php"
