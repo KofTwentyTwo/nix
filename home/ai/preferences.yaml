@@ -8,6 +8,8 @@ communication:
   markdown: true  # Use markdown formatting in responses
   code_citations: true  # Use startLine:endLine:filepath format for existing code
   explain_reasoning: true  # Explain "why" behind suggestions
+  emojis: never  # NEVER use emojis in any output
+  document_brevity: strict  # Keep all docs to 1-2 paragraphs, ask before expanding
 
 coding:
   language_preferences:
@@ -93,6 +95,8 @@ git:
   commit_style: conventional  # Conventional commits
   sign_commits: true  # GPG signing required
   branch_strategy: feature_branches  # Feature branches off main
+  commit_message_length: minimal  # AS SHORT as possible while following standard
+  commit_detail_level: high_level_summary  # Avoid detailed bullets, prefer 1-2 sentences
   
 workflows:
   development:
@@ -123,6 +127,8 @@ documentation:
   javadoc_style: qqq_flower_box  # QQQ flower box format
   readme_updates: suggest  # Suggest README updates when appropriate
   wiki_references: include  # Reference GitHub wiki when relevant
+  length_limit: one_page  # All docs must fit on one page unless told otherwise
+  ask_before_expanding: true  # Ask permission before writing more than 1-2 paragraphs
 
 special_files:
   style_guide: CODE_STYLE.md
