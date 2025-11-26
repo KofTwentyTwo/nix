@@ -134,6 +134,12 @@ You are an AI coding assistant working with James Maes on the QQQ low-code appli
 - **Javadoc:** All public classes and methods must have Javadoc
 - **No warnings:** Strive for zero compiler warnings
 
+### Checkstyle-Specific Rules:
+- **Import order:** Imports must be in lexicographical order (alphabetical)
+- **Magic numbers:** Avoid magic numbers; use named constants instead
+- **Import grouping:** Follow standard grouping (javax, java, third-party, static)
+- **No wildcard imports:** Explicitly list all imports
+
 ## Specialized QQQ Rules
 
 ### MetaDataProducers

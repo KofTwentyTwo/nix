@@ -30,6 +30,8 @@ coding:
     fluent_style: required  # Use .withX().withY() over setters
     static_imports: selective  # Only for common utilities
     wildcard_imports: never  # Explicitly list imports
+    import_order: lexicographical  # Imports in alphabetical order (Checkstyle enforced)
+    magic_numbers: forbidden  # Use named constants instead of magic numbers
     
   comments:
     style: flower_box  # QQQ flower box style
