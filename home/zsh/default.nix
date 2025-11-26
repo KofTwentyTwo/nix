@@ -138,6 +138,14 @@ in
             # GPG configuration
             GPG_TTY = "$(tty)";  # Required for GPG to work in terminal
             
+            # Testcontainers with Colima configuration
+            # Colima exposes the Docker socket at ~/.colima/default/docker.sock on macOS,
+            # but inside containers it's at /var/run/docker.sock. We need to tell Testcontainers:
+            # 1. DOCKER_HOST: where to connect to Docker (the Colima socket on macOS)
+            # 2. TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE: what path to mount into containers (inside VM)
+            DOCKER_HOST = "unix://${homeDir}/.colima/default/docker.sock";
+            TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE = "/var/run/docker.sock";
+            
             # Java/GraalVM configuration
             # Note: These paths are system-wide and should work on all Macs
             GRAALVM_HOME = "/opt/homebrew/Cellar/openjdk@21/21.0.9/libexec/openjdk.jdk/Contents/Home/";

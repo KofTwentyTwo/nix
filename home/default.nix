@@ -26,6 +26,7 @@ in
   # Import all Home Manager sub-modules
   imports = [
     ./1password
+    ./ai
     ./ca-certs
     ./k9s
     ./nvim

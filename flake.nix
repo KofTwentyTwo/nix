@@ -218,6 +218,7 @@
             "calicoctl"
             "clang-format"
             "cmake"
+            "colima"
             "commitizen"
             "composer"
             "coturn"
