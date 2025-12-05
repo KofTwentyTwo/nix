@@ -281,6 +281,7 @@
             "elgato-stream-deck"
             "fantastical"
             "github"
+            "graalvm-jdk@21"
             "istat-menus"
             "jump-desktop"
             "karabiner-elements"

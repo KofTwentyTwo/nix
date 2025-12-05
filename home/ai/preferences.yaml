@@ -139,3 +139,4 @@ special_files:
   nix_flake: /Users/james.maes/config/nix/flake.nix
   home_manager: /Users/james.maes/config/nix/home/default.nix
 
+

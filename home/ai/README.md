@@ -297,3 +297,4 @@ This configuration is part of your personal Nix configuration and follows the sa
 **Nix Version:** Flakes-enabled  
 **Home Manager Version:** Latest stable
 
+
