@@ -192,7 +192,7 @@
 
          taps = [];
          masApps = {
-            Xcode                         = 497799835;
+            ## Xcode                         = 497799835;
             airmail-lightning-fast-email  = 918858936;
             blackmagic-disk-speed-test    = 425264550;
             ivory-for-mastodon-by-tapbots = 6444602274;
@@ -456,6 +456,22 @@
             configuration
                home-manager.darwinModules.home-manager  {
                   home-manager.useGlobalPkgs = true;
+                  home-manager.useUserPackages = true;
+                  home-manager.verbose = true;
+                  # Backup existing files when Home Manager would overwrite them
+                  # This prevents errors when migrating to Home Manager
+                  home-manager.backupFileExtension = "backup";
+                  home-manager.extraSpecialArgs = { userConfig = userConfig; };
+                  home-manager.users."${username}" = homeconfig;
+               }
+         ];
+      };
+      darwinConfigurations."Renova" = nix-darwin.lib.darwinSystem {
+         modules = [
+            configuration
+               home-manager.darwinModules.home-manager  {
+                  home-manager.useGlobalPkgs = true;
+                  nix.enable = false;
                   home-manager.useUserPackages = true;
                   home-manager.verbose = true;
                   # Backup existing files when Home Manager would overwrite them
