@@ -41,6 +41,23 @@ in
            eval "$(task --completion zsh)"
            source <(velero completion zsh)
            
+           # AWS CLI completion (native zsh completion)
+           # Ensure Homebrew's zsh site-functions are in fpath for automatic completion loading
+           if [[ -d /opt/homebrew/share/zsh/site-functions ]]; then
+             fpath=(/opt/homebrew/share/zsh/site-functions $fpath)
+           fi
+           
+           # Source AWS CLI zsh completer
+           # Note: compinit should already be run by Home Manager (enableCompletion = true)
+           # The completer script sets up bashcompinit and defines the completion
+           if [[ -f /opt/homebrew/share/zsh/site-functions/aws_zsh_completer.sh ]]; then
+             # Ensure compinit has run (Home Manager should handle this, but check to be safe)
+             if ! (( $+functions[compdef] )); then
+               autoload -Uz compinit && compinit
+             fi
+             source /opt/homebrew/share/zsh/site-functions/aws_zsh_completer.sh
+           fi
+           
            # Load QQQ dev tools (if present)
            if [[ -f "${qqqDevTools}/lib/qqq-shell-functions.sh" ]]; then
              . "${qqqDevTools}/lib/qqq-shell-functions.sh"
