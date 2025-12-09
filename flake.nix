@@ -266,6 +266,7 @@
             "alfred"
             "alt-tab"
             "arc"
+            "awscli"
             "aws-vpn-client"
             "backblaze"
             "balenaetcher"

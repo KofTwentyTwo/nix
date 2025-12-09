@@ -27,6 +27,7 @@ in
   imports = [
     ./1password
     ./ai
+    ./aws
     ./ca-certs
     ./k9s
     ./nvim
