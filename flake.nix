@@ -253,6 +253,7 @@
             "pv"
             "pwgen"
             "rust"
+            "sqlfluff"
             "talosctl"
             "tree"
             "velero"
