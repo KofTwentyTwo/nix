@@ -229,6 +229,7 @@
             "gh"
             "git-crypt"
             "glow"
+            "gradle"
             "imagemagick"
             "julia"
             "k9s"
