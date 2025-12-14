@@ -1,14 +1,17 @@
 # AWS Configuration Module
 # ========================
-# Manages AWS CLI configuration file (~/.aws/config).
+# Manages AWS CLI configuration and credentials files (~/.aws/config and ~/.aws/credentials).
 #
 # This module:
 #   - Creates the ~/.aws directory structure
-#   - Manages AWS CLI configuration (not credentials)
+#   - Manages AWS CLI configuration file
+#   - Manages AWS CLI credentials file (encrypted with git-crypt)
 #   - Provides standard AWS CLI settings
 #
-# Note: Credentials (~/.aws/credentials) are NOT managed here for security.
-#       Use AWS SSO, IAM roles, or environment variables for credentials.
+# Security:
+#   - Credentials are stored in git using git-crypt encryption
+#   - See .gitattributes for encryption rules
+#   - Make sure git-crypt is unlocked before rebuilding: git-crypt unlock
 #
 # Usage Options:
 #   1. Declarative (default): Edit home/aws/config/config and rebuild
@@ -39,6 +42,16 @@ in
     # Home Manager will automatically create the .aws directory when this file is created
     home.file.".aws/config" = {
       source = ./config/config;
+    };
+
+    # Create AWS credentials file (encrypted with git-crypt)
+    # IMPORTANT: Make sure git-crypt is unlocked before rebuilding
+    # Run: git-crypt unlock (if using GPG key) or git-crypt unlock <key-file>
+    home.file.".aws/credentials" = {
+      source = ./config/credentials;
+      # Set restrictive permissions for credentials file (600 = rw-------)
+      # AWS CLI requires 600 permissions for security
+      mode = "0600";
     };
   };
 }
