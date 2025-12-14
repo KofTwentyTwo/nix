@@ -238,6 +238,7 @@
             "ldapvi"
             "liquibase"
             "llvm"
+            "markdownlint-cli2"
             "maven"
             "minio-mc"
             "mysql"
