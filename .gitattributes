@@ -1,0 +1,14 @@
+# Git-Crypt Encryption Rules
+# ==========================
+# Files and patterns that should be encrypted with git-crypt
+#
+# Usage:
+#   1. Initialize git-crypt: git-crypt init
+#   2. Add your GPG key: git-crypt add-gpg-user <your-email>
+#   3. Files matching these patterns will be automatically encrypted
+
+# AWS Credentials - Encrypted
+home/aws/config/credentials filter=git-crypt diff=git-crypt
+
+# Optional: Encrypt entire config directory (uncomment if desired)
+# home/aws/config/** filter=git-crypt diff=git-crypt
