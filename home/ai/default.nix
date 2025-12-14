@@ -19,7 +19,7 @@
 { config, pkgs, lib, ... }:
 
 {
-  home.file.".ai/profile.md".text = ''
+  home.file.".ai/1-profile.md".text = ''
     # Profile
 
     ## Overview
@@ -136,9 +136,10 @@
     - Automate repetitive tasks through tooling
   '';
 
-  home.file.".ai/rules.md".source = ./rules.md;
-  home.file.".ai/preferences.yaml".source = ./preferences.yaml;
-  home.file.".ai/coding-style.md".source = ./coding-style.md;
+  home.file.".ai/0-init.md".source = ./0-init.md;
+  home.file.".ai/2-coding-style.md".source = ./2-coding-style.md;
+  home.file.".ai/3-rules.md".source = ./3-rules.md;
+  home.file.".ai/4-preferences.yaml".source = ./4-preferences.yaml;
 }
 
 
