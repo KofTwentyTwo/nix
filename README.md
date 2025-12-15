@@ -47,16 +47,23 @@ If you prefer manual setup:
    cd nix
    ```
 
-3. **Customize for your machine**:
+3. **Unlock git-crypt encrypted files** (if using encrypted secrets):
+   ```bash
+   cd ~/.config/nix
+   git-crypt unlock
+   ```
+   Note: Git hooks are installed to automatically unlock after `git pull`, but you may need to unlock manually on first clone.
+
+4. **Customize for your machine**:
    - Edit `flake.nix` and update the `userConfig` definition (around line 42)
    - Update username, git info, and paths as needed
 
-4. **Build and activate**:
+5. **Build and activate**:
    ```bash
    darwin-rebuild switch --flake ~/.config/nix
    ```
 
-5. **Install WezTerm terminfo** (if using WezTerm):
+6. **Install WezTerm terminfo** (if using WezTerm):
    ```bash
    tempfile=$(mktemp) \
      && curl -o $tempfile https://raw.githubusercontent.com/wez/wezterm/main/termwiz/data/wezterm.terminfo \
@@ -152,6 +159,12 @@ userConfig = {
 
 - **Pure evaluation errors**: Make sure `userConfig` is defined inline in `flake.nix`, not imported
 - **File conflicts**: Home Manager will automatically back up existing files (`.backup` extension)
+- **git-crypt errors**: If you see errors about encrypted files, make sure git-crypt is unlocked:
+  ```bash
+  cd ~/.config/nix
+  git-crypt unlock
+  ```
+  Git hooks automatically unlock after `git pull`, but you may need to unlock manually after cloning or if the hooks fail.
 
 ### 1Password Issues
 

@@ -11,7 +11,8 @@
 # Security:
 #   - Credentials are stored in git using git-crypt encryption
 #   - See .gitattributes for encryption rules
-#   - Make sure git-crypt is unlocked before rebuilding: git-crypt unlock
+#   - Git hooks automatically unlock after git pull
+#   - If needed, manually unlock: git-crypt unlock
 #
 # Usage Options:
 #   1. Declarative (default): Edit home/aws/config/config and rebuild
@@ -47,17 +48,20 @@ in
     # Create AWS credentials file (encrypted with git-crypt)
     # IMPORTANT: Make sure git-crypt is unlocked before rebuilding
     # Run: git-crypt unlock (if using GPG key) or git-crypt unlock <key-file>
-    # Using text instead of source to avoid symlink issues with permissions
+    # Using source instead of text because the file may contain binary data (git-crypt encrypted)
     home.file.".aws/credentials" = {
-      text = builtins.readFile ./config/credentials;
+      source = ./config/credentials;
     };
 
     # Set restrictive permissions for credentials file (600 = rw-------)
     # AWS CLI requires 600 permissions for security
     # Using activation script to set permissions after file is created
+    # Resolve symlink to set permissions on the actual file
     home.activation.setAwsCredentialsPermissions = lib.hm.dag.entryAfter ["writeBoundary"] ''
-      if [ -f "$HOME/.aws/credentials" ] && [ ! -L "$HOME/.aws/credentials" ]; then
-        chmod 600 "$HOME/.aws/credentials" 2>/dev/null || true
+      if [ -f "$HOME/.aws/credentials" ]; then
+        # Resolve symlink to get actual file path
+        creds_file=$(readlink -f "$HOME/.aws/credentials" 2>/dev/null || echo "$HOME/.aws/credentials")
+        chmod 600 "$creds_file" 2>/dev/null || true
       fi
     '';
   };

@@ -120,6 +120,69 @@ clone_repo() {
   mkdir -p "$HOME/.config"
   git clone "$REPO_URL" "$REPO_DIR"
   success "Repository cloned to $REPO_DIR"
+  
+  # Install git hooks for automatic git-crypt unlock
+  if [[ -f "$REPO_DIR/scripts/install-git-hooks.sh" ]]; then
+    info "Installing git hooks for automatic git-crypt unlock..."
+    bash "$REPO_DIR/scripts/install-git-hooks.sh" >/dev/null 2>&1 || true
+  fi
+}
+
+# Unlock git-crypt encrypted files
+unlock_git_crypt() {
+  step "Unlocking git-crypt encrypted files..."
+  
+  cd "$REPO_DIR"
+  
+  # Check if git-crypt is installed
+  if ! command_exists git-crypt; then
+    warning "git-crypt is not installed"
+    info "Installing git-crypt..."
+    
+    if command_exists brew; then
+      brew install git-crypt
+    elif command_exists nix; then
+      nix profile install nixpkgs#git-crypt
+    else
+      error "Cannot install git-crypt automatically. Please install it manually:"
+      info "  macOS: brew install git-crypt"
+      info "  Nix: nix profile install nixpkgs#git-crypt"
+      info "  Or visit: https://www.agwa.name/projects/git-crypt/"
+      return 1
+    fi
+  fi
+  
+  # Check if repository uses git-crypt
+  if ! git-crypt status >/dev/null 2>&1; then
+    info "Repository does not use git-crypt or is already unlocked"
+    return 0
+  fi
+  
+  # Try to unlock with GPG key (most common method)
+  info "Attempting to unlock with GPG key..."
+  if git-crypt unlock 2>/dev/null; then
+    success "git-crypt unlocked successfully with GPG key"
+    return 0
+  fi
+  
+  # If GPG unlock failed, prompt for key file
+  warning "GPG unlock failed. You may need to provide a key file."
+  if [[ -t 0 ]]; then
+    read -p "Enter path to git-crypt key file (or press Enter to skip): " key_file
+    if [[ -n "$key_file" ]] && [[ -f "$key_file" ]]; then
+      if git-crypt unlock "$key_file" 2>/dev/null; then
+        success "git-crypt unlocked successfully with key file"
+        return 0
+      else
+        error "Failed to unlock with provided key file"
+      fi
+    fi
+  fi
+  
+  warning "git-crypt unlock skipped or failed"
+  info "You can manually unlock later with: git-crypt unlock"
+  info "Or with a key file: git-crypt unlock <key-file>"
+  return 0
 }
 
 # Configure user settings
@@ -240,6 +303,7 @@ main() {
   check_macos
   install_nix
   clone_repo
+  unlock_git_crypt
   configure_user
   build_config
   install_wezterm_terminfo
@@ -248,6 +312,9 @@ main() {
   echo -e "Your Nix configuration is now active."
   echo -e "To update in the future, run:"
   echo -e "  ${CYAN}cd ~/.config/nix && darwin-rebuild switch --flake ~/.config/nix${NC}\n"
+  echo -e "${YELLOW}Note:${NC} Git hooks are installed to automatically unlock git-crypt"
+  echo -e "      encrypted files after git pull. If you need to unlock manually:"
+  echo -e "      ${CYAN}cd ~/.config/nix && git-crypt unlock${NC}\n"
   
   if [[ -t 0 ]]; then
     echo -e "Opening a new shell is recommended to load all changes."
