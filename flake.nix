@@ -274,6 +274,7 @@
             "backblaze"
             "balenaetcher"
             "bettertouchtool"
+            "claude-code"
             "cleanshot"
             "connectmenow"
             "dbeaver-community"
