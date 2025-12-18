@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git -C /Users/james.maes/.config/nix status)",
+      "Bash(git -C /Users/james.maes/.config/nix diff)",
+      "Bash(git -C /Users/james.maes/.config/nix log --oneline -5)",
+      "Bash(git -C /Users/james.maes/.config/nix add:*)",
+      "Bash(git -C /Users/james.maes/.config/nix commit -m \"$\\(cat <<''EOF''\ndocs: add CLAUDE.md for Claude Code guidance\n\n🤖 Generated with [Claude Code]\\(https://claude.ai/code\\)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git -C /Users/james.maes/.config/nix diff home/ai/3-rules.md)",
+      "Bash(git -C /Users/james.maes/.config/nix log --oneline -3)",
+      "Bash(git -C /Users/james.maes/.config/nix commit -m \"$\\(cat <<''EOF''\nfeat\\(ai\\): add allowed commands list and no-AI commit rule\nEOF\n\\)\")",
+      "Bash(git -C /Users/james.maes/.config/nix push)"
+    ]
+  }
+}
