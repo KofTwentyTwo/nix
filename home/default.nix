@@ -29,6 +29,7 @@ in
     ./ai
     ./aws
     ./ca-certs
+    ./gpg
     ./k9s
     ./nvim
     ./ohmyzsh
