@@ -4,10 +4,12 @@
 # configuration files. All files are generated declaratively from this module.
 #
 # Files managed:
-#   - ~/.ai/profile.md       Personal operating profile
-#   - ~/.ai/rules.md         Agent behavioral rules
-#   - ~/.ai/preferences.yaml Machine-readable preferences
-#   - ~/.ai/coding-style.md  Engineering style guide
+#   - ~/.ai/0-init.md        Initialization instructions
+#   - ~/.ai/1-profile.md     Personal operating profile
+#   - ~/.ai/2-coding-style.md Engineering style guide
+#   - ~/.ai/3-rules.md       Agent behavioral rules
+#   - ~/.ai/4-preferences.yaml Machine-readable preferences
+#   - ~/.claude/CLAUDE.md    Claude Code user-level memory (imports ~/.ai/*)
 #
 # Usage:
 #   Import this module in home/default.nix:
@@ -140,6 +142,18 @@
   home.file.".ai/2-coding-style.md".source = ./2-coding-style.md;
   home.file.".ai/3-rules.md".source = ./3-rules.md;
   home.file.".ai/4-preferences.yaml".source = ./4-preferences.yaml;
+
+  # Claude Code user-level memory file
+  # Imports all ~/.ai/ config files so they load automatically in every session
+  home.file.".claude/CLAUDE.md".text = ''
+    # Global Development Context
+
+    See @~/.ai/0-init.md for initialization guidelines
+    See @~/.ai/1-profile.md for profile information
+    See @~/.ai/2-coding-style.md for coding style standards
+    See @~/.ai/3-rules.md for development rules
+    See @~/.ai/4-preferences.yaml for preferences
+  '';
 }
 
 

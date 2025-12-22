@@ -440,6 +440,19 @@
    };
    in
    {
+      # Dev shell with auto git-crypt unlock
+      devShells.aarch64-darwin.default = let
+        pkgs = nixpkgs.legacyPackages.aarch64-darwin;
+      in pkgs.mkShell {
+        buildInputs = [ pkgs.git-crypt pkgs.gnupg ];
+        shellHook = ''
+          if [ -d .git ] && [ ! -d .git/git-crypt ]; then
+            echo "git-crypt not unlocked. Unlocking..."
+            git-crypt unlock && echo "git-crypt unlocked successfully."
+          fi
+        '';
+      };
+
       darwinConfigurations."Darth" = nix-darwin.lib.darwinSystem {
          modules = [
             configuration
