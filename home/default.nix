@@ -29,6 +29,7 @@ in
     ./ai
     ./aws
     ./ca-certs
+    ./claude
     ./gpg
     ./k9s
     ./nvim
