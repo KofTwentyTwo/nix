@@ -42,5 +42,17 @@
        - Ambiguous (e.g., priority, parent issue)
 
     4. **After creating** - Verify the issue has all fields populated correctly.
+
+    ## Git Commit Messages
+
+    **NEVER include any of the following in commit messages:**
+
+    - References to Claude, AI assistants, or code generation tools
+    - "Generated with" lines
+    - "Co-Authored-By" lines mentioning AI
+    - Emojis (unless user explicitly requests them)
+
+    Keep commit messages clean and professional - they should look like they were
+    written by a human developer.
   '';
 }
