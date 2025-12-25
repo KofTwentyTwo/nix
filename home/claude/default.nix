@@ -1,58 +1,82 @@
 # Claude Code Configuration Module
 # ================================
-# This Home Manager module manages the ~/.claude/ directory with Claude Code
-# configuration files. All files are generated declaratively from this module.
+# Manages all Claude Code configuration files.
 #
 # Files managed:
-#   - ~/.claude/CLAUDE.md         User-level instructions for Claude Code
-#   - ~/.claude/settings.json     Claude Code settings (if needed)
-#
-# Usage:
-#   Import this module in home/default.nix:
-#     imports = [ ./claude ];
-#
-# Updates:
-#   Edit this file and run: darwin-rebuild switch --flake ~/.config/nix
+#   - ~/.claude.json: MCP servers (activation script, writable)
+#   - ~/.claude/settings.local.json: Permissions (activation script, writable)
+#   - ~/.claude/CLAUDE.md: User-level memory (symlink, read-only)
 
 { config, pkgs, lib, ... }:
 
+let
+  homeDir = config.home.homeDirectory;
+
+  # MCP Servers - consistent across machines
+  mcpServers = {
+    github = {
+      type = "stdio";
+      command = "npx";
+      args = [ "-y" "@modelcontextprotocol/server-github" ];
+      env = {
+        GITHUB_TOKEN = "$" + "{GITHUB_TOKEN}";
+      };
+    };
+    qqq-mcp = {
+      type = "http";
+      url = "http://localhost:8080/mcp";
+    };
+  };
+
+  # Permissions - consistent across machines
+  permissions = {
+    allow = [
+      "Bash(/opt/homebrew/bin/markdownlint-cli2:*)"
+    ];
+  };
+
+  mcpServersJson = pkgs.writeText "mcp-servers.json" (builtins.toJSON mcpServers);
+  permissionsJson = pkgs.writeText "permissions.json" (builtins.toJSON permissions);
+in
 {
+  # CLAUDE.md - read-only symlink is fine
   home.file.".claude/CLAUDE.md".text = ''
-    # User Settings for Claude Code
+    # Global Development Context
 
-    ## GitHub Issue Creation
+    See @~/.ai/0-init.md for initialization guidelines
+    See @~/.ai/1-profile.md for profile information
+    See @~/.ai/2-coding-style.md for coding style standards
+    See @~/.ai/3-rules.md for development rules
+    See @~/.ai/4-preferences.yaml for preferences
+  '';
 
-    When creating issues for QRun-IO repositories, ALWAYS:
+  # ~/.claude.json - merge mcpServers, preserve user data
+  home.activation.syncClaudeJson = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    claude_json="${homeDir}/.claude.json"
 
-    1. **Required fields** - Set all of these:
-       - Title (clear, concise)
-       - Body (structured with ## Summary, ## Tasks, ## Acceptance Criteria)
-       - Labels (at minimum: enhancement/bug, phase-X if applicable)
-       - Assignee (default: KofTwentyTwo)
-       - Milestone (if one exists for the repo)
+    if [ ! -f "$claude_json" ]; then
+      ${pkgs.jq}/bin/jq -n --slurpfile mcp "${mcpServersJson}" '{ mcpServers: $mcp[0] }' > "$claude_json"
+      chmod 600 "$claude_json"
+    else
+      ${pkgs.jq}/bin/jq --slurpfile mcp "${mcpServersJson}" '.mcpServers = $mcp[0]' "$claude_json" > "$claude_json.tmp"
+      mv "$claude_json.tmp" "$claude_json"
+      chmod 600 "$claude_json"
+    fi
+  '';
 
-    2. **Project fields** - Add to QQQ Roadmap project (#12) and set:
-       - Status (default: Backlog)
-       - Priority (ask if not obvious)
-       - Component (match the repo)
-       - Parent Issue (if part of an epic)
+  # ~/.claude/settings.local.json - merge permissions, preserve user data
+  home.activation.syncClaudeSettings = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    settings_json="${homeDir}/.claude/settings.local.json"
 
-    3. **Before creating** - Ask user to confirm any fields that are:
-       - Blank or unknown
-       - Ambiguous (e.g., priority, parent issue)
+    mkdir -p "${homeDir}/.claude"
 
-    4. **After creating** - Verify the issue has all fields populated correctly.
-
-    ## Git Commit Messages
-
-    **NEVER include any of the following in commit messages:**
-
-    - References to Claude, AI assistants, or code generation tools
-    - "Generated with" lines
-    - "Co-Authored-By" lines mentioning AI
-    - Emojis (unless user explicitly requests them)
-
-    Keep commit messages clean and professional - they should look like they were
-    written by a human developer.
+    if [ ! -f "$settings_json" ] || [ ! -s "$settings_json" ]; then
+      ${pkgs.jq}/bin/jq -n --slurpfile perms "${permissionsJson}" '{ permissions: $perms[0] }' > "$settings_json"
+      chmod 600 "$settings_json"
+    else
+      ${pkgs.jq}/bin/jq --slurpfile perms "${permissionsJson}" '.permissions = $perms[0]' "$settings_json" > "$settings_json.tmp"
+      mv "$settings_json.tmp" "$settings_json"
+      chmod 600 "$settings_json"
+    fi
   '';
 }
