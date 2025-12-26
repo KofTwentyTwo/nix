@@ -27,6 +27,14 @@ let
       type = "http";
       url = "http://localhost:8080/mcp";
     };
+    circleci-mcp-server = {
+      type = "stdio";
+      command = "npx";
+      args = [ "-y" "@circleci/mcp-server-circleci@latest" ];
+      env = {
+        CIRCLECI_TOKEN = "$" + "{CIRCLECI_TOKEN}";
+      };
+    };
   };
 
   # Permissions - consistent across machines

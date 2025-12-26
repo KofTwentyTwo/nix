@@ -13,7 +13,11 @@
       "Bash(darwin-rebuild switch:*)",
       "Bash(sudo darwin-rebuild switch:*)",
       "Bash(ls:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(git -C /Users/james.maes/.config/nix diff --stat)",
+      "Bash(git -C /Users/james.maes/.config/nix diff home/ai/default.nix home/claude/default.nix)",
+      "Bash(git -C /Users/james.maes/.config/nix diff home/ai/default.nix)",
+      "Bash(git -C /Users/james.maes/.config/nix commit -m \"$\\(cat <<''EOF''\nfeat\\(claude\\): consolidate config, add QQQ MCP, fix onboarding\n\n- Move CLAUDE.md management from ai module to claude module\n- Add QQQ MCP server \\(http://localhost:8080/mcp\\)\n- Add theme preference to settings.json\n- Fix jq --argfile to --slurpfile for newer jq versions\n- Add defensive checks to prevent data loss on jq failure\n- Set hasCompletedOnboarding to prevent setup wizard\nEOF\n\\)\")"
     ]
   }
 }
