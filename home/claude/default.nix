@@ -35,6 +35,10 @@ let
         CIRCLECI_TOKEN = "$" + "{CIRCLECI_TOKEN}";
       };
     };
+    atlassian = {
+      type = "sse";
+      url = "https://mcp.atlassian.com/v1/sse";
+    };
   };
 
   # Permissions - consistent across machines
