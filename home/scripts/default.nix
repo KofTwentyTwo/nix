@@ -43,6 +43,7 @@ in
         "update-nix.sh"
         "gitops-publish.sh"
         "fix-git-remote.sh"
+        "git-status-all.sh"
         # Add more scripts as you create them:
         # "backup-config.sh"
         # "health-check.sh"
