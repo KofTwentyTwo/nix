@@ -133,6 +133,14 @@ in
             gc          = "git cz c";  # Commit using commitizen
             gt          = "gitops-publish.sh";  # GitOps: publish feature branch tag
             gsa         = "git-status-all.sh";  # Check status of all repos in current dir
+            gclo        = "git-clone-all.sh";  # Clone all repos from a GitHub org
+            gfa         = "git-fetch-all.sh";  # Fetch updates for all repos
+            gpa         = "git-pull-all.sh";   # Pull all repos
+            gba         = "git-branch-all.sh"; # Show current branch for all repos
+            gcoa        = "git-checkout-all.sh"; # Checkout branch in all repos
+            gla         = "git-log-all.sh";    # Show recent commits for all repos
+            gi          = "git-info.sh";       # Show comprehensive repo info
+            ghelp       = "git-help.sh";       # Show all custom git commands
             
             # Security
             secure      = "op-load-secrets";  # Load secrets from 1Password vault
