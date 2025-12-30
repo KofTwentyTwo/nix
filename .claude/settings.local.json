@@ -18,7 +18,12 @@
       "Bash(git -C /Users/james.maes/.config/nix diff home/ai/default.nix home/claude/default.nix)",
       "Bash(git -C /Users/james.maes/.config/nix diff home/ai/default.nix)",
       "Bash(git -C /Users/james.maes/.config/nix commit -m \"$\\(cat <<''EOF''\nfeat\\(claude\\): consolidate config, add QQQ MCP, fix onboarding\n\n- Move CLAUDE.md management from ai module to claude module\n- Add QQQ MCP server \\(http://localhost:8080/mcp\\)\n- Add theme preference to settings.json\n- Fix jq --argfile to --slurpfile for newer jq versions\n- Add defensive checks to prevent data loss on jq failure\n- Set hasCompletedOnboarding to prevent setup wizard\nEOF\n\\)\")",
-      "Bash(git -C /Users/james.maes/.config/nix diff home/claude/default.nix)"
+      "Bash(git -C /Users/james.maes/.config/nix diff home/claude/default.nix)",
+      "Bash(git-clone-all.sh:*)",
+      "Bash(git -C /Users/james.maes/.config/nix commit -m \"$\\(cat <<''EOF''\nfeat\\(scripts\\): add git batch operation scripts\n\n- gclo: clone all repos from GitHub org \\(SSH default\\)\n- gfa/gpa: fetch/pull all repos\n- gba/gcoa: show/checkout branches across repos\n- gla: show recent commits for all repos\n- gi: comprehensive repo info with GitHub/CircleCI links\n- ghelp: show all custom git commands\nEOF\n\\)\")",
+      "Bash(zsh -ic 'alias | grep -i git')",
+      "Bash(git -C /Users/james.maes/.config/nix status:*)",
+      "Bash(git -C /Users/james.maes/.config/nix commit -m \"$\\(cat <<''EOF''\nfeat\\(ghelp\\): column-aligned output with detailed descriptions\nEOF\n\\)\")"
     ]
   }
 }
