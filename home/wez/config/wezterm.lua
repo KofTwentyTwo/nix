@@ -17,6 +17,18 @@ config.term = "wezterm"
 config.font_size = 14.0
 config.default_prog = { "zsh" }
 
+--------------------------
+-- Visual Bell Settings --
+--------------------------
+config.audible_bell = "Disabled"
+config.visual_bell = {
+	fade_in_duration_ms = 75,
+	fade_out_duration_ms = 150,
+	fade_in_function = "EaseIn",
+	fade_out_function = "EaseOut",
+	target = "CursorColor",
+}
+
 --------------------------------------
 -- Startup and New Windows Handling --
 --------------------------------------
@@ -182,6 +194,9 @@ config.colors = {
 	quick_select_label_fg = { Color = "#ffffff" },
 	quick_select_match_bg = { AnsiColor = "Navy" },
 	quick_select_match_fg = { Color = "#ffffff" },
+
+	-- Visual bell color (cursor flashes this color)
+	visual_bell = "#52ad70",
 }
 
 return config

@@ -51,6 +51,7 @@ let
   # User preferences - consistent across machines
   userPrefs = {
     theme = "dark";
+    terminalBellOnPrompt = true;
   };
 
   mcpServersJson = pkgs.writeText "mcp-servers.json" (builtins.toJSON mcpServers);
