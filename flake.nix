@@ -99,6 +99,7 @@
       ## Options here - https://daiderd.com/nix-darwin/manual/index.html ##
       #####################################################################
       security.pam.services.sudo_local.touchIdAuth = true;
+      security.pam.services.sudo_local.reattach = true;  # Enable Touch ID in tmux
       system.defaults.NSGlobalDomain.InitialKeyRepeat = 15;
       system.defaults.NSGlobalDomain.KeyRepeat = 2;
       system.defaults.finder.ShowStatusBar = true;

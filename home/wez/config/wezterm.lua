@@ -15,7 +15,7 @@ config.front_end = "WebGpu"
 ----------------------------------------------------------------------------------------
 config.term = "wezterm"
 config.font_size = 14.0
-config.default_prog = { "zsh" }
+config.default_prog = { "/opt/homebrew/bin/tmux", "new-session" }
 
 --------------------------
 -- Visual Bell Settings --

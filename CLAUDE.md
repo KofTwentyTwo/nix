@@ -45,7 +45,8 @@ Each module is self-contained and manages one concern:
 - `zsh/`: Zsh configuration and aliases
 - `ohmyzsh/`: Oh My Zsh with plugins
 - `starship/`: Starship prompt theme
-- `wez/`: WezTerm terminal configuration
+- `tmux/`: Tmux with screensaver (cmatrix) and hacker-style status bar
+- `wez/`: WezTerm terminal configuration (auto-starts tmux)
 - `ssh/`: SSH client config
 - `nvim/`: Neovim setup
 - `k9s/`: Kubernetes TUI config

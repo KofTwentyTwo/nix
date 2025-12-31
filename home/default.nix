@@ -37,6 +37,7 @@ in
     ./scripts
     ./ssh
     ./starship
+    ./tmux
     ./updates
     ./wez
     ./zsh
