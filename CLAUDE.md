@@ -40,6 +40,7 @@ This is a **nix-darwin + Home Manager** configuration for macOS (Apple Silicon).
 Each module is self-contained and manages one concern:
 - `1password/`: SSH agent integration and `op-load-secrets` function
 - `ai/`: AI assistant configuration files (generates `~/.ai/*`)
+- `claude/`: Claude Code settings, permissions, and MCP server configuration
 - `aws/`: AWS config and credentials
 - `zsh/`: Zsh configuration and aliases
 - `ohmyzsh/`: Oh My Zsh with plugins
