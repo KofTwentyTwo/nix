@@ -54,6 +54,13 @@ let
       "Bash(find:*)"
       "Bash(fd:*)"
       "Bash(pwd:*)"
+      "Bash(du:*)"
+      "Bash(df:*)"
+      "Bash(exa:*)"
+      "Bash(eza:*)"
+      "Bash(lsd:*)"
+      "Bash(readlink:*)"
+      "Bash(ncdu:*)"
 
       # File reading
       "Bash(cat:*)"
@@ -252,6 +259,13 @@ let
       "mcp__github__get_pull_request_comments"
       "mcp__github__get_pull_request_reviews"
       "mcp__github__list_commits"
+
+      # Current working directory (where Claude was started)
+      "Edit"
+      "Write"
+      "Bash(mkdir:*)"
+      "Bash(touch:*)"
+      "Bash(rm:*)"
     ];
   };
 
