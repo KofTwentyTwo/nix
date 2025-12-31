@@ -23,7 +23,9 @@
       "Bash(git -C /Users/james.maes/.config/nix commit -m \"$\\(cat <<''EOF''\nfeat\\(scripts\\): add git batch operation scripts\n\n- gclo: clone all repos from GitHub org \\(SSH default\\)\n- gfa/gpa: fetch/pull all repos\n- gba/gcoa: show/checkout branches across repos\n- gla: show recent commits for all repos\n- gi: comprehensive repo info with GitHub/CircleCI links\n- ghelp: show all custom git commands\nEOF\n\\)\")",
       "Bash(zsh -ic 'alias | grep -i git')",
       "Bash(git -C /Users/james.maes/.config/nix status:*)",
-      "Bash(git -C /Users/james.maes/.config/nix commit -m \"$\\(cat <<''EOF''\nfeat\\(ghelp\\): column-aligned output with detailed descriptions\nEOF\n\\)\")"
+      "Bash(git -C /Users/james.maes/.config/nix commit -m \"$\\(cat <<''EOF''\nfeat\\(ghelp\\): column-aligned output with detailed descriptions\nEOF\n\\)\")",
+      "Bash(wezterm cli:*)",
+      "Bash(git -C /Users/james.maes/.config/nix commit -m \"$\\(cat <<''EOF''\nfeat\\(claude,wez\\): add visual bell notification for CLI prompts\n\n- Enable terminalBellOnPrompt in Claude settings\n- Configure WezTerm visual bell with green cursor flash\nEOF\n\\)\")"
     ]
   }
 }
