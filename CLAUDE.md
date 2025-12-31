@@ -48,7 +48,7 @@ git-crypt unlock
 | `ai/` | AI config files (`~/.ai/*`) |
 | `claude/` | MCP servers, permissions, settings (see below) |
 | `tmux/` | Screensaver (cmatrix), hacker status bar |
-| `wez/` | WezTerm (auto-starts tmux) |
+| `wez/` | WezTerm terminal emulator |
 | `starship/` | Prompt theme (green borders, nerd fonts) |
 | `scripts/` | Custom shell scripts (`ghelp`, `gclo`, etc.) |
 | `zsh/`, `ohmyzsh/` | Shell configuration |
@@ -88,14 +88,20 @@ Pre-approved commands in `permissions.allow[]`:
 - `~/.claude.json`: MCP servers config
 - `~/.claude/settings.json`: User prefs (theme: dark, terminalBellOnPrompt: true)
 - `~/.claude/settings.local.json`: Permissions (merged, not overwritten)
-- `~/.claude/CLAUDE.md`: Symlink to global context
+- `~/.claude/CLAUDE.md`: Global context (profile, rules, preferences)
+
+**Note:** Session state is per-project, not global. Each repo has its own `./docs/SESSION-STATE.md`.
 
 ## Tmux Setup (`home/tmux/default.nix`)
+
+**STATUS: DISABLED** - Auto-start disabled due to performance issues (flickering/lag after 10min). Config preserved for future debugging.
 
 - **Screensaver**: cmatrix at 15min idle
 - **Status bar**: Two-line hacker aesthetic (green/yellow/purple/cyan)
 - **Touch ID**: Works via pam-reattach
-- **WezTerm**: Auto-starts tmux sessions
+
+### Known Issue
+Tmux experiences flickering and severe lag after ~10 minutes of use. See `./docs/TMUX-ISSUES.md` for investigation notes.
 
 ### Constraints (do not violate)
 - No mouse/clipboard/keybinding changes in tmux

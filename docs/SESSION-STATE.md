@@ -4,38 +4,29 @@ Last updated: 2025-12-31
 
 ## Current State
 
-Configuration is stable and working. No active tasks in progress.
+Tmux auto-start **disabled** due to performance issues (flickering/lag after 10min). WezTerm launches zsh directly. All tmux configuration preserved in `home/tmux/default.nix` for future debugging.
+
+## Active Issue
+
+**Tmux Performance** - See `./docs/TMUX-ISSUES.md` for details and investigation plan.
 
 ## Recent Completions
 
 - Tmux module: screensaver (cmatrix at 15min), hacker status bar
-- WezTerm: auto-starts tmux sessions
+- WezTerm: configured (tmux auto-start now disabled)
 - Touch ID in tmux via pam-reattach
 - Claude module: MCP servers, permissions, settings management
 - Documentation: CLAUDE.md updated with full architecture
 
+## Next Steps When Resuming
+
+1. Investigate tmux performance issues (see TMUX-ISSUES.md)
+2. Consider alternative approaches: simpler status bar, disable screensaver, test in isolation
+
 ## Future Ideas (Not Started)
 
-Potential enhancements discussed but not implemented:
-
-### Tmux Enhancements
-- `tmux-resurrect` / `tmux-continuum` for session persistence
-- `tmux-sessionizer` for fuzzy-find project directories
-- Git branch/status in status bar
-- Battery/CPU/memory indicators
-
-### Productivity
-- Named sessions per project
-- `tmuxinator` for predefined layouts
+See `./docs/FUTURE-IDEAS.md` for enhancement backlog.
 
 ## How to Continue
 
-Say **"continue from last session"**. Claude will read this file and `CLAUDE.md` for context.
-
-## Files Modified Recently
-
-- `home/tmux/default.nix` - screensaver and status bar
-- `home/wez/config/wezterm.lua` - tmux auto-start
-- `home/claude/default.nix` - MCP servers and permissions
-- `flake.nix` - pam-reattach for Touch ID
-- `CLAUDE.md` - architecture documentation
+Say **"continue from last session"**. Claude reads this file and `CLAUDE.md` for context.

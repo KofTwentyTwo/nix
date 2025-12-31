@@ -2,6 +2,19 @@
 -- This file contains your custom plugin configurations
 
 return {
+  -- Claude Code integration (reduces flickering when running inside tmux)
+  -- Launch with :ClaudeCode or <leader>ac
+  {
+    "coder/claudecode.nvim",
+    dependencies = { "folke/snacks.nvim" },
+    config = true,
+    keys = {
+      { "<leader>a", nil, desc = "AI/Claude Code" },
+      { "<leader>ac", "<cmd>ClaudeCode<cr>", desc = "Toggle Claude" },
+      { "<leader>af", "<cmd>ClaudeCodeFocus<cr>", desc = "Focus Claude" },
+    },
+  },
+
   -- Configure LazyVim to use tokyonight colorscheme
   {
     "LazyVim/LazyVim",

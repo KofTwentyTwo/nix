@@ -52,6 +52,7 @@ in
         "git-log-all.sh"
         "git-info.sh"
         "git-help.sh"
+        "claude-resume.sh"
         # Add more scripts as you create them:
         # "backup-config.sh"
         # "health-check.sh"

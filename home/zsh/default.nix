@@ -144,9 +144,12 @@ in
             
             # Security
             secure      = "op-load-secrets";  # Load secrets from 1Password vault
-            
+
             # Updates
             check-updates = "check-updates.sh";  # Check for brew and nix updates
+
+            # Claude Code
+            cr          = "claude-resume.sh";  # Resume session for current directory
          };
 
          # History configuration

@@ -42,7 +42,15 @@
       "Bash(git -C /Users/james.maes/.config/nix commit -m \"$\\(cat <<''EOF''\nfeat\\(tmux\\): add screensaver and hacker status bar\n\nWezTerm now auto-starts tmux; 15min idle triggers cmatrix lock; Touch ID enabled in tmux via pam-reattach\nEOF\n\\)\")",
       "Bash(git -C /Users/james.maes/.config/nix commit -m \"$\\(cat <<''EOF''\ndocs: update CLAUDE.md and add session state for continuity\nEOF\n\\)\")",
       "Bash(git -C /Users/james.maes/.config/nix diff .claude/settings.local.json)",
-      "Bash(git -C /Users/james.maes/.config/nix commit -m \"$\\(cat <<''EOF''\ndocs: update CLAUDE.md and session state for continuity\nEOF\n\\)\")"
+      "Bash(git -C /Users/james.maes/.config/nix commit -m \"$\\(cat <<''EOF''\ndocs: update CLAUDE.md and session state for continuity\nEOF\n\\)\")",
+      "Bash(git -C /Users/james.maes/.config/nix commit -m \"$\\(cat <<''EOF''\nfeat\\(claude\\): expand permissions for file ops and exploration\nEOF\n\\)\")",
+      "WebFetch(domain:github.com)",
+      "Bash(claude -r:*)",
+      "WebFetch(domain:blog.tymek.dev)",
+      "Bash(tmux list-sessions:*)",
+      "Bash(tmux list-panes:*)",
+      "Bash(vm_stat)",
+      "Bash(top:*)"
     ]
   }
 }

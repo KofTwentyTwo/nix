@@ -4,7 +4,11 @@ local wezterm = require("wezterm")
 -------------------------------------
 -- Highlevel WezTerm configuration --
 -------------------------------------
-config.front_end = "WebGpu"
+-- OpenGL is now the default; WebGpu had issues on macOS
+config.front_end = "OpenGL"
+
+-- Reduce frame rate for smoother rendering in tmux
+config.max_fps = 60
 
 ----------------------------------------------------------------------------------------
 -- To get this to work - we had to manually add the terminfo to the local machine ;-(
@@ -15,7 +19,8 @@ config.front_end = "WebGpu"
 ----------------------------------------------------------------------------------------
 config.term = "wezterm"
 config.font_size = 14.0
-config.default_prog = { "/opt/homebrew/bin/tmux", "new-session" }
+-- DISABLED: tmux auto-start causing performance issues (flickering/lag after 10min)
+-- config.default_prog = { "/opt/homebrew/bin/tmux", "new-session" }
 
 --------------------------
 -- Visual Bell Settings --
