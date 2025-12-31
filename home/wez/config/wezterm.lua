@@ -22,11 +22,11 @@ config.default_prog = { "zsh" }
 --------------------------
 config.audible_bell = "Disabled"
 config.visual_bell = {
-	fade_in_duration_ms = 75,
-	fade_out_duration_ms = 150,
+	fade_in_duration_ms = 150,
+	fade_out_duration_ms = 300,
 	fade_in_function = "EaseIn",
 	fade_out_function = "EaseOut",
-	target = "CursorColor",
+	target = "BackgroundColor",
 }
 
 --------------------------------------
@@ -195,8 +195,8 @@ config.colors = {
 	quick_select_match_bg = { AnsiColor = "Navy" },
 	quick_select_match_fg = { Color = "#ffffff" },
 
-	-- Visual bell color (cursor flashes this color)
-	visual_bell = "#52ad70",
+	-- Visual bell color (must contrast with cursor_bg to be visible)
+	visual_bell = "#ff6b6b",
 }
 
 return config
