@@ -2,47 +2,40 @@
 
 Last updated: 2025-12-31
 
-## Completed This Session
-
-- Added tmux module with screensaver (cmatrix at 15min idle)
-- Created hacker-style status bar matching starship theme
-- Configured WezTerm to auto-start tmux sessions
-- Enabled Touch ID in tmux via pam-reattach
-- Two-line status bar with green separator line
-
 ## Current State
 
-All changes committed and pushed. Configuration is stable and working.
+Configuration is stable and working. No active tasks in progress.
+
+## Recent Completions
+
+- Tmux module: screensaver (cmatrix at 15min), hacker status bar
+- WezTerm: auto-starts tmux sessions
+- Touch ID in tmux via pam-reattach
+- Claude module: MCP servers, permissions, settings management
+- Documentation: CLAUDE.md updated with full architecture
 
 ## Future Ideas (Not Started)
 
-Discussed but not implemented - potential enhancements for tmux:
+Potential enhancements discussed but not implemented:
 
-### Session Persistence
-- `tmux-resurrect` / `tmux-continuum` for auto-save/restore sessions
-
-### Quick Navigation
+### Tmux Enhancements
+- `tmux-resurrect` / `tmux-continuum` for session persistence
 - `tmux-sessionizer` for fuzzy-find project directories
-- Popup windows for quick commands
-
-### Visual Enhancements
 - Git branch/status in status bar
 - Battery/CPU/memory indicators
-- Weather widget
 
 ### Productivity
 - Named sessions per project
 - `tmuxinator` for predefined layouts
-- `tmux-fingers` for text copying without mouse
 
 ## How to Continue
 
-Say "continue from last session" to pick up. Read this file and CLAUDE.md for context.
+Say **"continue from last session"**. Claude will read this file and `CLAUDE.md` for context.
 
-## Files Modified This Session
+## Files Modified Recently
 
-- `home/tmux/default.nix` (new)
-- `home/wez/config/wezterm.lua` (tmux auto-start)
-- `home/default.nix` (import tmux)
-- `flake.nix` (pam-reattach)
-- `CLAUDE.md` (updated docs)
+- `home/tmux/default.nix` - screensaver and status bar
+- `home/wez/config/wezterm.lua` - tmux auto-start
+- `home/claude/default.nix` - MCP servers and permissions
+- `flake.nix` - pam-reattach for Touch ID
+- `CLAUDE.md` - architecture documentation

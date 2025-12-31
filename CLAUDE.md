@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Session Continuity
+
+Say **"continue from last session"** to resume. Check `./docs/SESSION-STATE.md` for context.
+
 ## Commands
 
 ```bash
@@ -26,66 +30,73 @@ git-crypt unlock
 
 ## Architecture
 
-This is a **nix-darwin + Home Manager** configuration for macOS (Apple Silicon). The configuration manages both system-level macOS settings and user environment via a single Nix flake.
+**nix-darwin + Home Manager** configuration for macOS (Apple Silicon). Single flake manages system and user environment.
 
-### Core Structure
+### Core Files
 
-- **flake.nix**: Entry point containing:
-  - `userConfig`: User-specific settings (username, git config, paths)
-  - `configuration`: nix-darwin system settings (macOS defaults, Homebrew, dock, firewall)
-  - `homeconfig`: Home Manager user environment (packages, git, imports `./home`)
-  - Machine definitions: `Darth`, `Grogu`, `Renova`
-  - PAM config: Touch ID for sudo with `pam-reattach` for tmux support
+| File | Purpose |
+|------|---------|
+| `flake.nix` | Entry point: userConfig, nix-darwin, Home Manager, machines (Darth/Grogu/Renova), PAM/Touch ID |
+| `home/default.nix` | Imports all Home Manager modules |
+| `home/*/default.nix` | Self-contained modules (one concern each) |
 
-- **home/default.nix**: Main Home Manager module that imports all sub-modules
+### Home Manager Modules
 
-### Home Manager Modules (`home/*/default.nix`)
-
-Each module is self-contained and manages one concern:
-- `1password/`: SSH agent integration and `op-load-secrets` function
-- `ai/`: AI assistant configuration files (generates `~/.ai/*`)
-- `aws/`: AWS config and credentials
-- `ca-certs/`: CA certificate management
-- `claude/`: Claude Code settings, permissions, and MCP server configuration
-- `gpg/`: GPG key management
-- `k9s/`: Kubernetes TUI config
-- `nvim/`: Neovim setup
-- `ohmyzsh/`: Oh My Zsh with plugins
-- `scripts/`: Custom shell scripts
-- `ssh/`: SSH client config
-- `starship/`: Starship prompt theme (green borders, nerd fonts)
-- `tmux/`: Tmux with screensaver and hacker status bar
-- `updates/`: LaunchAgent for update checking
-- `wez/`: WezTerm terminal (auto-starts tmux)
-- `zsh/`: Zsh configuration and aliases
+| Module | Purpose |
+|--------|---------|
+| `1password/` | SSH agent, `op-load-secrets` function |
+| `ai/` | AI config files (`~/.ai/*`) |
+| `claude/` | MCP servers, permissions, settings (see below) |
+| `tmux/` | Screensaver (cmatrix), hacker status bar |
+| `wez/` | WezTerm (auto-starts tmux) |
+| `starship/` | Prompt theme (green borders, nerd fonts) |
+| `scripts/` | Custom shell scripts (`ghelp`, `gclo`, etc.) |
+| `zsh/`, `ohmyzsh/` | Shell configuration |
+| Others | `aws/`, `ca-certs/`, `gpg/`, `k9s/`, `nvim/`, `ssh/`, `updates/` |
 
 ### Key Patterns
 
-**Adding packages**: Homebrew packages go in `flake.nix` under `homebrew.brews` or `homebrew.casks`. Nix packages go in `home/default.nix` under `home.packages`.
+- **Packages**: Homebrew in `flake.nix`, Nix in `home/default.nix`
+- **New modules**: Create `home/foo/default.nix`, import in `home/default.nix`
+- **File generation**: `home.file."path".text` or `.source`
+- **Tmux changes**: Require `tmux kill-server` to reload
+- **Secrets**: git-crypt encrypted, run `git-crypt unlock` after clone
 
-**Creating new modules**: Add directory under `home/` with `default.nix`, then import in `home/default.nix`.
+## Claude Module (`home/claude/default.nix`)
 
-**File generation**: Use `home.file."path".text` or `home.file."path".source`.
+Manages Claude Code configuration with activation scripts that merge settings (preserves user data).
 
-**After tmux config changes**: Must run `tmux kill-server` for changes to take effect.
+### MCP Servers
 
-### Secrets
+| Server | Type | Purpose |
+|--------|------|---------|
+| `github` | stdio | GitHub API via `@modelcontextprotocol/server-github` |
+| `qqq-mcp` | http | Local QQQ server at `localhost:8080/mcp` |
+| `circleci-mcp-server` | stdio | CircleCI via `@circleci/mcp-server-circleci` |
+| `atlassian` | sse | Jira/Confluence at `mcp.atlassian.com` |
 
-Encrypted files use git-crypt. After cloning, run `git-crypt unlock`.
+### Permissions
 
-## Current Configuration Details
+Pre-approved commands in `permissions.allow[]`:
+- File ops: `ls`, `cat`, `grep`, `rg`, `find`, `fd`
+- Git read-only: `status`, `diff`, `log`, `branch`, `show`
+- Build tools: `mvn`, `npm`, `cargo`, `python`, `nix`
+- MCP read-only: Atlassian, CircleCI, GitHub queries
 
-### Tmux Setup (`home/tmux/default.nix`)
-- **Screensaver**: cmatrix triggers after 15 minutes idle
-- **Status bar**: Two-line hacker aesthetic matching starship prompt
-  - Top line: Green separator
-  - Bottom: Session name, window, user@host, load avg, clock, date
-- **Colors**: Green/yellow/purple/cyan on black, nerd font icons
-- **WezTerm integration**: Auto-starts tmux on new terminals
-- **Touch ID**: Works in tmux via pam-reattach
+### Settings
+
+- `~/.claude.json`: MCP servers config
+- `~/.claude/settings.json`: User prefs (theme: dark, terminalBellOnPrompt: true)
+- `~/.claude/settings.local.json`: Permissions (merged, not overwritten)
+- `~/.claude/CLAUDE.md`: Symlink to global context
+
+## Tmux Setup (`home/tmux/default.nix`)
+
+- **Screensaver**: cmatrix at 15min idle
+- **Status bar**: Two-line hacker aesthetic (green/yellow/purple/cyan)
+- **Touch ID**: Works via pam-reattach
+- **WezTerm**: Auto-starts tmux sessions
 
 ### Constraints (do not violate)
-- No mouse option changes in tmux
-- No clipboard option changes in tmux
-- No keybinding changes in tmux
-- Keep tmux config minimal beyond screensaver and status bar
+- No mouse/clipboard/keybinding changes in tmux
+- Keep config minimal beyond screensaver and status bar

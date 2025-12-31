@@ -39,7 +39,10 @@
       "Bash(/opt/homebrew/bin/cmatrix:*)",
       "Bash(tmux lock-client:*)",
       "Bash(git -C /Users/james.maes/.config/nix diff --cached --stat)",
-      "Bash(git -C /Users/james.maes/.config/nix commit -m \"$\\(cat <<''EOF''\nfeat\\(tmux\\): add screensaver and hacker status bar\n\nWezTerm now auto-starts tmux; 15min idle triggers cmatrix lock; Touch ID enabled in tmux via pam-reattach\nEOF\n\\)\")"
+      "Bash(git -C /Users/james.maes/.config/nix commit -m \"$\\(cat <<''EOF''\nfeat\\(tmux\\): add screensaver and hacker status bar\n\nWezTerm now auto-starts tmux; 15min idle triggers cmatrix lock; Touch ID enabled in tmux via pam-reattach\nEOF\n\\)\")",
+      "Bash(git -C /Users/james.maes/.config/nix commit -m \"$\\(cat <<''EOF''\ndocs: update CLAUDE.md and add session state for continuity\nEOF\n\\)\")",
+      "Bash(git -C /Users/james.maes/.config/nix diff .claude/settings.local.json)",
+      "Bash(git -C /Users/james.maes/.config/nix commit -m \"$\\(cat <<''EOF''\ndocs: update CLAUDE.md and session state for continuity\nEOF\n\\)\")"
     ]
   }
 }
