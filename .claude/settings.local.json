@@ -29,7 +29,8 @@
       "Bash(printf:*)",
       "Bash(wezterm --version:*)",
       "WebSearch",
-      "Bash(git -C /Users/james.maes/.config/nix commit -m \"$\\(cat <<''EOF''\nfeat\\(claude,wez\\): expand permissions and fix visual bell\n\nAdd comprehensive allowed commands list from 3-rules.md; switch visual bell to BackgroundColor target\nEOF\n\\)\")"
+      "Bash(git -C /Users/james.maes/.config/nix commit -m \"$\\(cat <<''EOF''\nfeat\\(claude,wez\\): expand permissions and fix visual bell\n\nAdd comprehensive allowed commands list from 3-rules.md; switch visual bell to BackgroundColor target\nEOF\n\\)\")",
+      "Bash(git -C /Users/james.maes/.config/nix commit -m \"docs: add claude module to CLAUDE.md\")"
     ]
   }
 }
