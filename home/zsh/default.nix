@@ -67,9 +67,66 @@ in
            if [[ -f "$HOME/.cargo/env" ]]; then
              . $HOME/.cargo/env
            fi
-           
+
            # Secrets are loaded via op-load-secrets function (see 1password module)
-           
+
+           # SSH wrapper for WezTerm host tracking
+           # Updates terminal title with remote hostname for interactive SSH sessions
+           ssh() {
+             local update_title=false
+             local host=""
+
+             # Only update terminal title for interactive TTY sessions
+             if [[ -t 1 ]] && [[ -t 0 ]]; then
+               local skip_next=false
+               local has_command=false
+               local tunnel_only=false
+
+               for arg in "$@"; do
+                 if $skip_next; then
+                   skip_next=false
+                   continue
+                 fi
+                 case "$arg" in
+                   -b|-c|-D|-E|-e|-F|-I|-i|-J|-L|-l|-m|-O|-o|-p|-Q|-R|-S|-W|-w)
+                     skip_next=true ;;
+                   -[bcDEeFIiJLlmOopQRSWw]*)
+                     ;;
+                   -f|-N|-n)
+                     tunnel_only=true ;;
+                   -*)
+                     ;;
+                   *)
+                     if [[ -z "$host" ]]; then
+                       host="$arg"
+                     else
+                       has_command=true
+                     fi
+                     ;;
+                 esac
+               done
+
+               if [[ -n "$host" ]] && ! $tunnel_only && ! $has_command; then
+                 update_title=true
+               fi
+             fi
+
+             local display_host="''${host#*@}"
+
+             if $update_title; then
+               printf '\033]7;file://%s/\007' "$display_host"
+             fi
+
+             command ssh "$@"
+             local ssh_exit=$?
+
+             if $update_title; then
+               printf '\033]7;file://%s%s\007' "$(hostname)" "$PWD"
+             fi
+
+             return $ssh_exit
+           }
+
            # Check for available updates (similar to oh-my-zsh update notification)
            if [[ -f "$HOME/.config/nix/.updates-available" ]]; then
              echo ""

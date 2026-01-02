@@ -50,7 +50,11 @@
       "Bash(tmux list-sessions:*)",
       "Bash(tmux list-panes:*)",
       "Bash(vm_stat)",
-      "Bash(top:*)"
+      "Bash(top:*)",
+      "Bash(git -C /Users/james.maes/.config/nix commit -m \"$\\(cat <<''EOF''\nfix\\(wez\\): disable tmux auto-start due to performance issues\n\nTmux causes flickering and lag after ~10min. WezTerm now launches zsh directly. Config preserved for future debugging.\nEOF\n\\)\")",
+      "Bash(git -C /Users/james.maes/.config/nix diff home/wez/config/wezterm.lua)",
+      "Bash(git -C /Users/james.maes/.config/nix diff home/zsh/default.nix)",
+      "Bash(git -C /Users/james.maes/.config/nix commit -m \"feat\\(wez,zsh\\): add status bar and SSH host tracking\")"
     ]
   }
 }
