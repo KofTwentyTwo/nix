@@ -1,9 +1,24 @@
-# TODO / Future Improvements
-# =========================
+# TODO
 
-This document tracks planned improvements and features for the Nix configuration.
+Active tasks and future improvements for the Nix configuration.
 
-## 🔄 Linux Support
+## Active Tasks
+
+- [x] Add AI agent rules (secrets, retries, expensive ops, progress reporting)
+- [x] Add planning mode and session continuity rules
+- [x] Move TODO.md to docs/ directory
+- [ ] Rebuild nix config to apply new rules
+- [ ] Commit rule changes
+
+## Backlog: Tmux Performance
+
+- [ ] Investigate flickering/lag after 10min (see TMUX-ISSUES.md)
+- [ ] Test with simpler status bar
+- [ ] Test with screensaver disabled
+
+---
+
+## Backlog: Linux Support
 
 **Status:** Planned  
 **Priority:** Medium  
@@ -58,7 +73,7 @@ Add Linux support to make the configuration work on Linux distributions (Ubuntu,
 
 ---
 
-## 🚀 Quick Wins (From SUGGESTIONS.md)
+## Backlog: Quick Wins
 
 **Status:** Optional  
 **Priority:** Low  
@@ -75,7 +90,7 @@ See `SUGGESTIONS.md` for full list and implementation details.
 
 ---
 
-## 🔧 Maintenance Tasks
+## Backlog: Maintenance
 
 **Status:** Ongoing  
 **Priority:** Low
@@ -88,7 +103,7 @@ See `SUGGESTIONS.md` for full list and implementation details.
 
 ---
 
-## 📝 Documentation Improvements
+## Backlog: Documentation
 
 **Status:** Optional  
 **Priority:** Low
@@ -101,7 +116,7 @@ See `SUGGESTIONS.md` for full list and implementation details.
 
 ---
 
-## 🔐 Security Enhancements
+## Backlog: Security
 
 **Status:** Optional  
 **Priority:** Medium
@@ -113,7 +128,7 @@ See `SUGGESTIONS.md` for full list and implementation details.
 
 ---
 
-## 🎨 Configuration Enhancements
+## Backlog: Config Enhancements
 
 **Status:** Optional  
 **Priority:** Low

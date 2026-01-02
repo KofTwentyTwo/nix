@@ -1,32 +1,28 @@
 # Session State
 
-Last updated: 2025-12-31
+Last updated: 2026-01-02
 
 ## Current State
 
-Tmux auto-start **disabled** due to performance issues (flickering/lag after 10min). WezTerm launches zsh directly. All tmux configuration preserved in `home/tmux/default.nix` for future debugging.
+Refining AI agent rules and preferences. Just added major new rules for planning mode, progress tracking, secrets handling, retry limits, and session continuity.
 
-## Active Issue
+## Just Completed
 
-**Tmux Performance** - See `./docs/TMUX-ISSUES.md` for details and investigation plan.
+- Added rules: secrets handling, retry limits, expensive ops warning, progress reporting
+- Added rules: pause on failure, planning mode workflow
+- Added session continuity requirements (periodic updates to docs)
+- Moved TODO.md to docs/ directory
+- Committed WezTerm status bar and SSH host tracking
 
-## Recent Completions
+## Pending
 
-- Tmux module: screensaver (cmatrix at 15min), hacker status bar
-- WezTerm: configured (tmux auto-start now disabled)
-- Touch ID in tmux via pam-reattach
-- Claude module: MCP servers, permissions, settings management
-- Documentation: CLAUDE.md updated with full architecture
+- Run `sudo darwin-rebuild switch --flake ~/.config/nix` to apply rules
+- Commit the new rules
 
-## Next Steps When Resuming
+## Active Issues
 
-1. Investigate tmux performance issues (see TMUX-ISSUES.md)
-2. Consider alternative approaches: simpler status bar, disable screensaver, test in isolation
-
-## Future Ideas (Not Started)
-
-See `./docs/FUTURE-IDEAS.md` for enhancement backlog.
+**Tmux Performance** - Auto-start disabled due to flickering/lag. See `TMUX-ISSUES.md`.
 
 ## How to Continue
 
-Say **"continue from last session"**. Claude reads this file and `CLAUDE.md` for context.
+Say **"continue from last session"**. Claude reads this file, `CLAUDE.md`, and `docs/TODO.md`.

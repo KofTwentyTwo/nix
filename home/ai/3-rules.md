@@ -45,6 +45,7 @@ You are an AI coding assistant working with James Maes on the QQQ low-code appli
 5. **Architectural decisions** affect multiple modules
 6. **Test coverage** cannot be achieved without user guidance
 7. **Nix configuration changes** might affect system-wide behavior
+8. **Changing direction** on a problem - summarize what changed and why, then prompt for confirmation before proceeding
 
 ### Gather Context First When:
 1. User mentions a class, table, or process name you haven't seen
@@ -71,6 +72,58 @@ You are an AI coding assistant working with James Maes on the QQQ low-code appli
 3. Add appropriate comments and documentation
 4. Verify compliance with style guidelines
 5. Suggest tests if not automatically generated
+
+## Planning Mode & Progress Tracking
+
+### When to Enter Planning Mode:
+- **Always** before any sizable task (multi-file changes, new features, refactors)
+- When the scope is unclear and needs investigation
+- When multiple approaches exist and need evaluation
+- User explicitly requests a plan
+
+### Planning Workflow:
+1. **Create a PLAN document** in `./docs/PLAN-<task-name>.md`
+2. **Update TODO.md** in `./docs/` with task breakdown
+3. Research and explore the codebase as needed
+4. Document the approach, files affected, and steps
+5. Present plan summary to user for approval
+6. Only proceed with implementation after confirmation
+
+### Progress Tracking Requirements:
+- Use `./docs/TODO.md` to track all active tasks and subtasks
+- Mark items as completed immediately when done
+- Add new items discovered during implementation
+- Keep the TODO list as the source of truth for current work
+
+### Session Continuity:
+- **Periodically update** (every few significant steps):
+  - `./docs/SESSION-STATE.md` - Current context and status
+  - `./docs/TODO.md` - Progress on tasks
+  - `./CLAUDE.md` - If project context has changed
+- This ensures continuity if terminal crashes or session ends
+- Updates should happen after completing logical chunks of work
+- When resuming, always read these files first
+
+### Plan Document Structure:
+```markdown
+# PLAN: <Task Name>
+
+## Goal
+<One sentence describing the objective>
+
+## Approach
+<Brief description of the strategy>
+
+## Files Affected
+- `path/to/file.java` - <what changes>
+
+## Steps
+1. [ ] Step one
+2. [ ] Step two
+
+## Open Questions
+- <Any decisions needed from user>
+```
 
 ## Always Allowed Commands
 
@@ -167,6 +220,40 @@ These commands may be run without asking permission. They are read-only or safe 
 5. **Nix modifications:** Changing Home Manager or nix-darwin configuration
 6. **File deletion:** Removing source files or resources
 7. **Destructive operations:** Anything that cannot be easily undone
+
+### Test-First Commit Policy:
+- **NEVER** commit, push, or trigger CI/CD until all tests pass locally (100%)
+- Run the full test suite before any git commit
+- If tests fail, fix them first - do not proceed with partial fixes
+- This applies even when the user requests a commit - verify tests first
+
+### Secrets & Credentials:
+- **NEVER** log, print, or expose secrets, API keys, passwords, or tokens
+- **NEVER** commit `.env` files, `credentials.json`, or similar sensitive files
+- If a secret is accidentally exposed, immediately warn the user
+- Use environment variables or secret managers, never hardcode credentials
+
+### Retry Limits:
+- Maximum **2-3 retries** on failed commands before pausing to ask the user
+- If a command fails repeatedly, summarize what's happening and ask for guidance
+- Don't loop endlessly on flaky operations
+
+### Expensive Operations:
+- **Warn before** running full test suites, large builds, or long-running operations
+- Provide estimated time/scope when known (e.g., "Running 500+ tests, ~3 min")
+- Offer to run targeted tests first when debugging specific issues
+
+### Progress Reporting:
+- On long tasks, provide status updates every **3-5 significant steps**
+- Include: what's done, what's next, any blockers encountered
+- Update `./docs/TODO.md` and `./docs/SESSION-STATE.md` periodically
+- If a task will take many steps, give a brief checkpoint summary
+
+### Pause on Failure:
+- If something breaks mid-task, **STOP immediately**
+- Summarize what happened, what broke, and potential causes
+- Wait for user confirmation before attempting fixes or continuing
+- Do not attempt multiple fix strategies without user input
 
 ### Always Do:
 1. **Validate against Checkstyle rules** mentally before suggesting code
