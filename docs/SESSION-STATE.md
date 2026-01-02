@@ -4,25 +4,34 @@ Last updated: 2026-01-02
 
 ## Current State
 
-Refining AI agent rules and preferences. Just added major new rules for planning mode, progress tracking, secrets handling, retry limits, and session continuity.
+Session complete. All AI agent rules updated and committed. Ready to resume.
 
-## Just Completed
+## Completed This Session
 
-- Added rules: secrets handling, retry limits, expensive ops warning, progress reporting
-- Added rules: pause on failure, planning mode workflow
-- Added session continuity requirements (periodic updates to docs)
-- Moved TODO.md to docs/ directory
 - Committed WezTerm status bar and SSH host tracking
+- Added AI rules: secrets handling, retry limits, expensive ops warning, progress reporting
+- Added AI rules: pause on failure, planning mode workflow, session continuity
+- Moved TODO.md to docs/ directory, restructured with Active Tasks section
+- Updated CLAUDE.md with full project context and new rules summary
+- Pushed all changes to remote
 
-## Pending
+## Pending (User Action Required)
 
-- Run `sudo darwin-rebuild switch --flake ~/.config/nix` to apply rules
-- Commit the new rules
+Run rebuild to apply new AI rules:
+```bash
+sudo darwin-rebuild switch --flake ~/.config/nix
+```
 
-## Active Issues
+## Active Backlog
 
-**Tmux Performance** - Auto-start disabled due to flickering/lag. See `TMUX-ISSUES.md`.
+See `./docs/TODO.md` for full task list. Key items:
+- Tmux performance investigation (flickering/lag after 10min)
 
 ## How to Continue
 
-Say **"continue from last session"**. Claude reads this file, `CLAUDE.md`, and `docs/TODO.md`.
+Say **"continue from last session"**. Claude reads:
+1. `./docs/SESSION-STATE.md` (this file)
+2. `./docs/TODO.md`
+3. `./CLAUDE.md`
+
+**Never use `~/.claude/session-state.md`** - state is local to this repo.

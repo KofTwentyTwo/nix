@@ -7,8 +7,10 @@ Active tasks and future improvements for the Nix configuration.
 - [x] Add AI agent rules (secrets, retries, expensive ops, progress reporting)
 - [x] Add planning mode and session continuity rules
 - [x] Move TODO.md to docs/ directory
-- [ ] Rebuild nix config to apply new rules
-- [ ] Commit rule changes
+- [x] Commit rule changes
+- [x] Update CLAUDE.md with full context
+- [x] Push all changes
+- [ ] Rebuild nix config to apply new rules (user action: `sudo darwin-rebuild switch`)
 
 ## Backlog: Tmux Performance
 
