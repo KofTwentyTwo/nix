@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code when working with this repository.
+Guidance for Claude Code when working with this repository.
 
 ## Session Continuity
 
@@ -10,15 +10,6 @@ Say **"continue from last session"** to resume. Read these files first:
 - `./CLAUDE.md` - This file (project context)
 
 **Never use `~/.claude/session-state.md`** - always use local `./docs/` files for state.
-
-## Planning Mode
-
-Before any sizable task, create a plan:
-1. Create `./docs/PLAN-<task-name>.md` with goal, approach, files affected, steps
-2. Update `./docs/TODO.md` with task breakdown
-3. Get user approval before implementing
-
-Periodically update `./docs/SESSION-STATE.md` and `./docs/TODO.md` as you work.
 
 ## Commands
 
@@ -34,9 +25,6 @@ nix flake update
 
 # Unlock encrypted files (after fresh clone)
 git-crypt unlock
-
-# Kill tmux (required after tmux config changes)
-tmux kill-server
 ```
 
 ## Architecture
@@ -48,7 +36,7 @@ tmux kill-server
 | File | Purpose |
 |------|---------|
 | `flake.nix` | Entry point: nix-darwin, Home Manager, machines, PAM/Touch ID |
-| `home/default.nix` | Imports all Home Manager modules |
+| `home/default.nix` | Imports modules, env vars (`QQQ_SELENIUM_HEADLESS`), programs |
 | `home/*/default.nix` | Self-contained modules (one concern each) |
 
 ### Key Modules
@@ -57,31 +45,37 @@ tmux kill-server
 |--------|---------|
 | `ai/` | AI config files (`~/.ai/*`) - rules, preferences, profile |
 | `claude/` | MCP servers, permissions, settings |
-| `wez/` | WezTerm with hacker status bar |
-| `tmux/` | Screensaver, status bar (currently disabled) |
+| `wez/` | WezTerm with status bar |
+| `zsh/` | Shell config, aliases (`lss`, `lrt`, `llt`), SSH tracking |
 | `scripts/` | Custom git commands (`ghelp`, `gclo`, etc.) |
-| `zsh/` | Shell config with SSH host tracking |
+
+### Installed Tools
+
+| Tool | Alias | Purpose |
+|------|-------|---------|
+| `bat` | `cat` | Syntax-highlighted cat |
+| `eza` | `ls`, `ll`, `la`, `lss`, `lrt`, `llt` | Modern ls |
+| `zoxide` | `z` | Smart cd |
+| `delta` | — | Git diff viewer |
+| `direnv` | — | Auto-load `.envrc` files |
 
 ### Patterns
 
 - **Packages**: Homebrew in `flake.nix`, Nix in `home/default.nix`
 - **New modules**: Create `home/foo/default.nix`, import in `home/default.nix`
-- **File generation**: `home.file."path".text` or `.source`
+- **Env vars**: Add to `home.sessionVariables` in `home/default.nix`
+- **Aliases**: Add to `shellAliases` in `home/zsh/default.nix`
 - **Secrets**: git-crypt encrypted
 
 ## AI Rules (`home/ai/3-rules.md`)
 
-Key rules that govern Claude behavior:
-
 | Rule | Summary |
 |------|---------|
-| **Test-first commits** | Never commit until all tests pass locally (100%) |
-| **Planning mode** | Create PLAN docs before sizable tasks |
-| **Session continuity** | Periodically update docs/SESSION-STATE.md and TODO.md |
+| **Planning mode** | Create `./docs/PLAN-*.md` before sizable tasks |
+| **Session continuity** | Update `./docs/SESSION-STATE.md` and `TODO.md` periodically |
+| **Allowed commands** | `mvn:*` and many others run without asking |
 | **Secrets handling** | Never log/commit credentials |
-| **Retry limits** | Max 2-3 retries before asking user |
 | **Pause on failure** | Stop, summarize, confirm before fixing |
-| **Change direction** | Summarize what/why and confirm before pivoting |
 
 ## MCP Servers
 
@@ -94,7 +88,7 @@ Key rules that govern Claude behavior:
 
 ## Known Issues
 
-**Tmux**: Auto-start disabled due to flickering/lag after 10min. See `./docs/TMUX-ISSUES.md`.
+**Tmux**: Auto-start disabled due to flickering/lag. See `./docs/TMUX-ISSUES.md`.
 
 ## Docs Directory
 
@@ -103,5 +97,4 @@ Key rules that govern Claude behavior:
 | `SESSION-STATE.md` | Current session context (read on resume) |
 | `TODO.md` | Active tasks and backlog |
 | `TMUX-ISSUES.md` | Tmux performance investigation |
-| `FUTURE-IDEAS.md` | Enhancement backlog |
 | `PLAN-*.md` | Task-specific plans (created as needed) |

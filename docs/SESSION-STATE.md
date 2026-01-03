@@ -1,26 +1,27 @@
 # Session State
 
-Last updated: 2026-01-02
+Last updated: 2026-01-03
 
 ## Current State
 
-Session complete. All AI agent rules updated and committed. Ready to resume.
+Session complete. All changes applied and rebuilt. Ready for next session.
 
 ## Completed This Session
 
-- Committed WezTerm status bar and SSH host tracking
-- Added AI rules: secrets handling, retry limits, expensive ops warning, progress reporting
-- Added AI rules: pause on failure, planning mode workflow, session continuity
-- Moved TODO.md to docs/ directory, restructured with Active Tasks section
-- Updated CLAUDE.md with full project context and new rules summary
-- Pushed all changes to remote
+- Added `QQQ_SELENIUM_HEADLESS=true` env var to `home/default.nix`
+- Added `Bash(mvn:*)` to Claude allowed commands
+- Added `direnv` with nix-direnv integration
+- Added eza aliases: `lss` (sort by size), `lrt` (oldest first), `llt` (newest first)
+- User ran `sudo darwin-rebuild switch` - all changes active
 
-## Pending (User Action Required)
+## Environment Status
 
-Run rebuild to apply new AI rules:
-```bash
-sudo darwin-rebuild switch --flake ~/.config/nix
-```
+| Item | Status |
+|------|--------|
+| `QQQ_SELENIUM_HEADLESS` | Active (new terminal needed) |
+| `mvn:*` allowed | Active |
+| `direnv` | Installed |
+| `lss`, `lrt`, `llt` | Active |
 
 ## Active Backlog
 
