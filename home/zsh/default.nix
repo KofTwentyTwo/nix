@@ -182,6 +182,9 @@ in
             # File utilities (using modern replacements)
             cat         = "bat";  # Better cat with syntax highlighting
             # Note: eza aliases (ls, ll, la, tree) are auto-added by programs.eza.enableAliases
+            lss         = "eza -l --sort=size";            # Long listing sorted by size (largest first)
+            lrt         = "eza -l --sort=modified -r";     # Long listing sorted by time (oldest first)
+            llt         = "eza -l --sort=modified";        # Long listing sorted by time (newest first)
             
             # SSH utilities
             sshc        = "ssh-keygen -R";  # Remove host from known_hosts
