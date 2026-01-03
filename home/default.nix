@@ -138,6 +138,13 @@ in
       enable = true;
       enableZshIntegration = true;
     };
+
+    # Auto-load .envrc files per directory
+    programs.direnv = {
+      enable = true;
+      enableZshIntegration = true;
+      nix-direnv.enable = true;  # Faster nix integration
+    };
   };
 
 }
