@@ -55,7 +55,9 @@
       "Bash(git -C /Users/james.maes/.config/nix diff home/wez/config/wezterm.lua)",
       "Bash(git -C /Users/james.maes/.config/nix diff home/zsh/default.nix)",
       "Bash(git -C /Users/james.maes/.config/nix commit -m \"feat\\(wez,zsh\\): add status bar and SSH host tracking\")",
-      "Bash(git -C /Users/james.maes/.config/nix commit -m \"feat\\(ai\\): add planning mode, session continuity, and safety rules\")"
+      "Bash(git -C /Users/james.maes/.config/nix commit -m \"feat\\(ai\\): add planning mode, session continuity, and safety rules\")",
+      "Bash(git -C /Users/james.maes/.config/nix commit -m \"docs: update CLAUDE.md and session state for continuity\")",
+      "Bash(mvn:*)"
     ]
   }
 }

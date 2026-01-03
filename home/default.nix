@@ -55,6 +55,7 @@ in
         EDITOR = lib.mkForce "vi";    # Default editor (vi aliases to nvim)
         VISUAL = lib.mkForce "vi";    # Visual editor (same as EDITOR)
         PAGER  = "less -FR";  # Pager with colors and no pause on exit
+        QQQ_SELENIUM_HEADLESS = "true";  # Run Selenium tests headless
       };
 
       # PATH configuration - paths are added to $PATH
