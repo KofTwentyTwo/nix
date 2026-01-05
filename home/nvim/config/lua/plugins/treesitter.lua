@@ -47,7 +47,6 @@ return {
         "markdown",
         "markdown_inline",
         "latex",
-        "org",
         
         -- Data formats
         "csv",
@@ -60,18 +59,15 @@ return {
         "terraform",
         "hcl",
         "nginx",
-        "apache",
         
         -- Other
         "gitignore",
         "gitattributes",
         "gitcommit",
-        "gitrebase",
         "diff",
         "regex",
         "query",
         "comment",
-        "help",
       },
       sync_install = false,
       auto_install = true,

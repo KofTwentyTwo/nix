@@ -41,9 +41,6 @@
     home.file."./.config/nvim/" = {
       source = ./config;
       recursive = true;
-      
-      # Optional: Only copy specific files if you want more control
-      # For now, we copy everything to maintain your LazyVim setup
     };
   };
 }
