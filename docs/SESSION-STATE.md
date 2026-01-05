@@ -1,27 +1,25 @@
 # Session State
 
-Last updated: 2026-01-03
+Last updated: 2026-01-05
 
 ## Current State
 
-Session complete. All changes applied and rebuilt. Ready for next session.
+Session complete. Neovim treesitter compatibility issues resolved. Ready for next session.
 
 ## Completed This Session
 
-- Added `QQQ_SELENIUM_HEADLESS=true` env var to `home/default.nix`
-- Added `Bash(mvn:*)` to Claude allowed commands
-- Added `direnv` with nix-direnv integration
-- Added eza aliases: `lss` (sort by size), `lrt` (oldest first), `llt` (newest first)
-- User ran `sudo darwin-rebuild switch` - all changes active
+- Fixed Neovim 0.11 treesitter query errors (`noice.nvim` compatibility)
+- Removed `lazy-lock.json` from version control (Lazy.nvim manages versions at runtime)
+- Removed unsupported treesitter parsers: `org`, `apache`, `gitrebase`, `help`
+- Updated CLAUDE.md with nvim module documentation
 
 ## Environment Status
 
 | Item | Status |
 |------|--------|
-| `QQQ_SELENIUM_HEADLESS` | Active (new terminal needed) |
-| `mvn:*` allowed | Active |
-| `direnv` | Installed |
-| `lss`, `lrt`, `llt` | Active |
+| Neovim | Working (0.11 compatible) |
+| LazyVim plugins | Fresh install, latest versions |
+| Treesitter | Working, unsupported parsers removed |
 
 ## Active Backlog
 

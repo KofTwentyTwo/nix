@@ -8,11 +8,13 @@ None - all current tasks complete.
 
 ## Recently Completed
 
+- [x] Fix Neovim 0.11 treesitter compatibility (2026-01-05)
+- [x] Remove `lazy-lock.json` from version control
+- [x] Remove unsupported treesitter parsers
 - [x] Add `QQQ_SELENIUM_HEADLESS=true` env var
 - [x] Add `mvn:*` to Claude allowed commands
 - [x] Add `direnv` with nix-direnv integration
 - [x] Add eza aliases (`lss`, `lrt`, `llt`)
-- [x] Rebuild nix config
 
 ---
 

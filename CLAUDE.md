@@ -45,6 +45,7 @@ git-crypt unlock
 |--------|---------|
 | `ai/` | AI config files (`~/.ai/*`) - rules, preferences, profile |
 | `claude/` | MCP servers, permissions, settings |
+| `nvim/` | Neovim + LazyVim (config in `nvim/config/`) |
 | `wez/` | WezTerm with status bar |
 | `zsh/` | Shell config, aliases (`lss`, `lrt`, `llt`), SSH tracking |
 | `scripts/` | Custom git commands (`ghelp`, `gclo`, etc.) |
@@ -89,6 +90,8 @@ git-crypt unlock
 ## Known Issues
 
 **Tmux**: Auto-start disabled due to flickering/lag. See `./docs/TMUX-ISSUES.md`.
+
+**Neovim**: `lazy-lock.json` is NOT version controlled (deleted intentionally). Lazy.nvim manages plugin versions at runtime. After Neovim updates, may need to clear cache: `rm -rf ~/.local/share/nvim/lazy ~/.cache/nvim`
 
 ## Docs Directory
 
