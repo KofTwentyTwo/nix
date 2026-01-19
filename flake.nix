@@ -304,6 +304,7 @@
             "omnigraffle"
             "omniplan"
             "openwebstart"
+            "session-manager-plugin"
             "slack"
             "tunnelblick"
             "visual-studio-code"
