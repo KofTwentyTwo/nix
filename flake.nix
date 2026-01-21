@@ -131,8 +131,11 @@
       system.defaults.CustomUserPreferences.com.apple.LSSharedFileList.FavoriteItems = ["/Applications"];
       networking.applicationFirewall = {
         enable = true;
-        blockAllIncoming = true;
+        blockAllIncoming = false;
       };
+
+      # Enable SSH (Remote Login)
+      services.openssh.enable = true;
 
       # Dock persistent folders (uses user home directory)
       system.defaults.dock.persistent-others = [
@@ -343,8 +346,16 @@
           launchctl load "$PLIST_PATH" 2>/dev/null || true
         fi
       '';
+
+      # Enable Screen Sharing (VNC/ARD)
+      system.activationScripts.enableScreenSharing.text = ''
+        # Load screen sharing daemon if not already running
+        if ! launchctl list com.apple.screensharing &>/dev/null; then
+          launchctl load -w /System/Library/LaunchDaemons/com.apple.screensharing.plist 2>/dev/null || true
+        fi
+      '';
    };
- 
+
 
    homeconfig = {pkgs, config, ...}: {
       #######################################################################
