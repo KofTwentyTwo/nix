@@ -62,7 +62,8 @@
       "Bash(zsh -ic 'alias | grep -E \"\"^\\(cat|ls|cd\\)=\"\"')",
       "Bash(git -C /Users/james.maes/.config/nix commit:*)",
       "Bash(zsh -ic 'alias | grep -E \"\"^\\(ls|ll|la|tree\\)=\"\"')",
-      "Bash(eza --help:*)"
+      "Bash(eza --help:*)",
+      "Bash(git-crypt status:*)"
     ]
   }
 }
