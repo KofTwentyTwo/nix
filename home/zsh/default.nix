@@ -228,9 +228,9 @@ in
             GPG_TTY = "$(tty)";  # Required for GPG to work in terminal
             
             # Java/GraalVM configuration
-            # Note: These paths are system-wide and should work on all Macs
-            GRAALVM_HOME = "/opt/homebrew/Cellar/openjdk@21/21.0.9/libexec/openjdk.jdk/Contents/Home/";
-            JAVA_HOME = "/opt/homebrew/Cellar/openjdk@21/21.0.9/libexec/openjdk.jdk/Contents/Home/";
+            # Note: Uses Homebrew's stable symlink to avoid breakage on version upgrades
+            GRAALVM_HOME = "/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home";
+            JAVA_HOME = "/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home";
             
             # Kubernetes configuration
             KUBECONFIG = "$(find ~/.kube/configs -type f 2>/dev/null | tr '\n' ':' || echo '')";
