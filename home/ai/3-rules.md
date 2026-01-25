@@ -277,6 +277,75 @@ These commands may be run without asking permission. They are read-only or safe 
 - **Import grouping:** Follow standard grouping (javax, java, third-party, static)
 - **No wildcard imports:** Explicitly list all imports
 
+## QQQ Architecture Principles
+
+### Core Defines Interfaces, Implementations Register (CRITICAL)
+The fundamental QQQ architecture pattern: **qqq-backend-core defines interfaces; qbits/modules provide implementations.**
+
+**Never do:**
+- Have core know about specific implementations (even reflectively)
+- Use reflection to call implementation-specific classes from core
+- Create "helper" classes in core that reach out to optional modules
+
+**Always do:**
+- Define interfaces in qqq-backend-core
+- Have implementations register themselves with core on startup
+- Allow multiple implementations to coexist (e.g., Redis, database, in-memory)
+- Use dependency injection or service registration patterns
+
+### Reflection is a Last Resort
+Reflection should only be used when no better pattern exists. It is:
+- **Brittle** - breaks silently when class/method names change
+- **No compile-time safety** - errors only appear at runtime
+- **Hard to read** - obscures intent and makes code harder to follow
+- **Hard to refactor** - IDEs can't track usage through reflection
+
+**Prefer instead:** Interfaces with registration, SPI via `ServiceLoader`, or direct dependencies.
+
+### Optimize for Remote Operations
+When designing APIs for remote stores (Redis, databases, external services):
+- **Combine operations** to reduce round-trips (e.g., `loadAndTouchSession()` vs separate `load()` + `touch()`)
+- Design method variants or boolean flags for combined operations
+- Consider batch operations where possible
+
+### Module Dependency Direction
+Dependencies flow **toward** core, never away:
+- QBits depend on qqq-backend-core (correct)
+- Core NEVER depends on qbits, even reflectively (wrong)
+
+### Interface + Registry Pattern (Concrete Example)
+When core needs optional functionality from a qbit:
+
+1. **Define interface in core** (e.g., `QSessionStoreProviderInterface`)
+2. **Create singleton registry in core** (e.g., `QSessionStoreRegistry`)
+3. **QBit implements interface and registers on startup**
+4. **Core uses registry with graceful fallback**
+
+```java
+// Core: QSessionStoreRegistry.java
+public class QSessionStoreRegistry {
+   private static final QSessionStoreRegistry INSTANCE = new QSessionStoreRegistry();
+   private QSessionStoreProviderInterface provider;
+
+   public static QSessionStoreRegistry getInstance() { return INSTANCE; }
+   public void register(QSessionStoreProviderInterface p) { provider = p; }
+   public Optional<QSessionStoreProviderInterface> getProvider() {
+      return Optional.ofNullable(provider);
+   }
+}
+
+// QBit: registers on startup
+QSessionStoreRegistry.getInstance().register(myProvider);
+
+// Core: uses with fallback
+QSessionStoreRegistry.getInstance().getProvider()
+   .ifPresent(p -> p.store(uuid, session, ttl));
+```
+
+**Existing registries:** `SpaNotFoundHandlerRegistry`, `QSessionStoreRegistry`
+
+---
+
 ## Specialized QQQ Rules
 
 ### MetaDataProducers
@@ -309,6 +378,27 @@ LOG.info(logPair("key", value), logPair("key2", value2));
 - **Classes/Methods:** Javadoc flower box style (80 chars wide)
 - **Inline:** Flower box style with `//` borders
 - **No zombie code** unless clearly explained in a flower box
+
+### New MetaData Requirements
+- **QInstanceValidator:** ALL new metadata additions MUST have corresponding validation in QInstanceValidator
+- Validate: name consistency, required fields, code references
+- Run validation plugins: `runPlugins(MetaDataClass.class, metaData, qInstance)`
+
+### Testing Patterns
+- **BaseTest handles cleanup:** No need for `@AfterEach` tearDown in test classes
+- BaseTest's `baseBeforeEach`/`baseAfterEach` clear QContext and reset MemoryRecordStore
+- Don't duplicate cleanup logic that BaseTest already provides
+
+### Functional Interfaces
+- Use existing interfaces from `com.kingsrook.qqq.backend.core.utils.lambdas`:
+  - `UnsafeVoidVoidMethod<T extends Throwable>` - runnable that throws
+  - `UnsafeFunction<I, O, T extends Throwable>` - function that throws
+- Don't create private functional interfaces when existing ones work
+
+### Multi-Auth Support
+- QQQ supports multiple authentication modules via `AuthScope`
+- Operations like logout should iterate over ALL registered auth modules
+- Use `qInstance.getScopedAuthenticationProviders()` to get all auth modules
 
 ## Context Management
 
