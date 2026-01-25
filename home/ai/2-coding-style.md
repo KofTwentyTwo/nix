@@ -270,7 +270,9 @@ LOG.info("Processing order", logPair("orderId", orderId), logPair("customerId", 
 LOG.debug("Order validation passed", logPair("orderId", orderId), logPair("validations", validationCount));
 
 // Warn level - recoverable issues (95% of error logging)
-LOG.warn("Failed to send notification, will retry", logPair("orderId", orderId), e);
+// CRITICAL: Exception comes BEFORE logPairs, not after!
+LOG.warn("Failed to send notification", e, logPair("orderId", orderId));  // ✓ Correct
+LOG.warn("Failed to send notification", logPair("orderId", orderId), e);  // ❌ WRONG - exception won't log properly
 
 // Error level - critical failures (5% of error logging)
 LOG.error("Database connection failed", e);
@@ -291,6 +293,23 @@ LOG.error("Database connection failed", e);
 - ❌ `System.out.println()`
 - ❌ `System.err.println()`
 - ❌ `e.printStackTrace()`
+
+---
+
+## Boolean Conventions
+
+### Nullable Boolean Checks
+Use `BooleanUtils.isTrue()` for nullable Boolean fields instead of complex null-safe comparisons:
+```java
+// CORRECT - use BooleanUtils.isTrue()
+import org.apache.commons.lang3.BooleanUtils;
+if (BooleanUtils.isTrue(handler.getEnabled())) { ... }
+
+// WRONG - verbose and error-prone
+if (Boolean.TRUE.equals(handler.getEnabled()) || handler.getEnabled() == null) { ... }
+```
+
+**Convention:** `enabled == null` should be treated as `false` (disabled by default).
 
 ---
 
@@ -476,6 +495,21 @@ public class Order extends QRecord
    public Integer getId() { return id; }
    public Integer getCustomerId() { return customerId; }
    // ... more getters
+}
+```
+
+**Fluent Setter Javadoc:**
+Include `@param` descriptions in fluent setter Javadoc:
+```java
+/*******************************************************************************
+ ** Fluent setter for customerId
+ **
+ ** @param customerId the customer who placed this order
+ *******************************************************************************/
+public Order withCustomerId(Integer customerId)
+{
+   this.customerId = customerId;
+   return (this);
 }
 ```
 
