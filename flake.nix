@@ -264,6 +264,7 @@
             "shellcheck"
             "sqlfluff"
             "talosctl"
+            "terragrunt"
             "tree"
             "tty-clock"
             "velero"
