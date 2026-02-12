@@ -370,6 +370,12 @@
       # Enable Home Manager
       programs.home-manager.enable = true;
 
+      # Disable HM manual generation to suppress builtins.toFile options.json warning
+      # See: https://github.com/nix-community/home-manager/issues/7935
+      manual.manpages.enable = false;
+      manual.html.enable = false;
+      manual.json.enable = false;
+
       #######################################################################
       ## Git Configuration                                                 ##
       ## Git settings from userConfig (defined inline above)              ##
