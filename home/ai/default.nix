@@ -8,6 +8,7 @@
 #   - ~/.ai/2-coding-style.md Engineering style guide
 #   - ~/.ai/3-rules.md        Agent behavioral rules
 #   - ~/.ai/4-preferences.yaml Machine-readable preferences
+#   - ~/.ai/5-learnings.md    Ongoing tool and workflow learnings
 #
 # Note: ~/.claude/* files are managed by home/claude/default.nix
 
@@ -135,6 +136,7 @@
   home.file.".ai/2-coding-style.md".source = ./2-coding-style.md;
   home.file.".ai/3-rules.md".source = ./3-rules.md;
   home.file.".ai/4-preferences.yaml".source = ./4-preferences.yaml;
+  home.file.".ai/5-learnings.md".source = ./5-learnings.md;
 }
 
 
