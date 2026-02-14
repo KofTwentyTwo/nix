@@ -53,6 +53,7 @@ in
         "git-info.sh"
         "git-help.sh"
         "claude-resume.sh"
+        "confluence-blog.sh"
         # Add more scripts as you create them:
         # "backup-config.sh"
         # "health-check.sh"
