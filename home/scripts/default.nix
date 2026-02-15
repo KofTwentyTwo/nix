@@ -54,6 +54,7 @@ in
         "git-help.sh"
         "claude-resume.sh"
         "confluence-blog.sh"
+        "confluence.sh"
         # Add more scripts as you create them:
         # "backup-config.sh"
         # "health-check.sh"
