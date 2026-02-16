@@ -67,7 +67,16 @@
       "Bash(git rm:*)",
       "Bash(echo:*)",
       "Bash(git add:*)",
-      "Bash(git commit -m \"$\\(cat <<''EOF''\nchore: migrate Claude state files to ClaudeCode repo\n\nMoved SESSION-STATE.md, TODO.md, TMUX-ISSUES.md, and FUTURE-IDEAS.md\nto the external ClaudeCode repo. Updated .gitignore accordingly.\nEOF\n\\)\")"
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nchore: migrate Claude state files to ClaudeCode repo\n\nMoved SESSION-STATE.md, TODO.md, TMUX-ISSUES.md, and FUTURE-IDEAS.md\nto the external ClaudeCode repo. Updated .gitignore accordingly.\nEOF\n\\)\")",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(git -C /Users/james.maes/.config/nix show d6d3ab7 --stat)",
+      "Bash(git -C /Users/james.maes/.config/nix remote -v)",
+      "WebFetch(domain:mynixos.com)",
+      "WebFetch(domain:nix-darwin.github.io)",
+      "Bash(git stash:*)",
+      "Bash(git checkout:*)",
+      "Bash(git reset:*)"
     ]
   }
 }

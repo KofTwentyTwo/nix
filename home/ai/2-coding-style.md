@@ -1,5 +1,7 @@
 # Coding Style Guide
 
+> **Single source of truth** for how to write code. Behavioral mandates (MUST/MUST NOT) live in `3-rules.md`. Tuning knobs live in `4-preferences.yaml`. This file is a reference guide only.
+
 This document consolidates coding standards for all languages used in the QQQ project and personal development workflows. For Java-specific QQQ conventions, always reference `/Users/james.maes/Git.Local/QRun-IO/qqq/CODE_STYLE.md` as the authoritative source.
 
 ## General Principles
@@ -359,11 +361,7 @@ examples for each meta-data type.
 ```
 
 ### Signing Commits
-All commits must be GPG-signed:
-```bash
-git config --global commit.gpgSign true
-git config --global user.signingKey 62859E8ABE1FC2B7FCCB89080021767055740E6D
-```
+All commits must be GPG-signed. The signing key is configured in the user's global git config and MUST NOT be hardcoded in documentation or scripts.
 
 ---
 
