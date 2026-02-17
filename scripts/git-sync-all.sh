@@ -148,31 +148,17 @@ find_latest_remote_branch() {
     local repo_dir="$1"
     local user_email="$2"
 
-    # Get all remote branches sorted by committer date (most recent first)
-    # Filter to commits by this user's email
+    # Use a simple format with just email and branch name (no date in output).
+    # --sort=-committerdate ensures most recent first.
+    # refname:lstrip=3 strips "refs/remotes/origin/" leaving just the branch name.
     git -C "$repo_dir" for-each-ref \
         --sort=-committerdate \
-        --format='%(committerdate:iso8601) %(committeremail) %(refname:short)' \
+        --format='%(committeremail) %(refname:lstrip=3)' \
         refs/remotes/origin/ 2>/dev/null \
-    | while IFS= read -r line; do
-        local email_field
-        email_field=$(echo "$line" | awk '{print $4}')
-        # Strip angle brackets
-        email_field="${email_field#<}"
-        email_field="${email_field%>}"
-
-        if [[ "$email_field" == "$user_email" ]]; then
-            # Return the branch name without the origin/ prefix
-            local branch
-            branch=$(echo "$line" | awk '{print $5}')
-            branch="${branch#origin/}"
-            # Skip HEAD
-            if [[ "$branch" != "HEAD" ]]; then
-                echo "$branch"
-                return 0
-            fi
-        fi
-    done
+    | grep -v ' HEAD$' \
+    | grep "<${user_email}>" \
+    | head -1 \
+    | awk '{print $2}'
 }
 
 # Find max repo name length for alignment
@@ -226,6 +212,12 @@ for dir in */; do
             needs_switch=true
         fi
 
+        # For display: don't show "HEAD" as the source branch (detached HEAD)
+        display_from="$current_branch"
+        if [[ "$current_branch" == "HEAD" ]]; then
+            display_from=""
+        fi
+
         # Step 3: Handle dirty working tree
         is_dirty=false
         if [[ -n $(git -C "$dir" status --porcelain 2>/dev/null) ]]; then
@@ -248,18 +240,25 @@ for dir in */; do
             fi
         fi
 
-        # Step 4: Switch branch if needed
-        if [[ "$needs_switch" == true ]]; then
-            if [[ "$DRY_RUN" == false ]]; then
-                if ! git -C "$dir" checkout "$latest_branch" --quiet 2>/dev/null; then
+        # Step 4: Switch branch if needed, and ensure upstream tracking
+        if [[ "$needs_switch" == true ]] && [[ "$DRY_RUN" == false ]]; then
+            # Try checkout; if the branch doesn't exist locally, create it from origin
+            if ! git -C "$dir" checkout "$latest_branch" --quiet 2>/dev/null; then
+                if ! git -C "$dir" checkout -b "$latest_branch" "origin/$latest_branch" --quiet 2>/dev/null; then
                     echo -e "${RED}FAILED${NC} (checkout ${latest_branch})"
-                    # Pop stash if we made one
                     if [[ "$did_stash" == true ]]; then
-                        git -C "$dir" stash pop --quiet 2>/dev/null
+                        git -C "$dir" stash pop --quiet >/dev/null 2>&1
                     fi
                     ((failed++))
                     continue
                 fi
+            fi
+            # Ensure upstream tracking is set (git branch has no --quiet flag)
+            git -C "$dir" branch --set-upstream-to="origin/$latest_branch" "$latest_branch" >/dev/null 2>&1
+        elif [[ "$DRY_RUN" == false ]]; then
+            # Even if we didn't switch, ensure tracking is set for current branch
+            if git -C "$dir" show-ref --verify --quiet "refs/remotes/origin/$current_branch" 2>/dev/null; then
+                git -C "$dir" branch --set-upstream-to="origin/$current_branch" "$current_branch" >/dev/null 2>&1
             fi
         fi
 
@@ -268,7 +267,11 @@ for dir in */; do
             # Dry run output
             status_parts=""
             if [[ "$needs_switch" == true ]]; then
-                status_parts="${CYAN}${current_branch} -> ${latest_branch}${NC}"
+                if [[ -n "$display_from" ]]; then
+                    status_parts="${CYAN}${display_from} -> ${latest_branch}${NC}"
+                else
+                    status_parts="${CYAN}-> ${latest_branch}${NC}"
+                fi
             else
                 status_parts="${DIM}${current_branch}${NC}"
             fi
@@ -284,13 +287,18 @@ for dir in */; do
         upstream=$(git -C "$dir" rev-parse --abbrev-ref "@{upstream}" 2>/dev/null || echo "")
         if [[ -z "$upstream" ]]; then
             # No upstream tracking; just report the branch state
-            status_msg="${DIM}${current_branch}${NC} ${BLUE}(no upstream)${NC}"
             if [[ "$needs_switch" == true ]]; then
-                status_msg="${CYAN}${current_branch} -> ${latest_branch}${NC} ${BLUE}(no upstream)${NC}"
+                if [[ -n "$display_from" ]]; then
+                    status_msg="${CYAN}${display_from} -> ${latest_branch}${NC} ${BLUE}(no upstream)${NC}"
+                else
+                    status_msg="${CYAN}-> ${latest_branch}${NC} ${BLUE}(no upstream)${NC}"
+                fi
+            else
+                status_msg="${DIM}${current_branch}${NC} ${BLUE}(no upstream)${NC}"
             fi
             echo -e "$status_msg"
             if [[ "$did_stash" == true ]]; then
-                git -C "$dir" stash pop --quiet 2>/dev/null
+                git -C "$dir" stash pop --quiet >/dev/null 2>&1
             fi
             ((skipped++))
             continue
@@ -298,13 +306,13 @@ for dir in */; do
 
         behind=$(git -C "$dir" rev-list --count "HEAD..@{upstream}" 2>/dev/null || echo "0")
 
-        output=$(git -C "$dir" pull --quiet 2>&1)
+        git -C "$dir" pull --quiet >/dev/null 2>&1
         pull_ok=$?
 
         # Step 6: Pop stash
         stash_conflict=false
         if [[ "$did_stash" == true ]]; then
-            if ! git -C "$dir" stash pop --quiet 2>/dev/null; then
+            if ! git -C "$dir" stash pop --quiet >/dev/null 2>&1; then
                 stash_conflict=true
             fi
         fi
@@ -314,7 +322,11 @@ for dir in */; do
             status_parts=""
 
             if [[ "$needs_switch" == true ]]; then
-                status_parts="${CYAN}${current_branch} -> ${latest_branch}${NC} "
+                if [[ -n "$display_from" ]]; then
+                    status_parts="${CYAN}${display_from} -> ${latest_branch}${NC} "
+                else
+                    status_parts="${CYAN}-> ${latest_branch}${NC} "
+                fi
             fi
 
             if [[ "$behind" -gt 0 ]]; then
