@@ -48,7 +48,8 @@ print_row() {
 if [[ "$SHOW_MINE" == true ]]; then
     echo -e "${BOLD}=== Custom Git Commands ===${NC}"
     echo ""
-    print_row "$CYAN" "gsa"   "git-status-all.sh"    "Show status of all git repos in current directory"
+    print_row "$CYAN" "gsa"   "git-sync-all.sh"      "Morning sync: fetch, switch to latest branch, pull all repos"
+    print_row "$CYAN" "gsall" "git-status-all.sh"    "Show status of all git repos in current directory"
     print_row "$CYAN" "gclo"  "git-clone-all.sh"     "Clone all repositories from a GitHub organization (uses SSH by default)"
     print_row "$CYAN" "gfa"   "git-fetch-all.sh"     "Fetch updates from remote for all repos in current directory"
     print_row "$CYAN" "gpa"   "git-pull-all.sh"      "Pull updates for all clean repos (skips repos with uncommitted changes)"

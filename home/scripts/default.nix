@@ -43,6 +43,7 @@ in
         "update-nix.sh"
         "gitops-publish.sh"
         "fix-git-remote.sh"
+        "git-sync-all.sh"
         "git-status-all.sh"
         "git-clone-all.sh"
         "git-fetch-all.sh"

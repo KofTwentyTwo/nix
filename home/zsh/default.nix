@@ -192,7 +192,8 @@ in
             # Git shortcuts
             gc          = "git cz c";  # Commit using commitizen
             gt          = "gitops-publish.sh";  # GitOps: publish feature branch tag
-            gsa         = "git-status-all.sh";  # Check status of all repos in current dir
+            gsa         = "git-sync-all.sh";    # Morning sync: fetch, switch branch, pull all repos
+            gsall       = "git-status-all.sh";  # Check status of all repos in current dir
             gclo        = "git-clone-all.sh";  # Clone all repos from a GitHub org
             gfa         = "git-fetch-all.sh";  # Fetch updates for all repos
             gpa         = "git-pull-all.sh";   # Pull all repos

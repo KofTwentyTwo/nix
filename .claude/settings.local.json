@@ -76,7 +76,10 @@
       "WebFetch(domain:nix-darwin.github.io)",
       "Bash(git stash:*)",
       "Bash(git checkout:*)",
-      "Bash(git reset:*)"
+      "Bash(git reset:*)",
+      "Bash(git config:*)",
+      "Bash(darwin-rebuild check:*)",
+      "Bash(bash -n /Users/james.maes/.config/nix/scripts/git-sync-all.sh)"
     ]
   }
 }
