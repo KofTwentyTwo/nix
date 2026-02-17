@@ -198,6 +198,13 @@ for dir in */; do
             fi
         fi
 
+        # Step 1.5: Check if repo is already in a conflicted/merge state
+        if [[ -f "${dir}.git/MERGE_HEAD" ]] || [[ -f "${dir}.git/REBASE_HEAD" ]] || [[ -f "${dir}.git/CHERRY_PICK_HEAD" ]]; then
+            echo -e "${YELLOW}SKIPPED${NC} (unresolved merge/rebase/cherry-pick)"
+            ((skipped++))
+            continue
+        fi
+
         # Step 2: Determine target branch
         latest_branch=$(find_latest_remote_branch "$dir" "$EMAIL")
         current_branch=$(git -C "$dir" rev-parse --abbrev-ref HEAD 2>/dev/null)
@@ -347,10 +354,16 @@ for dir in */; do
 
             echo -e "$status_parts"
         else
-            echo -e "${RED}FAILED${NC} (pull error)"
-            if [[ "$did_stash" == true ]] && [[ "$stash_conflict" == false ]]; then
-                # stash was already popped or not; if pop failed we already noted it
-                :
+            # Pull failed; clean up merge state if present
+            if [[ -f "${dir}.git/MERGE_HEAD" ]]; then
+                git -C "$dir" merge --abort >/dev/null 2>&1
+                echo -e "${RED}FAILED${NC} (merge conflict, aborted)"
+            else
+                echo -e "${RED}FAILED${NC} (pull error)"
+            fi
+            # Restore stash if we made one
+            if [[ "$did_stash" == true ]]; then
+                git -C "$dir" stash pop --quiet >/dev/null 2>&1
             fi
             ((failed++))
         fi
