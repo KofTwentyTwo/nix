@@ -53,3 +53,28 @@ Every Confluence page or blog post we create or edit MUST be full-width. The `co
   4. Rebuild: `home-manager switch --flake ~/config/nix`
 - `1-profile.md` is special: inline in `default.nix`, not a separate source file
 - Do NOT write to `~/.ai/` directly. Always edit the Nix source.
+
+## CircleCI / Faber Orb
+
+### cimg/base executor
+- **No python/pip installed.** Use `apt-get install` for Python tools (e.g., `yamllint`), not `pip3 install`.
+- Has curl, tar, git, sudo, and standard Unix tools.
+
+### GitHub Release Asset URL Quirks
+- **kustomize**: Path segment uses URL-encoded slash: `kustomize%2Fv{VERSION}` (not `kustomize/v{VERSION}`)
+- **kube-linter**: Assets use OS-only filenames (`kube-linter-linux.tar.gz`), no `_amd64` arch suffix
+- **kubesec**: Standard pattern with OS and arch (`kubesec_linux_amd64.tar.gz`)
+- Always verify actual release asset names on GitHub before writing install scripts.
+
+### CircleCI Deploy Keys
+- **Read-only.** Cannot `git push` tags or branches. Use `gh release create` API or HTTPS with `x-access-token:${GITHUB_TOKEN}`.
+
+### yq Boolean Handling
+- `yq '.field // true'` treats `false` as falsy and returns `true`. Read raw value first, then check explicitly in bash.
+
+### CD/GitOps Repo Linting
+- YAML lint in CD repos should be **non-blocking** (always exit 0). Helm-rendered manifests have trailing spaces and indentation quirks from template engines that aren't real problems.
+
+### Workspace Persistence
+- `attach_workspace: at: .` overwrites `.git/` if workspace was persisted with `root: .`. Always `checkout` first, then `attach_workspace`.
+- For kustomize output, persist with `root: /tmp/kustomize-output` and attach at the same path to avoid conflicts.
