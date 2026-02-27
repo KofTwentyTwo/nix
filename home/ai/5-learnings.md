@@ -78,3 +78,34 @@ Every Confluence page or blog post we create or edit MUST be full-width. The `co
 ### Workspace Persistence
 - `attach_workspace: at: .` overwrites `.git/` if workspace was persisted with `root: .`. Always `checkout` first, then `attach_workspace`.
 - For kustomize output, persist with `root: /tmp/kustomize-output` and attach at the same path to avoid conflicts.
+
+### kingsrook/qqq-orb — node_app_* jobs (added 0.6.5)
+- `node_app_test_only` and `node_app_build` jobs for pnpm-based Next.js/Vite apps
+- Requires `"typecheck": "tsc --noEmit"` script in package.json (default `typecheck_script` param)
+- **qqq_helpers.sh fallback stubs:** Orb scripts source `qqq_helpers.sh` by path, but packed orbs inline scripts as YAML — the file doesn't exist on CI disk. Fix: add fallback stubs after the source attempt: `source ... 2>/dev/null || true; if ! type banner &>/dev/null; then banner() { ...; }; fi`
+- **Cache key checksum failure:** `{{ checksum "pnpm-lock.yaml" }}` fails hard if the file doesn't exist. Never combine multiple lockfile checksums. Use per-pkg_manager conditional `restore_cache`/`save_cache` blocks.
+- **corepack enable EACCES:** `cimg/node` images have pnpm pre-installed at `/usr/local/bin/pnpm` (owned by root). Check `command -v pnpm` first and skip corepack enable entirely if already available.
+- **No private packages:** No `qqq-maven-registry-credentials` or npm registry context needed for this project.
+
+## Next.js / MSW Development
+
+### MSW Race Condition with Next.js Auth
+- When using MSW for mocking and an auth provider that fires API calls on mount, the service worker must be fully started BEFORE any children render. The fix: gate rendering of the provider tree behind a `mockReady` state in `providers.tsx` — only render children after `worker.start()` resolves.
+
+### MSW Handler URL Patterns
+- MSW handler `BASE` URL should use hardcoded path (`/qqq/v1`), NOT `process.env.NEXT_PUBLIC_API_BASE_URL`. The env var is unreliable in the service worker context and at handler module-load time. Use path-only patterns and MSW will match against the current origin.
+
+### Next.js Route Groups in URLs
+- Route group directory names (e.g., `(auth)`, `(dashboard)`) NEVER appear in the browser URL. Redirects must use `/login` not `/(auth)/login`. This applies everywhere: `router.push()`, `redirect()`, `href` attributes.
+
+### Next.js Stale .next Cache
+- After adding new packages or significant code changes, the `.next/` build cache can serve stale manifests causing Internal Server Errors. Fix: `rm -rf .next && pnpm dev`.
+
+### lucide-react Named Import Shadowing
+- Never import `{ File }` from `lucide-react` — it shadows the global browser `File` constructor, breaking `instanceof File` checks. Rename: `import { File as FileIcon } from 'lucide-react'`.
+
+### Next.js App Router — Multiple Dynamic Segments at Same Depth
+- You CANNOT have multiple dynamic route directories at the same depth (e.g., `[appName]/`, `[tableName]/`, `[processName]/` as siblings). Next.js only allows one dynamic segment per directory level. Solution: use a single `[slug]` and resolve the type at render time via metadata lookup.
+
+### QQQ Admin UI — Flat URL Scheme
+- QQQ routes are flat: `/app/{name}` for all entity types (apps, tables, processes). The app tree hierarchy is for sidebar visual grouping only — it does NOT appear in URLs. `use-routes.ts` must start `buildRoutes` with `parentPath = '/app'` and use flat `/app/{tableName}` paths for TABLE/PROCESS/REPORT nodes (not nested under their parent app).
