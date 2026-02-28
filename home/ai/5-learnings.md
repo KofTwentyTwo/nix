@@ -79,6 +79,36 @@ Every Confluence page or blog post we create or edit MUST be full-width. The `co
 - `attach_workspace: at: .` overwrites `.git/` if workspace was persisted with `root: .`. Always `checkout` first, then `attach_workspace`.
 - For kustomize output, persist with `root: /tmp/kustomize-output` and attach at the same path to avoid conflicts.
 
+## Munitor Orb (`kof22/munitor`)
+
+### Image Tagging (export_version_vars.sh)
+- `main` branch: clean semver only (e.g., `0.1.0`). No env tag, no `main` or `latest` alias.
+- `develop`: `{semver}-SNAPSHOT.{sha}` + env tag `develop`
+- `staging`: `{semver}-staging.{sha}` + env tag `staging`
+- `release/*`: `{semver}-rc.{sha}` (no env tag)
+- Feature branches: `{semver}-{sanitized-branch}-{sha}-SNAPSHOT` (no env tag)
+
+### CD Repo Update (update_cd_repo.sh)
+- Clones the CD repo, updates kustomization.yaml via yq, commits, pushes.
+- For kustomize format: updates `overlays/{environment}/kustomization.yaml` using `(.images[] | select(.name == "{image}")).newTag`
+- Default env names: `develop`, `staging`, `prod`. Override via `.munitor.yml` `cd.env.*` if CD repo uses different directory names (e.g., `cd.env.develop: dev`, `cd.env.prod: production`).
+
+### ArgoCD Image Updater Conflict
+- Do NOT use ArgoCD Image Updater alongside Munitor's `update-cd-repo` job. They compete and overwrite each other's tags within seconds. Image Updater replaces Munitor's version tags with digest hashes (dev/staging) or rewrites them to branch names (prod).
+- When Munitor handles CD updates, remove all `argocd-image-updater.argoproj.io/*` annotations from ArgoCD Application resources.
+
+### yq Empty String Handling
+- `yq '.field // "default"'` treats `""` (empty string) as falsy and returns `"default"`. When empty string is a valid value (e.g., `base_path: ""`), use an explicit null check: `yq -e '.field != null' file &>/dev/null` then read the raw value.
+
+### Bash Default Substitution: `:-` vs `-`
+- `${VAR:-default}` uses default for both **unset** AND **empty**. `${VAR-default}` only uses default when **unset**. Use `-` (not `:-`) when an empty string is a valid value that should be preserved (e.g., `KUSTOMIZE_BASE_PATH=""` meaning "skip base build").
+
+### Orb Stable Release Required for Consumer Setup Config
+- Consumer `.circleci/config.yml` references the orb directly (e.g., `kof22/munitor@1`). If no stable release exists, CircleCI rejects the config at parse time with "Cannot find orb in registry". Both the setup config AND `.munitor.yml` `orb_version` must use `dev:snapshot` until a stable release is cut.
+
+### Same-SHA Multi-Branch Push
+- Pushing the same commit to multiple branches (e.g., staging + main fast-forward) causes CircleCI to run separate pipelines but GitHub commit statuses merge across all pipelines for that SHA. This makes it hard to distinguish per-branch CI results via the status API.
+
 ### kingsrook/qqq-orb — node_app_* jobs (added 0.6.5)
 - `node_app_test_only` and `node_app_build` jobs for pnpm-based Next.js/Vite apps
 - Requires `"typecheck": "tsc --noEmit"` script in package.json (default `typecheck_script` param)
