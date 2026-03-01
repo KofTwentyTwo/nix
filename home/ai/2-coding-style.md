@@ -511,6 +511,21 @@ public Order withCustomerId(Integer customerId)
 }
 ```
 
+**V1 Middleware Endpoint Specs (qqq-middleware-javalin):**
+Each v1 API endpoint requires 5 artifacts following this pattern:
+```
+specs/v1/YourSpecV1.java              <- defineBasicOperation, defineRequestParameters, buildInput, handleOutput
+specs/v1/responses/YourResponseV1.java <- implements YourOutputInterface + ToSchema
+executors/YourExecutor.java            <- extends AbstractMiddlewareExecutor, calls QQQ core actions
+executors/io/YourInput.java            <- extends AbstractMiddlewareInput, request POJO
+executors/io/YourOutputInterface.java  <- extends AbstractMiddlewareOutputInterface, setter interface
+```
+- Register in `MiddlewareVersionV1.java` static block
+- Binary streaming endpoints (export, download) override `handleOutput()` instead of using JSON
+- Permission checks go in executors via `PermissionsHelper.checkTablePermissionThrowing()`
+- Always set `QInputSource.USER` on core action inputs
+- For async work (export), use `QContext.capture()` before spawning threads, `QContext.init()` + `QContext.clear()` inside
+
 ---
 
 ### Rust
