@@ -117,6 +117,14 @@ Every Confluence page or blog post we create or edit MUST be full-width. The `co
 - **corepack enable EACCES:** `cimg/node` images have pnpm pre-installed at `/usr/local/bin/pnpm` (owned by root). Check `command -v pnpm` first and skip corepack enable entirely if already available.
 - **No private packages:** No `qqq-maven-registry-credentials` or npm registry context needed for this project.
 
+## ArgoCD
+
+### Tracking Label: One Owner Per Resource
+ArgoCD uses the `argocd.argoproj.io/instance` label to track which Application owns a resource. Only one Application can own a given resource. If multiple Applications manage the same resource (e.g., via a shared/ directory included by all envs), each sync overwrites the tracking label and causes the other apps to report OutOfSync, creating a perpetual sync cycle. **Fix:** Shared resources (AppProject, SealedSecrets for repo-creds) must be owned by a single dedicated root Application, not included by multiple apps.
+
+### ignoreDifferences for Controller-Managed Fields
+SealedSecrets controller mutates `/status` after apply. AppProject status fields also drift. Use `ignoreDifferences` with `jqPathExpressions: [".status"]` on Applications that manage these resources to avoid false OutOfSync.
+
 ## Next.js / MSW Development
 
 ### MSW Race Condition with Next.js Auth
@@ -139,3 +147,24 @@ Every Confluence page or blog post we create or edit MUST be full-width. The `co
 
 ### QQQ Admin UI — Flat URL Scheme
 - QQQ routes are flat: `/app/{name}` for all entity types (apps, tables, processes). The app tree hierarchy is for sidebar visual grouping only — it does NOT appear in URLs. `use-routes.ts` must start `buildRoutes` with `parentPath = '/app'` and use flat `/app/{tableName}` paths for TABLE/PROCESS/REPORT nodes (not nested under their parent app).
+
+### JSDoc + ESLint jsdoc/require-jsdoc
+- The `jsdoc/require-jsdoc` rule requires the JSDoc block to **directly precede** the export it annotates. If a type alias, interface, or any other declaration is inserted between the JSDoc block and the function/export, the function is seen as undocumented and the rule fires. Always place helper type declarations (e.g. `type Foo = ...`) **above** the JSDoc block, not between it and the function.
+
+### Test localStorage Isolation
+- When a component test writes to `localStorage` (e.g. a dismiss callback that persists state), subsequent tests in the same `describe` block will initialise with that stale value — even though each test renders a fresh component. Fix: add `beforeEach(() => localStorage.clear())` at the top of any `describe` block that tests components with localStorage persistence (e.g. Banner, ColumnConfig, SavedViews).
+
+### Stateful Regex with `g` Flag in React Render
+- A regex created with `new RegExp(pattern, 'gi')` and reused across multiple `.test()` calls in a `.map()` loop is stateful — `lastIndex` advances after each match, causing alternating true/false results. When using `split(captureGroupRegex)` to highlight matches, odd-indexed parts (`i % 2 !== 0`) are always the captured matches — use index parity instead of `regex.test(part)` to avoid the stale `lastIndex` bug entirely.
+
+### Next.js App Router: Async Layout Blocks All Children
+- An `async` Layout component blocks ALL `{children}` from rendering until every `await` in the Layout resolves. If Layout fetches nav data (menus, blogs for dropdowns), every page is delayed by those API calls. Fix: make Layout synchronous and wrap data-dependent parts (header, footer) in `<Suspense>` around async server components (e.g., `AsyncHeader`, `AsyncFooter`). Children render immediately.
+
+### React `cache()` for API Deduplication
+- Next.js App Router calls `generateMetadata()` and the page component in the same request. Without `cache()`, identical API calls execute twice. Wrapping exported API functions in React `cache()` deduplicates within a single request. Cache keys must match exactly: `getBlogPosts(slug, 1)` and `getBlogPosts(slug)` are different cache keys even if page 1 is the default.
+
+### Next.js `remotePatterns` Image Domain Security
+- Using `hostname: '**'` in `next.config.mjs` `images.remotePatterns` allows ANY external domain to serve images through the Next.js image optimizer, which is a security risk. Restrict to known domains (e.g., `*.kof22.com`). For dev with mock data using placeholder domains like `example.com`, conditionally allow them only when `MOCK_API=true`.
+
+### OpenAPI Generated Code: Do Not Modify runtime.ts
+- The `runtime.ts` file in OpenAPI-generated API clients is auto-generated and will be overwritten on spec regeneration. Apply cross-cutting concerns (timeouts, logging, auth) via the `Configuration` middleware chain in `client.ts`, not by editing generated files. For fetch timeouts, wrap the `fetchApi` function with an `AbortController` timeout wrapper.
