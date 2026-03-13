@@ -70,6 +70,335 @@ in
 
            # Secrets are loaded via op-load-secrets function (see 1password module)
 
+           # Override eza's auto-alias so our wrapper function takes precedence
+           unalias ls 2>/dev/null
+
+           # ls wrapper - translates standard ls flags to eza equivalents
+           # Handles: -t (sort by time), -S (sort by size), -s (show size), -h (skip, eza default)
+           # All other flags pass through directly to eza
+           ls() {
+             local eza_args=()
+             local files=()
+             local sort_field=""
+
+             for arg in "$@"; do
+               if [[ "$arg" == -* && "$arg" != --* ]]; then
+                 local chars="''${arg#-}"
+                 local j
+                 for (( j=0; j<''${#chars}; j++ )); do
+                   local c="''${chars:$j:1}"
+                   case "$c" in
+                     t) sort_field="modified" ;;
+                     S) sort_field="size" ;;
+                     s) eza_args+=("-S") ;;
+                     h) ;;
+                     *) eza_args+=("-$c") ;;
+                   esac
+                 done
+               elif [[ "$arg" == --* ]]; then
+                 eza_args+=("$arg")
+               else
+                 files+=("$arg")
+               fi
+             done
+
+             [[ -n "$sort_field" ]] && eza_args+=("--sort=$sort_field")
+
+             command eza "''${eza_args[@]}" "''${files[@]}"
+           }
+
+           # Shell help - quick reference for all tools, aliases, scripts, and apps
+           shelp() {
+             local filter="$1"
+             local help_text='ALIASES - File Listing
+  ls              eza wrapper              translates ls flags to eza automatically
+  ls-la           eza -la                  long, all files
+  ls-lt           eza -l --sort=modified   long, newest first
+  ls-lrt          eza -lr --sort=modified  long, oldest first
+  ls-lsrt         eza -lrS --sort=modified long, sizes, oldest first
+  ls-lsart        eza -larS --sort=modified long, all, sizes, oldest first
+  ls-lS           eza -l --sort=size       long, largest first
+  ls-lSr          eza -lr --sort=size      long, smallest first
+  ll              eza -l                   long listing (auto from eza)
+  la              eza -la                  long listing, all (auto from eza)
+  tree            eza --tree               tree view (auto from eza)
+  cat             bat                      syntax-highlighted cat
+
+ALIASES - Editors
+  vi              nvim
+  vim             nvim
+
+ALIASES - Nix/Darwin
+  switch          darwin-rebuild switch    rebuild and activate nix config
+
+ALIASES - Git
+  gc              git cz c               commitizen commit
+  gt              gitops-publish.sh      publish feature branch tag
+  gsa             git-sync-all.sh        fetch, switch, pull all repos
+  gsall           git-status-all.sh      status of all repos
+  gclo            git-clone-all.sh       clone all repos from org
+  gfa             git-fetch-all.sh       fetch all repos
+  gpa             git-pull-all.sh        pull all repos
+  gba             git-branch-all.sh      branches for all repos
+  gcoa            git-checkout-all.sh    checkout branch in all repos
+  gla             git-log-all.sh         recent commits for all repos
+  gi              git-info.sh            comprehensive repo info
+  ghelp           git-help.sh            all custom git commands
+
+ALIASES - Kubernetes
+  k               kubectl
+  ka              kubectl apply -f
+  kns             kubectl config set-context --current --namespace
+  kshell          kubectl exec --stdin --tty
+  kdns            kubectl run dnsutils   spin up dnsutils debug pod
+  h               helm
+  v               velero
+
+ALIASES - Task/History/Other
+  t               task                   go-task runner
+  tl              task --list-all        list all tasks
+  hist/his/hi     history
+  sshc            ssh-keygen -R          remove host from known_hosts
+  secure          op-load-secrets        load 1Password secrets to env
+  check-updates   check-updates.sh       check brew/nix updates
+  cr              claude-resume.sh       resume Claude session
+
+TOOLS - Modern Replacements (installed via brew)
+  bat             replaces cat           syntax highlighting, line numbers, paging
+  eza             replaces ls            colors, git status, tree view, icons
+  zoxide (z)      replaces cd            learns frequent directories, fuzzy match
+  delta           replaces diff          git diff viewer, syntax highlighting, side-by-side
+  fd              replaces find          faster, simpler syntax, respects .gitignore
+  ripgrep (rg)    replaces grep          faster, respects .gitignore, regex
+  dust            replaces du            visual disk usage, sorted, colored
+  duf             replaces df            disk free with colors, table layout
+  procs           replaces ps            modern process viewer, tree, search
+  sd              replaces sed           simpler syntax: sd FIND REPLACE file
+  xh              replaces curl/httpie   friendlier HTTP client, colored output
+  doggo           replaces dig           modern DNS client, colored, JSON output
+  difftastic      replaces diff          structural, syntax-aware, language-aware diffs
+  ncdu            replaces du            interactive disk usage explorer (ncurses)
+  tokei           replaces cloc          fast line-of-code counter by language
+  mtr             replaces traceroute    traceroute + ping combined, live updating
+  hyperfine       replaces time          statistical benchmarking, multiple runs
+  btop            replaces top/htop      resource monitor TUI with graphs
+  tldr            replaces man           simplified, example-based man pages
+  glow            replaces less (for md) terminal markdown viewer with styling
+
+TOOLS - Shell Integration
+  fzf             Ctrl+R                 fuzzy history search
+  fzf             Ctrl+T                 fuzzy file picker (insert path)
+  fzf             Alt+C                  fuzzy cd into directory
+  zoxide          z DIR                  jump to frequent directory
+  direnv          (automatic)            loads .envrc files on cd
+  starship        (automatic)            customizable shell prompt
+
+TOOLS - Git & Version Control
+  gh              github cli             PRs, issues, releases, actions, API
+  lazygit         git TUI                interactive staging, commits, branches
+  git-absorb      auto fixup             auto-absorb staged changes into prior commits
+  git-crypt       encryption             transparent file encryption in git repos
+  git-lfs         large files            large file storage for git
+  gitleaks        secrets scanner        detect hardcoded secrets in repos
+  bfg             repo cleaner           remove large files/secrets from git history
+  commitizen      commit tool            interactive conventional commit messages
+  commitlint      commit linter          validate commit message format
+
+TOOLS - Kubernetes & DevOps
+  kubectl         kubernetes cli         manage k8s clusters
+  k9s             kubernetes TUI         terminal UI for k8s clusters
+  kubectx         context switcher       fast k8s context/namespace switching (also kubens)
+  krew            kubectl plugins        kubectl plugin manager
+  stern           log tailing            multi-pod log streaming with filtering
+  helm            package manager        k8s package manager (charts)
+  helmfile        helm declarative       declarative helm chart management
+  kustomize       k8s overlays           template-free k8s configuration
+  velero          k8s backup             backup and restore k8s resources
+  kubeseal        k8s secrets            encrypt secrets for sealed-secrets controller
+  argocd          gitops                 declarative GitOps continuous delivery
+  calicoctl       network policy         calico CNI network policy management
+  cmctl           cert-manager           cert-manager CLI for TLS certificates
+  talosctl        talos linux            manage Talos Linux k8s nodes
+  eksctl          EKS management         create and manage AWS EKS clusters
+  lens            kubernetes IDE         GUI for k8s cluster management (app)
+
+TOOLS - Cloud & AWS
+  awscli          AWS CLI                manage AWS services from terminal
+  aws (omz)       zsh completions        AWS CLI tab completion (oh-my-zsh plugin)
+  session-manager AWS SSM                connect to EC2 instances via SSM
+
+TOOLS - Infrastructure
+  ansible         automation             infrastructure automation and config management
+  ansible-lint    linting                lint ansible playbooks
+  opentofu        IaC                    terraform-compatible infrastructure as code
+  terragrunt      IaC wrapper            terraform/tofu wrapper for DRY configs
+  docker          containers             container runtime (Docker Desktop cask)
+  lazydocker      docker TUI             interactive docker container management
+
+TOOLS - Database
+  postgresql@17   postgres               PostgreSQL 17 server and client
+  mysql@8.4       mysql                  MySQL 8.4 server and client
+  liquibase       migrations             database schema migration tool
+  sqlfluff        SQL linter             lint and auto-format SQL
+  dbeaver         database GUI           universal database client (app)
+
+TOOLS - Security & Encryption
+  gnupg (gpg)     encryption             GPG encryption, signing, key management
+  age             encryption             simple file encryption tool
+  sops            secrets management     encrypted secrets in config files (yaml/json)
+  cosign          code signing           sign and verify container images
+  nmap            network scanner        network discovery and security auditing
+  wireshark       packet analyzer        network protocol analyzer (app)
+  1password       password manager       password vault (app + CLI)
+  op              1password CLI          manage vault items from terminal
+
+TOOLS - Development Languages
+  openjdk@21      Java 21                primary JDK (JAVA_HOME set)
+  graalvm-jdk@21  GraalVM 21             native image compilation
+  maven           Java build             project management and build tool
+  gradle          Java build             build automation tool
+  node@22         Node.js 22             default node (v25, v22, v20 installed)
+  go              Go                     Go programming language
+  rust            Rust                   Rust programming language (cargo in PATH)
+  python/pipx     Python                 Python 3 with pipx for isolated CLI tools
+  lua/luarocks    Lua                    Lua language and package manager
+  julia           Julia                  Julia programming language
+  llvm            LLVM                   compiler infrastructure (clang, etc.)
+
+TOOLS - Build & CI/CD
+  go-task (task)  task runner             Makefile alternative (yaml-based)
+  circleci        CI/CD CLI              CircleCI local testing and config validation
+  act             GitHub Actions         run GitHub Actions locally
+  qctl            QRun.IO CLI            QRun.IO management tool
+
+TOOLS - Text & Documents
+  jq              JSON processor         query, filter, transform JSON
+  yq              YAML processor         query, filter, transform YAML
+  pandoc          document converter     convert between markup formats
+  weasyprint      HTML to PDF            convert HTML/CSS to PDF
+  glow            markdown viewer        render markdown in terminal
+  w3m             text browser           text-based web browser
+  markdownlint-cli2 markdown linter      lint markdown files
+
+TOOLS - Code Quality
+  shellcheck      shell linter           lint bash/sh scripts
+  semgrep         code scanner           static analysis, find bugs and vulnerabilities
+  ast-grep        code search            AST-based code search and refactoring
+  clang-format    C/C++ formatter        format C/C++/ObjC code
+  yamllint        YAML linter            lint YAML files
+  sqlfluff        SQL linter             lint and format SQL
+
+TOOLS - Network & System
+  iperf3          bandwidth test         network throughput measurement
+  arping          ARP ping               ping at the ARP layer
+  inetutils       network utils          telnet, ftp, ping, traceroute, etc.
+  minio-mc (mc)   S3 client              MinIO/S3 compatible object storage client
+  pv              pipe viewer            monitor data through a pipeline (progress bar)
+  watch           repeat command         run command repeatedly, show output
+  fastfetch       system info            display system info (neofetch replacement)
+  imagemagick     image tools            convert, resize, edit images from CLI
+
+TOOLS - TUI Applications
+  k9s             kubernetes             terminal UI for k8s
+  lazygit         git                    terminal UI for git
+  lazydocker      docker                 terminal UI for docker
+  btop            system monitor         terminal UI for system resources
+  ncdu            disk usage             terminal UI for disk usage
+
+TOOLS - Fun
+  asciiquarium    aquarium               ASCII art aquarium animation
+  cmatrix         matrix                 matrix rain effect (tmux screensaver)
+  cowsay          cow                    ASCII art cow with message
+  tty-clock       clock                  terminal clock display
+  boxes           ASCII boxes            draw ASCII art boxes around text
+
+SCRIPTS - Custom (in ~/.local/bin)
+  check-updates.sh    check brew and nix for available updates
+  update-nix.sh       update nix flake inputs
+  gitops-publish.sh   publish feature branch tag for GitOps
+  fix-git-remote.sh   fix git remote URL issues
+  git-sync-all.sh     morning sync: fetch, switch, pull all repos
+  git-status-all.sh   check status of all repos in current dir
+  git-clone-all.sh    clone all repos from a GitHub org
+  git-fetch-all.sh    fetch updates for all repos
+  git-pull-all.sh     pull all repos in current dir
+  git-branch-all.sh   show current branch for all repos
+  git-checkout-all.sh checkout branch in all repos
+  git-log-all.sh      show recent commits for all repos
+  git-info.sh         show comprehensive repo info
+  git-help.sh         show all custom git commands
+  claude-resume.sh    resume Claude Code session for current dir
+  op-load-secrets     load env vars from 1Password vault
+  confluence-blog.sh  post to Confluence blog
+  confluence.sh       Confluence integration
+
+SHELL - Oh-My-Zsh Plugins
+  git             git shortcuts and status in prompt
+  sudo            press ESC ESC to prepend sudo to last command
+  docker          docker command completions
+  kubectl         kubectl command completions
+  aws             aws cli completions
+  helm            helm command completions
+  terraform       terraform/tofu completions
+  fzf             fzf shell integration
+  aliases         alias management (acs to search aliases)
+
+CONFIG - Key Paths
+  ~/.config/nix           nix-darwin + home-manager config
+  ~/.ai/                  AI agent config (profile, rules, style, prefs)
+  ~/.config/nvim/         neovim config (LazyVim)
+  ~/.config/wezterm/      wezterm terminal config
+  ~/.config/starship.toml starship prompt config
+  ~/.config/k9s/          k9s kubernetes TUI config
+  ~/.gnupg/               GPG keys and agent config
+  ~/.aws/                 AWS CLI config and credentials
+  ~/.kube/configs/        kubernetes config files (auto-merged via KUBECONFIG)
+  ~/.local/bin/           custom scripts
+
+CONFIG - Key Environment Variables
+  JAVA_HOME       /opt/homebrew/opt/openjdk@21/...
+  KUBECONFIG      auto-merged from ~/.kube/configs/*
+  EDITOR/VISUAL   vi (aliases to nvim)
+  PAGER           less -FR
+  SSL_CERT_FILE   ~/.config/ca-certs.pem
+  GPG_TTY         current tty (for gpg passphrase prompt)
+
+APPS - macOS (managed via brew cask)
+  1password       password manager
+  alfred          spotlight replacement / launcher
+  alt-tab         window switcher (like Windows)
+  arc             browser
+  bettertouchtool trackpad/keyboard customization
+  cleanshot       screenshot tool
+  dbeaver         database GUI
+  devonthink      document management
+  docker-desktop  container runtime
+  drawio          diagram editor
+  fantastical     calendar
+  intellij-idea   Java IDE
+  istat-menus     system monitor in menu bar
+  karabiner       keyboard remapping
+  keyboard-maestro macro automation
+  lens            kubernetes GUI
+  obsidian        knowledge base / notes
+  omnifocus       task management
+  omnigraffle     diagramming
+  omniplan        project management
+  slack           team communication
+  tailscale-app   mesh VPN
+  visual-studio-code code editor
+  wezterm         GPU-accelerated terminal
+  zoom            video conferencing
+
+TIP: shelp KEYWORD   filter output (e.g., shelp kubectl, shelp replace, shelp git)'
+
+             if [[ -n "$filter" ]]; then
+               echo "$help_text" | grep -i "$filter"
+             else
+               echo "$help_text"
+             fi
+           }
+
            # SSH wrapper for WezTerm host tracking
            # Updates terminal title with remote hostname for interactive SSH sessions
            ssh() {
@@ -181,10 +510,15 @@ in
             
             # File utilities (using modern replacements)
             cat         = "bat";  # Better cat with syntax highlighting
-            # Note: eza aliases (ls, ll, la, tree) are auto-added by programs.eza.enableAliases
-            lss         = "eza -l --sort=size";            # Long listing sorted by size (largest first)
-            lrt         = "eza -l --sort=modified -r";     # Long listing sorted by time (oldest first)
-            llt         = "eza -l --sort=modified";        # Long listing sorted by time (newest first)
+            # Note: ls is wrapped as a function (in initContent) that translates ls flags to eza
+            # ll, la, tree are auto-added by programs.eza
+            "ls-la"     = "eza -la";                          # ls -la    (long, all)
+            "ls-lt"     = "eza -l --sort=modified";           # ls -lt    (long, newest first)
+            "ls-lrt"    = "eza -lr --sort=modified";          # ls -lrt   (long, oldest first)
+            "ls-lsrt"   = "eza -lrS --sort=modified";        # ls -lsrt  (long, sizes, oldest first)
+            "ls-lsart"  = "eza -larS --sort=modified";       # ls -lsart (long, all, sizes, oldest first)
+            "ls-lS"     = "eza -l --sort=size";               # ls -lS    (long, largest first)
+            "ls-lSr"    = "eza -lr --sort=size";              # ls -lSr   (long, smallest first)
             
             # SSH utilities
             sshc        = "ssh-keygen -R";  # Remove host from known_hosts
@@ -211,6 +545,9 @@ in
 
             # Claude Code
             cr          = "claude-resume.sh";  # Resume session for current directory
+
+            # Help
+            # shelp is a function (in initContent) - supports: shelp, shelp grep, shelp kubectl
          };
 
          # History configuration
