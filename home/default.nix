@@ -34,6 +34,7 @@ in
     ./k9s
     ./nvim
     ./ohmyzsh
+    ./python
     ./scripts
     ./ssh
     ./starship
@@ -62,6 +63,7 @@ in
       # Uses home directory for portability across machines
       sessionPath = [
          "./bin/"                                    # Local bin in current directory
+         "/opt/homebrew/opt/node@22/bin"             # Node.js 22 as default
          "/opt/homebrew/bin/"                        # Homebrew (Apple Silicon)
          "${homeDir}/.local/bin"                     # User local binaries
          "/opt/homebrew/opt/llvm/bin"                # LLVM from Homebrew
@@ -81,15 +83,8 @@ in
       packages = with pkgs; let
         # Command-line utilities and tools
         commonPackages = [
-          ack          # Better grep alternative
-          curl         # HTTP client
           delta        # Better git diff viewer (configured via git.delta.enable)
-          htop         # Interactive process viewer
-          btop         # Modern system monitor
-          fastfetch    # System information tool
-          tldr         # Simplified man pages
-          wget         # File downloader
-          comma        # Run programs without installing
+          comma        # Run programs without installing (Nix-specific)
         ];
 
         # Font packages - installed system-wide

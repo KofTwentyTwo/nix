@@ -79,7 +79,15 @@
       "Bash(git reset:*)",
       "Bash(git config:*)",
       "Bash(darwin-rebuild check:*)",
-      "Bash(bash -n /Users/james.maes/.config/nix/scripts/git-sync-all.sh)"
+      "Bash(bash -n /Users/james.maes/.config/nix/scripts/git-sync-all.sh)",
+      "Bash(brew leaves:*)",
+      "Bash(brew list:*)",
+      "Bash(brew info:*)",
+      "Bash(brew search:*)",
+      "Bash(mas list:*)",
+      "Bash(pip3 list:*)",
+      "Bash(pipx list:*)",
+      "Bash(nix flake:*)"
     ]
   }
 }

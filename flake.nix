@@ -4,8 +4,8 @@
 #
 # Structure:
 #   - flake.nix: Main flake definition and macOS system configuration
+#   - modules/homebrew.nix: Homebrew taps, formulae, casks, masApps
 #   - userConfig (inline): User-specific settings (username, git, paths)
-#   - user-config.nix: Template/reference file (not directly imported)
 #   - home/: Home Manager modules for user environment
 #
 # Portability:
@@ -190,135 +190,8 @@
       programs.zsh.enable = true;
       environment.systemPackages = [ ];
 
-      homebrew = {
-         enable = true;
-         # onActivation.cleanup = "uninstall";
-
-         taps = [];
-         masApps = {
-            ## Xcode                         = 497799835;
-            ## airmail-lightning-fast-email  = 918858936;
-            ## blackmagic-disk-speed-test    = 425264550;
-            ## ivory-for-mastodon-by-tapbots = 6444602274;
-            ## keynote                       = 409183694;
-            ## lanscan                       = 472226235;
-            ## numbers                       = 409203825;
-            ## pages                         = 409201541;
-            ## pagesi                        = 409201541;
-            ## parcel-delivery-tracking      = 639968404;
-            ## whatsapp-messenger            = 310633997;
-            ##wireguard                     = 1451685025;
-         };
-         brews = [ 
-            "act"
-            "aerc"
-            "aicommits"
-            "ansible-creator"
-            "ansible-lint"
-            "argocd"
-            "asciiquarium"
-            "ast-grep"
-            "awscli"
-            "bash"
-            "boxes"
-            "calicoctl"
-            "circleci"
-            "clang-format"
-            "cmake"
-            "cmatrix"
-            "commitizen"
-            "composer"
-            "coturn"
-            "fd"
-            "fish"
-            "fzf"
-            "gh"
-            "git-crypt"
-            "glow"
-            "gradle"
-            "imagemagick"
-            "julia"
-            "k9s"
-            "kubeseal"
-            "lazydocker"
-            "lazygit"
-            "ldapvi"
-            "liquibase"
-            "llvm"
-            "markdownlint-cli2"
-            "maven"
-            "minio-mc"
-            "mysql"
-            "ninja"
-            "npm"
-            "nvim"
-            "openjdk@21"
-            "opentofu"
-            "pandoc"
-            "php"
-            "pinentry-mac"
-            "platformio"
-            "pv"
-            "pwgen"
-            "rust"
-            "shellcheck"
-            "sqlfluff"
-            "talosctl"
-            "terragrunt"
-            "tree"
-            "tty-clock"
-            "velero"
-            "w3m"
-            "wimlib"
-            "wireshark"
-            "yq"
-         ];
-         casks = [
-            "1password-cli"
-            "1password"
-            "adobe-creative-cloud"
-            "alfred"
-            "alt-tab"
-            "arc"
-            "aws-vpn-client"
-            "backblaze"
-            "balenaetcher"
-            "bettertouchtool"
-            "claude-code"
-            "cleanshot"
-            "connectmenow"
-            "dbeaver-community"
-            "devonthink"
-            "docker-desktop"
-            "drawio"
-            "ecamm-live"
-            "elgato-camera-hub"
-            "elgato-stream-deck"
-            "fantastical"
-            "github"
-            "graalvm-jdk@21"
-            "istat-menus"
-            "jump-desktop"
-            "karabiner-elements"
-            "keyboard-maestro"
-            "lens"
-            "loopback"
-            "obsidian"
-            "omnifocus"
-            "omnigraffle"
-            "omniplan"
-            "openwebstart"
-            "session-manager-plugin"
-            "slack"
-            "tunnelblick"
-            "visual-studio-code"
-            "warp"
-            "wezterm"
-            "wireshark-chmodbpf"
-            "zoom"
-            ## "tailscale"
-         ];
-      };
+      # Homebrew packages managed in modules/homebrew.nix
+      imports = [ ./modules/homebrew.nix ];
 
       #############################################################
       ## Launchd Agents                                            ##
@@ -430,37 +303,7 @@
          ./home
       ];
 
-      #########################
-      ## Packages to install ##
-      #########################
-      home.packages = with pkgs; [ 
-         ansible
-         arping
-         cargo-spellcheck
-         cmctl
-         dialog
-         fastfetch 
-         gnupg
-         go
-         go-task
-         gping 
-         helmfile
-         inetutils
-         iperf3
-         kubernetes-helm
-         lua5_1
-         luarocks
-         ncdu
-         nmap
-         postgresql_16_jit.out
-         ripgrep
-         sshpass
-         stuntman
-         texliveFull
-         watch
-         yamllint
-      ];
-
+      # Note: Packages managed in home/default.nix and modules/homebrew.nix
       # Note: sessionPath is now managed in home/default.nix for better modularity
    };
    in
