@@ -81,7 +81,7 @@
       "go"
       "go-task"
       "gradle"
-      "gping"
+      # "gping" -- conflicts with inetutils; run `brew link --overwrite gping` manually
       "helm"
       "helmfile"
       "htop"
