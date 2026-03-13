@@ -70,9 +70,6 @@ in
 
            # Secrets are loaded via op-load-secrets function (see 1password module)
 
-           # Override eza's auto-alias so our wrapper function takes precedence
-           unalias ls 2>/dev/null
-
            # ls wrapper - translates standard ls flags to eza equivalents
            # Handles: -t (sort by time), -S (sort by size), -s (show size), -h (skip, eza default)
            # All other flags pass through directly to eza
@@ -511,7 +508,10 @@ TIP: shelp KEYWORD   filter output (e.g., shelp kubectl, shelp replace, shelp gi
             # File utilities (using modern replacements)
             cat         = "bat";  # Better cat with syntax highlighting
             # Note: ls is wrapped as a function (in initContent) that translates ls flags to eza
-            # ll, la, tree are auto-added by programs.eza
+            # programs.eza.enableZshIntegration = false, so we define all eza aliases here
+            ll          = "eza -l";                            # long listing
+            la          = "eza -la";                           # long listing, all
+            tree        = "eza --tree";                        # tree view
             "ls-la"     = "eza -la";                          # ls -la    (long, all)
             "ls-lt"     = "eza -l --sort=modified";           # ls -lt    (long, newest first)
             "ls-lrt"    = "eza -lr --sort=modified";          # ls -lrt   (long, oldest first)

@@ -123,9 +123,11 @@ in
     };
 
     # Modern ls replacement with colors and git status
-    # Aliases (ls, ll, la, tree) are enabled by default when enable = true
+    # Zsh integration disabled - we define our own ls wrapper function
+    # and aliases in home/zsh/default.nix for proper flag translation
     programs.eza = {
       enable = true;
+      enableZshIntegration = false;
     };
 
     # Smart cd that learns your habits
