@@ -119,6 +119,15 @@ Every Confluence page or blog post we create or edit MUST be full-width. The `co
 
 ## ArgoCD
 
+### AppProject Permissions Must Be Wide
+Restrictive AppProject CRDs (single namespace destination, limited resource whitelists) cause "not permitted to use project" errors on the Application. Use wildcard destinations (`name: "*", namespace: "*", server: "*"`), all resource types whitelisted (`group: "*", kind: "*"`), and `sourceNamespaces: [argocd]`. If fixing an AppProject doesn't resolve the error, delete and recreate the Application to clear the cached rejection.
+
+### ExternalSecret Operator Default Fields Cause Drift
+The ESO adds default values to fields not specified in the manifest (e.g., `deletionPolicy: Retain`, `conversionStrategy: Default`, `decodingStrategy: None`, `metadataPolicy: None`, `engineVersion: v2`, `mergePolicy: Replace`). ArgoCD sees these as drift. Include all operator-defaulted fields explicitly in Helm templates.
+
+### ExternalSecret API Version
+Use `external-secrets.io/v1`, not `v1beta1`. Newer clusters may not have the beta CRD installed.
+
 ### Tracking Label: One Owner Per Resource
 ArgoCD uses the `argocd.argoproj.io/instance` label to track which Application owns a resource. Only one Application can own a given resource. If multiple Applications manage the same resource (e.g., via a shared/ directory included by all envs), each sync overwrites the tracking label and causes the other apps to report OutOfSync, creating a perpetual sync cycle. **Fix:** Shared resources (AppProject, SealedSecrets for repo-creds) must be owned by a single dedicated root Application, not included by multiple apps.
 
@@ -144,6 +153,22 @@ SealedSecrets controller mutates `/status` after apply. AppProject status fields
 
 ### Next.js App Router — Multiple Dynamic Segments at Same Depth
 - You CANNOT have multiple dynamic route directories at the same depth (e.g., `[appName]/`, `[tableName]/`, `[processName]/` as siblings). Next.js only allows one dynamic segment per directory level. Solution: use a single `[slug]` and resolve the type at render time via metadata lookup.
+
+### Jest + ESM Modules (react-markdown, remark-gfm, etc.)
+- `react-markdown`, `remark-gfm`, `rehype-raw`, etc. are pure ESM packages. Jest with `ts-jest` preset cannot import them directly (SyntaxError: Unexpected token 'export').
+- **Fix:** Extract pure logic (parsing, slugify, etc.) into separate utility files that don't import React/ESM components, then test those directly. Don't try to import React component files that transitively pull in ESM-only deps.
+- Alternative: add `transformIgnorePatterns` to jest.config.cjs to transform specific node_modules, but extracting pure logic is cleaner.
+
+### CSS `group-focus-within` Keeps Dropdowns Open After Navigation
+- Tailwind `group-focus-within:` utility keeps dropdown menus visible as long as any child has focus. After clicking a link and navigating (client-side), focus remains on the now-invisible link element, keeping the dropdown open.
+- **Fix:** Use `useEffect` watching `usePathname()` to blur the active element when pathname changes:
+  ```typescript
+  useEffect(() => {
+    if (containerRef.current?.contains(document.activeElement)) {
+      ;(document.activeElement as HTMLElement)?.blur()
+    }
+  }, [pathname])
+  ```
 
 ### QQQ Admin UI — Flat URL Scheme
 - QQQ routes are flat: `/app/{name}` for all entity types (apps, tables, processes). The app tree hierarchy is for sidebar visual grouping only — it does NOT appear in URLs. `use-routes.ts` must start `buildRoutes` with `parentPath = '/app'` and use flat `/app/{tableName}` paths for TABLE/PROCESS/REPORT nodes (not nested under their parent app).
