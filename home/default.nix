@@ -134,6 +134,19 @@ in
       enableZshIntegration = true;
     };
 
+    # Fuzzy finder with shell integration
+    # Ctrl+R: fuzzy history search
+    # Ctrl+T: fuzzy file picker
+    # Alt+C: fuzzy cd into directory
+    programs.fzf = {
+      enable = true;
+      enableZshIntegration = true;
+      defaultOptions = [ "--height 40%" "--border" "--reverse" ];
+      defaultCommand = "fd --type f --hidden --follow --exclude .git";
+      fileWidgetCommand = "fd --type f --hidden --follow --exclude .git";
+      changeDirWidgetCommand = "fd --type d --hidden --follow --exclude .git";
+    };
+
     # Auto-load .envrc files per directory
     programs.direnv = {
       enable = true;

@@ -289,6 +289,36 @@ let
   userPrefs = {
     theme = "dark";
     terminalBellOnPrompt = true;
+    effortLevel = "high";
+
+    # Plugins from anthropics/claude-plugins-official marketplace
+    enabledPlugins = {
+      "context7@claude-plugins-official" = true;
+      "superpowers@claude-plugins-official" = true;
+      "code-review@claude-plugins-official" = true;
+      "github@claude-plugins-official" = true;
+      "feature-dev@claude-plugins-official" = true;
+      "code-simplifier@claude-plugins-official" = true;
+      "ralph-loop@claude-plugins-official" = true;
+      "playwright@claude-plugins-official" = true;
+      "typescript-lsp@claude-plugins-official" = true;
+      "commit-commands@claude-plugins-official" = true;
+      "security-guidance@claude-plugins-official" = true;
+      "claude-md-management@claude-plugins-official" = true;
+      "serena@claude-plugins-official" = true;
+    };
+
+    # Additional MCP servers (settings.json scope)
+    mcpServers = {
+      sonarqube = {
+        args = [
+          "run" "-i" "--rm"
+          "-e" ("SONARQUBE_TOKEN=$" + "{SONARQUBE_TOKEN}")
+          "-e" "SONARQUBE_ORG=dmdbrands"
+          "mcp/sonarqube"
+        ];
+      };
+    };
   };
 
   mcpServersJson = pkgs.writeText "mcp-servers.json" (builtins.toJSON mcpServers);
