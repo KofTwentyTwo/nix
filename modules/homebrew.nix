@@ -132,7 +132,6 @@
       "sqlfluff"
       "sshpass"
       "stuntman"
-      "tailscale"
       "talosctl"
       "terragrunt"
       "tldr"
