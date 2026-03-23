@@ -193,3 +193,14 @@ SealedSecrets controller mutates `/status` after apply. AppProject status fields
 
 ### OpenAPI Generated Code: Do Not Modify runtime.ts
 - The `runtime.ts` file in OpenAPI-generated API clients is auto-generated and will be overwritten on spec regeneration. Apply cross-cutting concerns (timeouts, logging, auth) via the `Configuration` middleware chain in `client.ts`, not by editing generated files. For fetch timeouts, wrap the `fetchApi` function with an `AbortController` timeout wrapper.
+
+## Munitor Orb — CD Environment Key Names
+
+### cd.env Keys Are Fixed Convention Names, Not Branch Names
+- The munitor orb's `extract_munitor_vars.sh` reads `.cd.env.develop`, `.cd.env.staging`, `.cd.env.prod` as hardcoded yq paths. The key names (`develop`, `staging`, `prod`) are **convention names in the orb**, not git branch names.
+- The **values** (e.g., `dev`, `staging`, `production`) map to overlay directory names in the CD repo (e.g., `overlays/production/`).
+- The orb templates hardcode `only: main` as the branch filter for the production workflow. So `prod: production` means "when building main branch, update `overlays/production/` in the CD repo."
+- Using a custom key like `main: production` causes the orb to miss `.cd.env.prod`, falling back to the default `"prod"`, which looks for `overlays/prod/` (doesn't exist).
+
+### Orb Version Pinning
+- Pin to minor version (e.g., `kof22/munitor@0.1`) to float with patch updates. Avoid `@dev:snapshot` in staging/production.
