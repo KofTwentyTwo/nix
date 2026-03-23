@@ -205,6 +205,7 @@
       "omnigraffle"
       "omniplan"
       "openwebstart"
+      "rustdesk"
       "session-manager-plugin"
       "slack"
       "tailscale-app"
