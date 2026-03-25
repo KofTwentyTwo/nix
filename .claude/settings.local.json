@@ -88,7 +88,11 @@
       "Bash(pip3 list:*)",
       "Bash(pipx list:*)",
       "Bash(nix flake:*)",
-      "Bash(ssh 100.76.144.59 -p 22 \"brew leaves 2>/dev/null; echo '===CASKS==='; brew list --cask 2>/dev/null; echo '===PIPX==='; pipx list --short 2>/dev/null; echo '===NODE==='; node --version 2>/dev/null; echo '===HOSTNAME==='; hostname; echo '===UNAME==='; uname -m\")"
+      "Bash(ssh 100.76.144.59 -p 22 \"brew leaves 2>/dev/null; echo '===CASKS==='; brew list --cask 2>/dev/null; echo '===PIPX==='; pipx list --short 2>/dev/null; echo '===NODE==='; node --version 2>/dev/null; echo '===HOSTNAME==='; hostname; echo '===UNAME==='; uname -m\")",
+      "Bash(psql --version)",
+      "Bash(/opt/homebrew/opt/postgresql@17/bin/psql --version)",
+      "Read(//opt/homebrew/Cellar/postgresql@17/17.9/bin/**)",
+      "Read(//opt/homebrew/bin/**)"
     ]
   }
 }

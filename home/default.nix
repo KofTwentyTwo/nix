@@ -63,6 +63,7 @@ in
       # Uses home directory for portability across machines
       sessionPath = [
          "./bin/"                                    # Local bin in current directory
+         "/opt/homebrew/opt/postgresql@17/bin"        # PostgreSQL 17 tools (keg-only)
          "/opt/homebrew/opt/node@22/bin"             # Node.js 22 as default
          "/opt/homebrew/bin/"                        # Homebrew (Apple Silicon)
          "${homeDir}/.local/bin"                     # User local binaries
