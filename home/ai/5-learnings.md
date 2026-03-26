@@ -204,3 +204,39 @@ SealedSecrets controller mutates `/status` after apply. AppProject status fields
 
 ### Orb Version Pinning
 - Pin to minor version (e.g., `kof22/munitor@0.1`) to float with patch updates. Avoid `@dev:snapshot` in staging/production.
+
+### test.setup Behavior (node-webapp pipeline)
+- `test.setup` in `.munitor.yml` is NOT a shell command string and NOT an npm script name. It expects an executable command name resolvable in PATH. Neither shell strings (`corepack enable && ...`) nor npm script names (`ci:setup`) work — both produce "Test setup script 'X' not found."
+- For pnpm projects on `cimg/node:22`, pnpm is pre-installed. **Remove `test.setup` entirely** and put any needed setup as the first `test.commands` entry if necessary.
+
+### gitleaks — Scanning Git History
+- gitleaks scans the **full git history** by default, not just the working tree. Dev credentials in old commits are flagged even after deletion.
+- Add `.gitleaks.toml` with `[allowlist] regexes = [...]` to suppress known dev placeholder values.
+- File-path-based allowlisting covers those paths across all commits.
+
+### semgrep — child_process and Shell Injection
+- `child_process` functions used with template literals are flagged by semgrep's `detect-child-process` rule.
+- The `// nosemgrep` inline comment is blocked by a security hook in this codebase when the offending pattern is present.
+- **Correct fix:** Use `execFileSync("cmd", ["subcmd", ...argsArray])` instead of shell-interpolated strings. Eliminates the finding AND the real injection risk.
+- Applied to `packages/api/src/services/job-scheduler.ts` in praesidium.
+
+### package-lock.json in pnpm Projects
+- This project uses pnpm but Munitor CI always runs `npm ci` first. The root `package-lock.json` must be tracked in git.
+- Do NOT add `package-lock.json` to `.gitignore` for this project.
+- Regenerate after package name changes: `npm install --package-lock-only --ignore-scripts`
+
+## Me Health Portal — Dev Kubernetes Environment (Authentik)
+
+### Dev Authentik Has No Pre-Created Portal Users
+- The local Docker blueprint (`docker/blueprints/me-health-portal.yaml`) creates test users (`cs-rep`, `cs-admin`, `system-admin`, etc.) with `password: admin123`. These only exist in local Docker.
+- The k8s dev blueprint (`overlays/dev/authentik-blueprints-patch.yaml` in the CD repo) creates NO users — only groups, flows, stages, and the OAuth2 provider.
+- To log in to the dev portal, users must be manually created in the Authentik admin UI at `auth-dev.me.health` and added to an appropriate group.
+
+### akadmin Cannot Log Into the Portal Without Group Membership
+- `akadmin` is the Authentik bootstrap superuser. Its JWT has no `mhCompanyId`, `mhAllAccess`, or `policies` claims because it belongs to no Me Health groups.
+- The portal will log `akadmin` in via OAuth2 but show empty data everywhere (security filters reject all queries).
+- Fix: add `akadmin` to the `internal-admin` group in Authentik. That group has `mhAllAccess: true`, which bypasses company security filters.
+
+### Dev Environment Credentials
+- Authentik admin: `auth-dev.me.health` — username `akadmin`, password `MeHealth-Dev-2026`
+- Portal: `portal-dev.me.health` — requires Authentik user with Me Health group membership
