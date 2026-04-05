@@ -96,7 +96,17 @@
       
       # Enable Nix flakes and commands
       nix.settings.experimental-features = "nix-command flakes";
-      
+
+      # Auto-deduplicate identical files in the store on each build
+      nix.settings.auto-optimise-store = true;
+
+      # Automatic garbage collection - runs weekly, keeps last 7 days
+      nix.gc = {
+        automatic = true;
+        interval = { Weekday = 0; Hour = 3; Minute = 0; };
+        options = "--delete-older-than 7d";
+      };
+
       # Track configuration revision for system updates
       system.configurationRevision = self.rev or self.dirtyRev or null;
       

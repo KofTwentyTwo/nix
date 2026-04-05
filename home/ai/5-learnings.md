@@ -203,7 +203,7 @@ SealedSecrets controller mutates `/status` after apply. AppProject status fields
 - Using a custom key like `main: production` causes the orb to miss `.cd.env.prod`, falling back to the default `"prod"`, which looks for `overlays/prod/` (doesn't exist).
 
 ### Orb Version Pinning
-- Pin to minor version (e.g., `kof22/munitor@0.1`) to float with patch updates. Avoid `@dev:snapshot` in staging/production.
+- Pin to minor version (e.g., `kof22/munitor@0.2`) to float with patch updates. Avoid `@dev:snapshot` in staging/production.
 
 ### test.setup Behavior (node-webapp pipeline)
 - `test.setup` in `.munitor.yml` is NOT a shell command string and NOT an npm script name. It expects an executable command name resolvable in PATH. Neither shell strings (`corepack enable && ...`) nor npm script names (`ci:setup`) work — both produce "Test setup script 'X' not found."
@@ -225,6 +225,17 @@ SealedSecrets controller mutates `/status` after apply. AppProject status fields
 - Do NOT add `package-lock.json` to `.gitignore` for this project.
 - Regenerate after package name changes: `npm install --package-lock-only --ignore-scripts`
 
+### Health Check Step Order (v0.2.2+)
+- `build_push_supplemental` must run BEFORE `health_check` so the migrations image is in local Docker cache
+- `docker_push_ghcr` must run BEFORE `build_push_supplemental` because it does `docker login`
+- Correct order: `docker_build` -> `trivy` -> `docker_push_ghcr` -> `build_push_supplemental` -> `health_check`
+- For dev/staging branches, prior tags exist in GHCR so the old order worked. New version tags (prod) fail because nothing to pull.
+
+### Maven SNAPSHOT Resolution (v0.2.3+)
+- `mvn_build.sh` now includes `-U` flag to force SNAPSHOT updates on every build
+- Without `-U`, CircleCI Maven cache serves stale SNAPSHOTs even after new ones are published
+- This caused builds to silently use old dependency versions
+
 ## Me Health Portal — Dev Kubernetes Environment (Authentik)
 
 ### Dev Authentik Has No Pre-Created Portal Users
@@ -240,3 +251,16 @@ SealedSecrets controller mutates `/status` after apply. AppProject status fields
 ### Dev Environment Credentials
 - Authentik admin: `auth-dev.me.health` — username `akadmin`, password `MeHealth-Dev-2026`
 - Portal: `portal-dev.me.health` — requires Authentik user with Me Health group membership
+
+## Calico CNI / Kubernetes Networking
+
+### `to: []` in Calico NetworkPolicy = DENY
+- An empty `to:` array (`to: []`) in a Calico NetworkPolicy egress rule means "match no destinations" = effectively deny. Omit `to:` entirely to mean "all destinations."
+
+### LoadBalancer VIPs Unreachable via ipBlock
+- Calico evaluates NetworkPolicy AFTER kube-proxy DNAT. Traffic to a LoadBalancer VIP (e.g., `10.120.208.205:443`) gets rewritten to `backend-pod:8443` before Calico sees it. The original port 443 rule never matches.
+- Fix: Use `podSelector` rules for in-cluster services. Generic `ports:` rules (no `to:`) only work for external IPs (no DNAT).
+
+### CoreDNS Override for Internal Service Access
+- Use CoreDNS `template` plugin to resolve specific hostnames to ClusterIPs, bypassing LoadBalancer VIP hairpin issues
+- Example: `auth.kof22.com` -> Authentik ClusterIP `172.19.49.208` so backend pods reach Authentik directly
