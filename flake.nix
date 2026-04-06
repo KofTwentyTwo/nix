@@ -34,6 +34,33 @@
          url = "github:nix-community/home-manager";
          inputs.nixpkgs.follows = "nixpkgs";
       };
+
+      # Claude Code skill repositories (non-flake, fetched as source trees)
+      # Update with: nix flake update
+      claude-skills-phuryn = {
+         url = "github:phuryn/pm-skills";
+         flake = false;
+      };
+      claude-skills-alireza = {
+         url = "github:alirezarezvani/claude-skills";
+         flake = false;
+      };
+      claude-skills-spillwave-jira = {
+         url = "github:SpillwaveSolutions/jira";
+         flake = false;
+      };
+      claude-skills-product-on-purpose = {
+         url = "github:product-on-purpose/pm-skills";
+         flake = false;
+      };
+      claude-skills-deanpeters = {
+         url = "github:deanpeters/Product-Manager-Skills";
+         flake = false;
+      };
+      claude-skills-ccpm = {
+         url = "github:automazeio/ccpm";
+         flake = false;
+      };
    };
 
    outputs = inputs@{ self, nix-darwin, nixpkgs, home-manager, ...}:
@@ -332,7 +359,7 @@
                   # Backup existing files when Home Manager would overwrite them
                   # This prevents errors when migrating to Home Manager
                   home-manager.backupFileExtension = "backup";
-                  home-manager.extraSpecialArgs = { inherit userConfig; };
+                  home-manager.extraSpecialArgs = { inherit inputs userConfig; };
                   home-manager.users."${username}" = homeconfig;
                }
          ];
@@ -347,7 +374,7 @@
                   # Backup existing files when Home Manager would overwrite them
                   # This prevents errors when migrating to Home Manager
                   home-manager.backupFileExtension = "backup";
-                  home-manager.extraSpecialArgs = { userConfig = userConfig; };
+                  home-manager.extraSpecialArgs = { inherit inputs userConfig; };
                   home-manager.users."${username}" = homeconfig;
                }
          ];
@@ -363,7 +390,7 @@
                   # Backup existing files when Home Manager would overwrite them
                   # This prevents errors when migrating to Home Manager
                   home-manager.backupFileExtension = "backup";
-                  home-manager.extraSpecialArgs = { userConfig = userConfig; };
+                  home-manager.extraSpecialArgs = { inherit inputs userConfig; };
                   home-manager.users."${username}" = homeconfig;
                }
          ];

@@ -12,7 +12,7 @@
 #   - Uses ${config.home.homeDirectory} for user-specific paths
 #   - Machine-specific paths come from userConfig (defined inline in flake.nix)
 
-{ config, pkgs, lib, inputs, userConfig, ... }:
+{ config, pkgs, lib, inputs ? {}, userConfig, ... }:
 let
   homeDir = config.home.homeDirectory;
   

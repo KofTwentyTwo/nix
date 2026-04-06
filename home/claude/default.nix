@@ -8,7 +8,7 @@
 #   - ~/.claude/settings.local.json: Permissions (activation script, writable)
 #   - ~/.claude/CLAUDE.md: User-level memory (symlink, read-only)
 
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib, inputs ? {}, ... }:
 
 let
   homeDir = config.home.homeDirectory;
@@ -326,6 +326,7 @@ let
   userPrefsJson = pkgs.writeText "user-prefs.json" (builtins.toJSON userPrefs);
 in
 {
+  imports = [ ./skills.nix ];
   # CLAUDE.md - read-only symlink is fine
   home.file.".claude/CLAUDE.md".text = ''
     # Global Development Context

@@ -1,5 +1,101 @@
 {
   "nodes": {
+    "claude-skills-alireza": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1775262167,
+        "narHash": "sha256-0Q+43Cfb2dIeFP6xXZLcj21MmnI1rjMW9H1h+7kRsMY=",
+        "owner": "alirezarezvani",
+        "repo": "claude-skills",
+        "rev": "a96cc20bb5e0d47ff7fdcee967eebd561c99deb2",
+        "type": "github"
+      },
+      "original": {
+        "owner": "alirezarezvani",
+        "repo": "claude-skills",
+        "type": "github"
+      }
+    },
+    "claude-skills-ccpm": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1773836122,
+        "narHash": "sha256-Yodu4k9OYfVW1ajtsLKob+bkIuMM94mIeTyYd4n5HNc=",
+        "owner": "automazeio",
+        "repo": "ccpm",
+        "rev": "7d7e4623bc6d4c0c9ba66ca6bfecd7e5261dc697",
+        "type": "github"
+      },
+      "original": {
+        "owner": "automazeio",
+        "repo": "ccpm",
+        "type": "github"
+      }
+    },
+    "claude-skills-deanpeters": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1775088923,
+        "narHash": "sha256-HLFcHru8jhMQTUY/kQyvcJjxXGHhsvJ1kTIpOsQpIUo=",
+        "owner": "deanpeters",
+        "repo": "Product-Manager-Skills",
+        "rev": "4aa4196c14873b84f5af7316e7f66328cb6dee4c",
+        "type": "github"
+      },
+      "original": {
+        "owner": "deanpeters",
+        "repo": "Product-Manager-Skills",
+        "type": "github"
+      }
+    },
+    "claude-skills-phuryn": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1773042641,
+        "narHash": "sha256-DkzuTb/GUX48dv0bSq8HYPjGHJajwIwjj4I5RfoFHdc=",
+        "owner": "phuryn",
+        "repo": "pm-skills",
+        "rev": "36ccefdc6c2e00d7c0c12cb0a52bf93e8ec50da4",
+        "type": "github"
+      },
+      "original": {
+        "owner": "phuryn",
+        "repo": "pm-skills",
+        "type": "github"
+      }
+    },
+    "claude-skills-product-on-purpose": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1775461865,
+        "narHash": "sha256-S4Bm2km09zr/xYW/y0TmFkpfLqtD1AWAm79pfYLF5k4=",
+        "owner": "product-on-purpose",
+        "repo": "pm-skills",
+        "rev": "8a3947d61dba4a93f2fa4c3585f8132b904966d4",
+        "type": "github"
+      },
+      "original": {
+        "owner": "product-on-purpose",
+        "repo": "pm-skills",
+        "type": "github"
+      }
+    },
+    "claude-skills-spillwave-jira": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1767025615,
+        "narHash": "sha256-qX5eSve+PE9Zb47UUC+dOs/hIjxO159foZAwEfq4byU=",
+        "owner": "SpillwaveSolutions",
+        "repo": "jira",
+        "rev": "54bbda7550307968f4d3fd14382c4d44fa18d4cf",
+        "type": "github"
+      },
+      "original": {
+        "owner": "SpillwaveSolutions",
+        "repo": "jira",
+        "type": "github"
+      }
+    },
     "home-manager": {
       "inputs": {
         "nixpkgs": [
@@ -58,6 +154,12 @@
     },
     "root": {
       "inputs": {
+        "claude-skills-alireza": "claude-skills-alireza",
+        "claude-skills-ccpm": "claude-skills-ccpm",
+        "claude-skills-deanpeters": "claude-skills-deanpeters",
+        "claude-skills-phuryn": "claude-skills-phuryn",
+        "claude-skills-product-on-purpose": "claude-skills-product-on-purpose",
+        "claude-skills-spillwave-jira": "claude-skills-spillwave-jira",
         "home-manager": "home-manager",
         "nix-darwin": "nix-darwin",
         "nixpkgs": "nixpkgs"
