@@ -19,8 +19,8 @@ config.max_fps = 60
 ----------------------------------------------------------------------------------------
 config.term = "wezterm"
 config.font_size = 14.0
--- DISABLED: tmux auto-start causing performance issues (flickering/lag after 10min)
--- config.default_prog = { "/opt/homebrew/bin/tmux", "new-session" }
+-- Tmux auto-start (re-enabled after fixing status-interval 1->5)
+config.default_prog = { "/opt/homebrew/bin/tmux", "new-session", "-A", "-s", "main" }
 
 --------------------------
 -- Visual Bell Settings --

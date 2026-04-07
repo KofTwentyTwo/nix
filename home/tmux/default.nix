@@ -51,13 +51,12 @@
       # Status bar - hacker aesthetic matching starship prompt
       set -g status on
       set -g status-interval 5
-      set -g status-position bottom
+      set -g status-position top
 
-      # Two-line status: top line is separator, bottom line is content
+      # Two-line status: top line for path/git, bottom line for session/time
       set -g status 2
-      set -g status-format[0] "#[fg=green]────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────"
-      # Note: Removed shell commands (sysctl, whoami) - they spawn processes every interval and cause lag
-      set -g status-format[1] "#[fg=green,bold]  #S #[fg=green]░▒▓ #[fg=white]#I:#W#[align=right]#[fg=yellow]#H #[fg=green]│ #[fg=cyan] %H:%M #[fg=green]│ #[fg=white]󰃰 %d-%b-%y "
+      set -g status-format[0] "#[fg=cyan] #{pane_current_path} #[fg=green]│ #[fg=white,bold]#(cd #{pane_current_path} && git rev-parse --show-toplevel 2>/dev/null | xargs basename)#[fg=green] #[fg=yellow]#(cd #{pane_current_path} && git rev-parse --abbrev-ref HEAD 2>/dev/null)#[align=right]#[fg=yellow]#H #[fg=green]│ #[fg=cyan] %H:%M #[fg=green]│ #[fg=white]󰃰 %d-%b-%y "
+      set -g status-format[1] "#[fg=green,bold]  #S #[fg=green]░▒▓ #[fg=white]#I:#W #[fg=green]────────────────────────────────────────────────────────────────────────────────────────────────────────────────"
 
       # Colors - match starship (green borders, black bg)
       set -g status-style "bg=black,fg=green"
