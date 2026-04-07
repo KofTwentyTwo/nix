@@ -72,7 +72,7 @@
 
       # Top bar (per-pane): repo/branch left, path right
       set -g pane-border-status top
-      set -g pane-border-format "#[fg=white,bold]#(cd #{pane_current_path} && git rev-parse --show-toplevel 2>/dev/null | xargs basename || echo 'n/a') #[fg=yellow,nobold]#(cd #{pane_current_path} && git rev-parse --abbrev-ref HEAD 2>/dev/null || echo 'n/a')#[align=right]#[fg=cyan]#{pane_current_path} #[fg=green]────"
+      set -g pane-border-format "#[fg=green][#[fg=white,bold]#(cd #{pane_current_path} && git rev-parse --show-toplevel 2>/dev/null | xargs basename || echo 'n/a')#[fg=green]] [#[fg=yellow,nobold]#(cd #{pane_current_path} && git rev-parse --abbrev-ref HEAD 2>/dev/null || echo 'n/a')#[fg=green]]#[align=right][#[fg=cyan]#{pane_current_path}#[fg=green]]────"
       set -g pane-border-style "fg=#444444"
       set -g pane-active-border-style "fg=green"
     '';

@@ -77,25 +77,11 @@ let
       "Bash(ack:*)"
       "Bash(ag:*)"
 
-      # Git read-only (commits/push require approval)
-      "Bash(git status:*)"
-      "Bash(git diff:*)"
-      "Bash(git log:*)"
-      "Bash(git branch:*)"
-      "Bash(git show:*)"
-      "Bash(git blame:*)"
-      "Bash(git stash list:*)"
-      "Bash(git remote:*)"
-      "Bash(git fetch:*)"
-      "Bash(git rev-parse:*)"
-      "Bash(git ls-files:*)"
-      "Bash(git ls-tree:*)"
-      "Bash(git config --get:*)"
-      "Bash(git config --list:*)"
+      # Git (all operations)
+      "Bash(git:*)"
 
-      # Git branch operations (for feature branch workflow)
-      "Bash(git checkout:*)"
-      "Bash(git switch:*)"
+      # Read AI config files
+      "Read(~/.ai/*)"
 
       # System info
       "Bash(which:*)"
