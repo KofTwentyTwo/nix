@@ -298,7 +298,7 @@ let
       "pyright-lsp@claude-plugins-official" = true;
       "ralph-loop@claude-plugins-official" = true;
       "security-guidance@claude-plugins-official" = true;
-      "serena@claude-plugins-official" = true;
+      "serena@claude-plugins-official" = false;
       "superpowers@claude-plugins-official" = true;
       "swift-lsp@claude-plugins-official" = true;
       "typescript-lsp@claude-plugins-official" = true;
