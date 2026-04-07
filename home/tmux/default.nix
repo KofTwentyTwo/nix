@@ -66,7 +66,7 @@
       #   Line 1: green separator
       #   Line 2: session name + window + host/time/date
       set -g status 3
-      set -g status-format[0] "#[fg=cyan] #{pane_current_path} #[fg=green]│ #[fg=white,bold]#(cd #{pane_current_path} && git rev-parse --show-toplevel 2>/dev/null | xargs basename) #[fg=yellow,nobold]#(cd #{pane_current_path} && git rev-parse --abbrev-ref HEAD 2>/dev/null)"
+      set -g status-format[0] "#[fg=white,bold]#(cd #{pane_current_path} && git rev-parse --show-toplevel 2>/dev/null | xargs basename) #[fg=yellow,nobold]#(cd #{pane_current_path} && git rev-parse --abbrev-ref HEAD 2>/dev/null)#[align=right]#[fg=cyan]#{pane_current_path} "
       set -g status-format[1] "#[fg=green]────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────"
       set -g status-format[2] "#[fg=green,bold]  #S #[fg=green]░▒▓ #[fg=white]#I:#W#[align=right]#[fg=yellow]#H #[fg=green]│ #[fg=cyan] %H:%M #[fg=green]│ #[fg=white]󰃰 %d-%b-%y "
 
