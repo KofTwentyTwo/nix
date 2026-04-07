@@ -282,42 +282,33 @@
       #######################################################################
       programs.git = {
          enable = true;
-         userName = userConfig.git.userName;
-         userEmail = userConfig.git.userEmail;
          ignores = [ ".DS_Store" ];
          signing = {
             key = userConfig.git.signingKey;
-            signByDefault = true;         
+            signByDefault = true;
+            format = "openpgp";
          };
-         # Configure git to use delta for diffs
-         # Delta package is installed via home.default.nix packages
-         delta.enable = true;
-         delta.options = {
+         settings = {
+            user.name = userConfig.git.userName;
+            user.email = userConfig.git.userEmail;
+            core.editor = "vi";
+            alias.cz = "!cz";
+            fetch.prune = true;
+            gpg.program = "gpg";
+            http.postBuffer = "157286400";
+            init.defaultBranch = "main";
+            push.autoSetupRemote = true;
+         };
+      };
+
+      # Delta diff viewer (promoted to top-level in HM 25.05+)
+      programs.delta = {
+         enable = true;
+         enableGitIntegration = true;
+         options = {
            syntax-theme = "TwoDark";
            line-numbers = true;
            side-by-side = true;
-         };
-         extraConfig = {
-            # Editor configuration
-            core.editor = "vi";       # Use vi (aliases to nvim) for git operations
-            
-            # Commitizen shortcuts
-            alias.cz = "!cz";        # Commit using commitizen
-
-            # Performance settings
-            fetch.prune = true;       # Prune remote-tracking branches on fetch
-            
-            # GPG signing
-            gpg.program = "gpg";
-            
-            # Network settings
-            http.postBuffer = "157286400";  # 150MB buffer for large repos
-            
-            # Branch settings
-            init.defaultBranch = "main";  # Modern standard default branch
-            
-            # Push settings
-            push.autoSetupRemote = true;   # Automatically set up remote tracking
          };
       };
 
