@@ -55,6 +55,8 @@ in
         "claude-resume.sh"
         "confluence-blog.sh"
         "confluence.sh"
+        "tmux-lock.sh"
+        "tmux-lock-set-pin.sh"
         # Add more scripts as you create them:
         # "backup-config.sh"
         # "health-check.sh"

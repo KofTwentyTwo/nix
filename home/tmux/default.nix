@@ -52,9 +52,9 @@
       # Help menu - prefix+space shows a shortcut cheat sheet
       bind Space display-menu -T " Tmux Shortcuts " -x C -y C "Split Horizontal     |" '"' "split-window -h" "Split Vertical       -" '%' "split-window -v" "" "New Window           c" 'c' "new-window" "Next Window          n" 'n' "next-window" "Prev Window          p" 'p' "previous-window" "Pick Window          w" 'w' "choose-tree -Zw" "" "Pick Session         s" 's' "choose-tree -Zs" "New Session          S" 'S' "command-prompt -p 'new session:' 'new-session -s \"%%\"'" "Rename Session       $" '$' "command-prompt -I '#S' 'rename-session -- \"%%\"'" "Detach               d" 'd' "detach-client" "" "Zoom Pane            z" 'z' "resize-pane -Z" "Kill Pane            x" 'x' "confirm-before -p 'kill pane? (y/n)' kill-pane" "Break Pane to Window !" '!' "break-pane" "" "Copy Mode        Enter" '[' "copy-mode" "Screensaver          L" 'L' "lock-session" "" "All Keybindings      ?" '?' "list-keys"
 
-      # Screensaver: cmatrix after 15 minutes idle, prefix+L to trigger manually
+      # Lock screen: cmatrix + PIN after 15 minutes idle, prefix+L to trigger manually
       set -g lock-after-time 900
-      set -g lock-command "/opt/homebrew/bin/cmatrix -s"
+      set -g lock-command "$HOME/.local/bin/tmux-lock.sh"
       bind L lock-session
 
       # Status bar - hacker aesthetic matching starship prompt
