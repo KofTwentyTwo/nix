@@ -293,24 +293,35 @@ let
 
     # Plugins from anthropics/claude-plugins-official marketplace
     enabledPlugins = {
-      "context7@claude-plugins-official" = true;
-      "superpowers@claude-plugins-official" = true;
-      "code-review@claude-plugins-official" = true;
-      "github@claude-plugins-official" = true;
-      "feature-dev@claude-plugins-official" = true;
-      "code-simplifier@claude-plugins-official" = true;
-      "ralph-loop@claude-plugins-official" = true;
-      "playwright@claude-plugins-official" = true;
-      "typescript-lsp@claude-plugins-official" = true;
-      "commit-commands@claude-plugins-official" = true;
-      "security-guidance@claude-plugins-official" = true;
+      "agent-sdk-dev@claude-plugins-official" = true;
+      "atlassian@claude-plugins-official" = true;
+      "claude-code-setup@claude-plugins-official" = true;
       "claude-md-management@claude-plugins-official" = true;
+      "code-review@claude-plugins-official" = true;
+      "code-simplifier@claude-plugins-official" = true;
+      "commit-commands@claude-plugins-official" = true;
+      "context7@claude-plugins-official" = true;
+      "explanatory-output-style@claude-plugins-official" = true;
+      "feature-dev@claude-plugins-official" = true;
+      "figma@claude-plugins-official" = true;
+      "frontend-design@claude-plugins-official" = true;
+      "github@claude-plugins-official" = true;
+      "playwright@claude-plugins-official" = true;
+      "pr-review-toolkit@claude-plugins-official" = true;
+      "pyright-lsp@claude-plugins-official" = true;
+      "ralph-loop@claude-plugins-official" = true;
+      "security-guidance@claude-plugins-official" = true;
       "serena@claude-plugins-official" = true;
+      "superpowers@claude-plugins-official" = true;
+      "swift-lsp@claude-plugins-official" = true;
+      "typescript-lsp@claude-plugins-official" = true;
     };
 
     # Additional MCP servers (settings.json scope)
     mcpServers = {
       sonarqube = {
+        type = "stdio";
+        command = "docker";
         args = [
           "run" "-i" "--rm"
           "-e" ("SONARQUBE_TOKEN=$" + "{SONARQUBE_TOKEN}")
