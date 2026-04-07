@@ -1,0 +1,22 @@
+# sops configuration
+# ==================
+# Maps age public keys to encrypted files.
+# Each machine that needs to decrypt secrets must have its age key listed here.
+#
+# To add a new machine:
+#   1. Generate key: age-keygen -o ~/.config/sops/age/keys.txt
+#   2. Add public key below
+#   3. Re-encrypt: sops updatekeys secrets/aws-credentials.enc
+
+keys:
+  - &darth age17x3xfs46rcxvlu0a6pv3kjnhx8qsakl5w92s6x3kt9s5kpa9cpls37lxs8
+
+creation_rules:
+  - path_regex: secrets/aws-credentials\.enc$
+    key_groups:
+      - age:
+          - *darth
+  - path_regex: secrets/.*\.yaml$
+    key_groups:
+      - age:
+          - *darth

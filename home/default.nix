@@ -36,6 +36,7 @@ in
     ./ohmyzsh
     ./python
     ./scripts
+    ./sops
     ./ssh
     ./starship
     ./tmux

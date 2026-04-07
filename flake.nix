@@ -35,6 +35,10 @@
          inputs.nixpkgs.follows = "nixpkgs";
       };
 
+      sops-nix = {
+         url = "github:Mic92/sops-nix";
+      };
+
       # Claude Code skill repositories (non-flake, fetched as source trees)
       # Update with: nix flake update
       claude-skills-phuryn = {
@@ -317,6 +321,7 @@
       #############################################################
       imports = [
          ./home
+         inputs.sops-nix.homeManagerModules.sops
       ];
 
       # Note: Packages managed in home/default.nix and modules/homebrew.nix

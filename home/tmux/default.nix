@@ -50,14 +50,14 @@
 
       # Status bar - hacker aesthetic matching starship prompt
       set -g status on
-      set -g status-interval 1
+      set -g status-interval 5
       set -g status-position bottom
 
       # Two-line status: top line is separator, bottom line is content
       set -g status 2
       set -g status-format[0] "#[fg=green]────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────"
       # Note: Removed shell commands (sysctl, whoami) - they spawn processes every interval and cause lag
-      set -g status-format[1] "#[fg=green,bold]  #S #[fg=green]░▒▓ #[fg=white]#I:#W#[align=right]#[fg=yellow]#H #[fg=green]│ #[fg=cyan] %H:%M:%S #[fg=green]│ #[fg=white]󰃰 %d-%b-%y "
+      set -g status-format[1] "#[fg=green,bold]  #S #[fg=green]░▒▓ #[fg=white]#I:#W#[align=right]#[fg=yellow]#H #[fg=green]│ #[fg=cyan] %H:%M #[fg=green]│ #[fg=white]󰃰 %d-%b-%y "
 
       # Colors - match starship (green borders, black bg)
       set -g status-style "bg=black,fg=green"

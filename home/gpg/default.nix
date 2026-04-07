@@ -1,22 +1,22 @@
 # GPG Configuration
 # =================
-# Configures GPG agent with pinentry-mac for GUI passphrase prompts.
+# Declarative GPG and gpg-agent setup via Home Manager modules.
+# Uses pinentry-mac for GUI passphrase prompts on macOS.
+# Agent managed via launchd (automatic start/restart).
 
 { config, pkgs, lib, ... }:
 
 {
   config = {
-    # GPG agent configuration
-    home.file.".gnupg/gpg-agent.conf".text = ''
-      # Use pinentry-mac for GUI passphrase prompts
-      pinentry-program /opt/homebrew/bin/pinentry-mac
+    programs.gpg = {
+      enable = true;
+    };
 
-      # Cache passphrases for 8 hours (28800 seconds)
-      default-cache-ttl 28800
-      max-cache-ttl 28800
-
-      # Enable SSH agent support (optional)
-      # enable-ssh-support
-    '';
+    services.gpg-agent = {
+      enable = true;
+      defaultCacheTtl = 28800;     # 8 hours
+      maxCacheTtl = 28800;         # 8 hours
+      pinentry.package = pkgs.pinentry_mac;
+    };
   };
 }
