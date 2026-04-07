@@ -44,6 +44,11 @@
       # Stay in copy mode after mouse selection (don't auto-exit)
       unbind -T copy-mode-vi MouseDragEnd1Pane
 
+      # Session management
+      # prefix+s: built-in session picker (tree view)
+      # prefix+S: create a new named session interactively
+      bind S command-prompt -p "new session name:" "new-session -s '%%'"
+
       # Screensaver: lock after 15 minutes (900 seconds) of inactivity
       set -g lock-after-time 900
       set -g lock-command "/opt/homebrew/bin/cmatrix -s"

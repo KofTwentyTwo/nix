@@ -19,8 +19,9 @@ config.max_fps = 60
 ----------------------------------------------------------------------------------------
 config.term = "wezterm"
 config.font_size = 14.0
--- Tmux auto-start (re-enabled after fixing status-interval 1->5)
-config.default_prog = { "/opt/homebrew/bin/tmux", "new-session", "-A", "-s", "main" }
+-- Tmux auto-start: each WezTerm window gets a new tmux session.
+-- Use prefix+s (or ctrl-b s) inside tmux to list/switch sessions.
+config.default_prog = { "/opt/homebrew/bin/tmux", "new-session" }
 
 --------------------------
 -- Visual Bell Settings --
