@@ -3,7 +3,7 @@
 # Manages all Claude Code configuration files.
 #
 # Files managed:
-#   - ~/.claude.json: MCP servers (activation script, writable)
+#   - ~/.claude.json: MCP servers for non-plugin services (activation script, writable)
 #   - ~/.claude/settings.json: User prefs like theme (activation script, writable)
 #   - ~/.claude/settings.local.json: Permissions (activation script, writable)
 #   - ~/.claude/CLAUDE.md: User-level memory (symlink, read-only)
@@ -13,16 +13,10 @@
 let
   homeDir = config.home.homeDirectory;
 
-  # MCP Servers - consistent across machines
+  # MCP Servers - only non-plugin servers belong here
+  # GitHub and Atlassian removed: plugin:github:github and plugin:atlassian:atlassian
+  # provide superset functionality via the enabled plugins
   mcpServers = {
-    github = {
-      type = "stdio";
-      command = "npx";
-      args = [ "-y" "@modelcontextprotocol/server-github" ];
-      env = {
-        GITHUB_TOKEN = "$" + "{GITHUB_TOKEN}";
-      };
-    };
     qqq-mcp = {
       type = "http";
       url = "http://localhost:8080/mcp";
@@ -34,10 +28,6 @@ let
       env = {
         CIRCLECI_TOKEN = "$" + "{CIRCLECI_TOKEN}";
       };
-    };
-    atlassian = {
-      type = "sse";
-      url = "https://mcp.atlassian.com/v1/sse";
     };
   };
 
@@ -80,8 +70,8 @@ let
       # Git (all operations)
       "Bash(git:*)"
 
-      # Read AI config files
-      "Read(~/.ai/*)"
+      # Read AI config files (must use absolute path - tilde not expanded in permissions)
+      "Read(${homeDir}/.ai/*)"
 
       # System info
       "Bash(which:*)"
@@ -205,33 +195,33 @@ let
       # Custom scripts (zsh functions)
       "Bash(zsh -ic:*)"
 
-      # MCP - Atlassian (read operations)
-      "mcp__atlassian__atlassianUserInfo"
-      "mcp__atlassian__getAccessibleAtlassianResources"
-      "mcp__atlassian__getConfluenceSpaces"
-      "mcp__atlassian__getConfluencePage"
-      "mcp__atlassian__getPagesInConfluenceSpace"
-      "mcp__atlassian__getConfluencePageFooterComments"
-      "mcp__atlassian__getConfluencePageInlineComments"
-      "mcp__atlassian__getConfluencePageDescendants"
-      "mcp__atlassian__searchConfluenceUsingCql"
-      "mcp__atlassian__getJiraIssue"
-      "mcp__atlassian__getTransitionsForJiraIssue"
-      "mcp__atlassian__getJiraIssueRemoteIssueLinks"
-      "mcp__atlassian__getVisibleJiraProjects"
-      "mcp__atlassian__getJiraProjectIssueTypesMetadata"
-      "mcp__atlassian__getJiraIssueTypeMetaWithFields"
-      "mcp__atlassian__searchJiraIssuesUsingJql"
-      "mcp__atlassian__lookupJiraAccountId"
-      "mcp__atlassian__search"
-      "mcp__atlassian__fetch"
+      # MCP - Atlassian plugin (read operations)
+      "mcp__plugin_atlassian_atlassian__atlassianUserInfo"
+      "mcp__plugin_atlassian_atlassian__getAccessibleAtlassianResources"
+      "mcp__plugin_atlassian_atlassian__getConfluenceSpaces"
+      "mcp__plugin_atlassian_atlassian__getConfluencePage"
+      "mcp__plugin_atlassian_atlassian__getPagesInConfluenceSpace"
+      "mcp__plugin_atlassian_atlassian__getConfluencePageFooterComments"
+      "mcp__plugin_atlassian_atlassian__getConfluencePageInlineComments"
+      "mcp__plugin_atlassian_atlassian__getConfluencePageDescendants"
+      "mcp__plugin_atlassian_atlassian__searchConfluenceUsingCql"
+      "mcp__plugin_atlassian_atlassian__getJiraIssue"
+      "mcp__plugin_atlassian_atlassian__getTransitionsForJiraIssue"
+      "mcp__plugin_atlassian_atlassian__getJiraIssueRemoteIssueLinks"
+      "mcp__plugin_atlassian_atlassian__getVisibleJiraProjects"
+      "mcp__plugin_atlassian_atlassian__getJiraProjectIssueTypesMetadata"
+      "mcp__plugin_atlassian_atlassian__getJiraIssueTypeMetaWithFields"
+      "mcp__plugin_atlassian_atlassian__searchJiraIssuesUsingJql"
+      "mcp__plugin_atlassian_atlassian__lookupJiraAccountId"
+      "mcp__plugin_atlassian_atlassian__search"
+      "mcp__plugin_atlassian_atlassian__fetch"
 
-      # MCP - Atlassian (Jira write operations for ticket tracking)
-      "mcp__atlassian__createJiraIssue"
-      "mcp__atlassian__editJiraIssue"
-      "mcp__atlassian__addCommentToJiraIssue"
-      "mcp__atlassian__transitionJiraIssue"
-      "mcp__atlassian__addWorklogToJiraIssue"
+      # MCP - Atlassian plugin (Jira write operations for ticket tracking)
+      "mcp__plugin_atlassian_atlassian__createJiraIssue"
+      "mcp__plugin_atlassian_atlassian__editJiraIssue"
+      "mcp__plugin_atlassian_atlassian__addCommentToJiraIssue"
+      "mcp__plugin_atlassian_atlassian__transitionJiraIssue"
+      "mcp__plugin_atlassian_atlassian__addWorklogToJiraIssue"
 
       # MCP - CircleCI (read-only operations)
       "mcp__circleci-mcp-server__get_build_failure_logs"
@@ -242,26 +232,41 @@ let
       "mcp__circleci-mcp-server__list_followed_projects"
       "mcp__circleci-mcp-server__list_component_versions"
 
-      # MCP - GitHub (read operations)
-      "mcp__github__get_file_contents"
-      "mcp__github__search_repositories"
-      "mcp__github__search_code"
-      "mcp__github__search_issues"
-      "mcp__github__search_users"
-      "mcp__github__get_issue"
-      "mcp__github__list_issues"
-      "mcp__github__get_pull_request"
-      "mcp__github__list_pull_requests"
-      "mcp__github__get_pull_request_files"
-      "mcp__github__get_pull_request_status"
-      "mcp__github__get_pull_request_comments"
-      "mcp__github__get_pull_request_reviews"
-      "mcp__github__list_commits"
+      # MCP - GitHub plugin (read operations)
+      "mcp__plugin_github_github__get_file_contents"
+      "mcp__plugin_github_github__search_repositories"
+      "mcp__plugin_github_github__search_code"
+      "mcp__plugin_github_github__search_issues"
+      "mcp__plugin_github_github__search_pull_requests"
+      "mcp__plugin_github_github__search_users"
+      "mcp__plugin_github_github__get_commit"
+      "mcp__plugin_github_github__get_label"
+      "mcp__plugin_github_github__get_latest_release"
+      "mcp__plugin_github_github__get_me"
+      "mcp__plugin_github_github__get_release_by_tag"
+      "mcp__plugin_github_github__get_tag"
+      "mcp__plugin_github_github__get_team_members"
+      "mcp__plugin_github_github__get_teams"
+      "mcp__plugin_github_github__issue_read"
+      "mcp__plugin_github_github__list_branches"
+      "mcp__plugin_github_github__list_commits"
+      "mcp__plugin_github_github__list_issue_types"
+      "mcp__plugin_github_github__list_issues"
+      "mcp__plugin_github_github__list_pull_requests"
+      "mcp__plugin_github_github__list_releases"
+      "mcp__plugin_github_github__list_tags"
+      "mcp__plugin_github_github__pull_request_read"
+      "mcp__plugin_github_github__get_pull_request"
+      "mcp__plugin_github_github__get_pull_request_files"
+      "mcp__plugin_github_github__get_pull_request_status"
+      "mcp__plugin_github_github__get_pull_request_comments"
+      "mcp__plugin_github_github__get_pull_request_reviews"
 
-      # MCP - GitHub (issue write operations for ticket tracking)
-      "mcp__github__create_issue"
-      "mcp__github__update_issue"
-      "mcp__github__add_issue_comment"
+      # MCP - GitHub plugin (write operations for ticket tracking)
+      "mcp__plugin_github_github__create_issue"
+      "mcp__plugin_github_github__update_issue"
+      "mcp__plugin_github_github__add_issue_comment"
+      "mcp__plugin_github_github__issue_write"
 
       # Current working directory (where Claude was started)
       "Edit"
