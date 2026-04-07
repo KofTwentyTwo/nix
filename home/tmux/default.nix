@@ -49,6 +49,29 @@
       # prefix+S: create a new named session interactively
       bind S command-prompt -p "new session name:" "new-session -s '%%'"
 
+      # Help menu - prefix+space shows a shortcut cheat sheet
+      bind Space display-menu -T " Tmux Shortcuts " -x C -y C \
+        "Split Horizontal     |"  '"' "split-window -h" \
+        "Split Vertical       -"  '%' "split-window -v" \
+        "" \
+        "New Window           c"  'c' "new-window" \
+        "Next Window          n"  'n' "next-window" \
+        "Prev Window          p"  'p' "previous-window" \
+        "Pick Window          w"  'w' "choose-tree -Zw" \
+        "Rename Window        ,"  ',' "command-prompt -I '#W' 'rename-window -- \"%%\"'" \
+        "" \
+        "Pick Session         s"  's' "choose-tree -Zs" \
+        "New Session          S"  'S' "command-prompt -p 'new session:' 'new-session -s \"%%\"'" \
+        "Rename Session       $"  '$' "command-prompt -I '#S' 'rename-session -- \"%%\"'" \
+        "Detach               d"  'd' "detach-client" \
+        "" \
+        "Zoom Pane            z"  'z' "resize-pane -Z" \
+        "Kill Pane            x"  'x' "confirm-before -p 'kill pane? (y/n)' kill-pane" \
+        "Break Pane to Window !"  '!' "break-pane" \
+        "" \
+        "Copy Mode        Enter"  '[' "copy-mode" \
+        "All Keybindings      ?"  '?' "list-keys"
+
       # Screensaver: lock after 15 minutes (900 seconds) of inactivity
       set -g lock-after-time 900
       set -g lock-command "/opt/homebrew/bin/cmatrix -s"
