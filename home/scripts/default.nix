@@ -39,7 +39,6 @@ in
       }) [
         # Add your script filenames here
         # Scripts will be installed to ~/.local/bin/ and available in PATH
-        "check-updates.sh"
         "update-nix.sh"
         "gitops-publish.sh"
         "fix-git-remote.sh"

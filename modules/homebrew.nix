@@ -8,13 +8,15 @@
 {
   homebrew = {
     enable = true;
-    # onActivation.cleanup = "uninstall";
+    onActivation.cleanup = "uninstall";
 
     taps = [
       "charmbracelet/tap"
       "qrun-io/qctl"
     ];
 
+    # masApps are intentionally commented out (mas CLI unreliable on recent macOS).
+    # Uncomment individually after signing into the Mac App Store.
     masApps = {
       ## Xcode                         = 497799835;
       ## airmail-lightning-fast-email  = 918858936;
@@ -116,14 +118,11 @@
       "maven"
       "mtr"
       "minio-mc"
-      "mysql"
       "mysql@8.4"
       "ncdu"
       "neovim"
       "ninja"
       "nmap"
-      "node"
-      "node@20"
       "node@22"
       "openjdk@21"
       "opentofu"

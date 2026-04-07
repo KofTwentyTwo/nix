@@ -1,33 +1,31 @@
 # Python Package Management
 # =========================
-# Declarative management of pipx applications and pip3 libraries.
+# Declarative management of Python libraries (via Nix) and pipx applications.
 # Ensures consistent Python tooling across machines.
 #
-# pipx and pip3 are installed via Homebrew.
-# This module runs install commands on every `darwin-rebuild switch`.
+# Libraries are installed as Nix packages (no --break-system-packages needed).
+# pipx applications are installed via activation script (Homebrew pipx).
 
 { config, pkgs, lib, ... }:
 
 {
+  # Python libraries via Nix (replaces pip3 --break-system-packages)
+  home.packages = with pkgs.python3Packages; [
+    cryptography
+    linkify-it-py
+    notmuch2
+    pillow
+    requests
+    textual
+  ];
+
+  # pipx applications (isolated CLI tools, via Homebrew pipx)
   home.activation.pythonPackages = lib.hm.dag.entryAfter ["writeBoundary"] ''
     export PATH="/opt/homebrew/bin:$PATH"
 
-    # pipx applications (isolated CLI tools)
     if command -v pipx &>/dev/null; then
       pipx install ansible-builder 2>/dev/null || true
       pipx install ansible-navigator 2>/dev/null || true
-    fi
-
-    # pip3 libraries (system-level)
-    if command -v pip3 &>/dev/null; then
-      pip3 install --quiet --break-system-packages \
-        cryptography \
-        linkify-it-py \
-        notmuch2 \
-        pillow \
-        requests \
-        textual \
-        2>/dev/null || true
     fi
   '';
 }

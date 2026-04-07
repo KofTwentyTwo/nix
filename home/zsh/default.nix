@@ -29,7 +29,8 @@ in
          enableCompletion = true;
          syntaxHighlighting.enable = true;
          enableVteIntegration = true;
-         autosuggestion.strategy = "completion";
+         autosuggestion.enable = true;
+         autosuggestion.strategy = [ "completion" ];
 
          # Shell initialization script (runs when zsh starts)
          # Order 550 ensures it runs after other init scripts
@@ -567,7 +568,7 @@ TIP: shelp KEYWORD   filter output (e.g., shelp kubectl, shelp replace, shelp gi
             
             # Java/GraalVM configuration
             # Note: Uses Homebrew's stable symlink to avoid breakage on version upgrades
-            GRAALVM_HOME = "/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home";
+            GRAALVM_HOME = "/opt/homebrew/opt/graalvm-jdk@21/Contents/Home";
             JAVA_HOME = "/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home";
             
             # Kubernetes configuration
@@ -576,8 +577,7 @@ TIP: shelp KEYWORD   filter output (e.g., shelp kubectl, shelp replace, shelp gi
             
             # Editor settings (vi aliases to nvim via shellAliases)
             # EDITOR and VISUAL are set in home/default.nix with mkForce to override neovim module
-            PAGER = "less -FR";  # Pager with colors and no pause on exit
-            
+
             # Development tools (uses portable paths)
             QQQ_DEV_TOOLS_DIR = qqqDevTools;
             

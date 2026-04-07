@@ -421,7 +421,11 @@ in
       ${pkgs.jq}/bin/jq -n --slurpfile prefs "${userPrefsJson}" '$prefs[0]' > "$user_settings"
       chmod 600 "$user_settings"
     else
-      if ${pkgs.jq}/bin/jq --slurpfile prefs "${userPrefsJson}" '. * $prefs[0]' "$user_settings" > "$user_settings.tmp" \
+      if ${pkgs.jq}/bin/jq --slurpfile prefs "${userPrefsJson}" '
+        # Deep merge enabledPlugins to preserve manually-added plugins
+        .enabledPlugins = ((.enabledPlugins // {}) * ($prefs[0].enabledPlugins // {}))
+        | . * ($prefs[0] | del(.enabledPlugins))
+      ' "$user_settings" > "$user_settings.tmp" \
         && [ -s "$user_settings.tmp" ]; then
         mv "$user_settings.tmp" "$user_settings"
         chmod 600 "$user_settings"
