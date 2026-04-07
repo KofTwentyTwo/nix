@@ -194,13 +194,21 @@ let
     mkSkill "ccpm" "project-management" ccpm "skill/ccpm"
   );
 
+  # Local skills (managed in this repo, not fetched from GitHub)
+  localSkillsDir = ./skills;
+  localSkills = {
+    ".claude/skills/local--session-start".source = "${localSkillsDir}/session-start";
+    ".claude/skills/local--session-end".source = "${localSkillsDir}/session-end";
+  };
+
   # Merge all skill sets into one attrset
   allSkills = phurynSkills
     // alirezaSkills
     // spillwaveSkills
     // popSkills
     // deanpetersSkills
-    // ccpmSkills;
+    // ccpmSkills
+    // localSkills;
 in
 {
   home.file = allSkills;
