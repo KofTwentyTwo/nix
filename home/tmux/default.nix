@@ -61,20 +61,18 @@
       set -g status-interval 5
       set -g status-position bottom
 
-      # Three-line bottom bar:
-      #   Line 0: path + git repo/branch
-      #   Line 1: green separator
-      #   Line 2: session name + window + host/time/date
-      set -g status 3
-      set -g status-format[0] "#[fg=white,bold]#(cd #{pane_current_path} && git rev-parse --show-toplevel 2>/dev/null | xargs basename) #[fg=yellow,nobold]#(cd #{pane_current_path} && git rev-parse --abbrev-ref HEAD 2>/dev/null)#[align=right]#[fg=cyan]#{pane_current_path} "
-      set -g status-format[1] "#[fg=green]────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────"
-      set -g status-format[2] "#[fg=green,bold]  #S #[fg=green]░▒▓ #[fg=white]#I:#W#[align=right]#[fg=yellow]#H #[fg=green]│ #[fg=cyan] %H:%M #[fg=green]│ #[fg=white]󰃰 %d-%b-%y "
+      # Bottom bar: separator + session/host/time
+      set -g status 2
+      set -g status-format[0] "#[fg=green]────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────"
+      set -g status-format[1] "#[fg=green,bold]  #S #[fg=green]░▒▓ #[fg=white]#I:#W#[align=right]#[fg=yellow]#H #[fg=green]│ #[fg=cyan] %H:%M #[fg=green]│ #[fg=white]󰃰 %d-%b-%y "
 
       # Colors
       set -g status-style "bg=black,fg=green"
       set -g message-style "bg=black,fg=green,bold"
 
-      # Pane borders
+      # Top bar (per-pane): repo/branch left, path right
+      set -g pane-border-status top
+      set -g pane-border-format "#[fg=white,bold]#(cd #{pane_current_path} && git rev-parse --show-toplevel 2>/dev/null | xargs basename) #[fg=yellow,nobold]#(cd #{pane_current_path} && git rev-parse --abbrev-ref HEAD 2>/dev/null)#[align=right]#[fg=cyan]#{pane_current_path} "
       set -g pane-border-style "fg=#444444"
       set -g pane-active-border-style "fg=green"
     '';
