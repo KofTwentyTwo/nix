@@ -140,7 +140,7 @@
       system.defaults.dock.orientation = "left";
       system.defaults.dock.minimize-to-application = true;
       system.defaults.dock.launchanim = false;
-      system.defaults.dock.expose-animation-duration = -.01;
+      system.defaults.dock.expose-animation-duration = 0.001;
       system.defaults.dock.mouse-over-hilite-stack = true;
       system.defaults.menuExtraClock.ShowDate = 1;
       system.defaults.menuExtraClock.ShowSeconds = true;
@@ -303,10 +303,8 @@
             
             # Commitizen shortcuts
             alias.cz = "!cz";        # Commit using commitizen
-            alias.gc = "!cz";        # Make git gc run commitizen
-            
+
             # Performance settings
-            core.compression = "0";   # Disable compression (faster, uses more space)
             fetch.prune = true;       # Prune remote-tracking branches on fetch
             
             # GPG signing
@@ -369,6 +367,7 @@
             configuration
                home-manager.darwinModules.home-manager  {
                   home-manager.useGlobalPkgs = true;
+                  nix.enable = false;
                   home-manager.useUserPackages = true;
                   home-manager.verbose = true;
                   # Backup existing files when Home Manager would overwrite them

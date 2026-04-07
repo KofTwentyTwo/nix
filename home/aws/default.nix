@@ -45,24 +45,14 @@ in
       source = ./config/config;
     };
 
-    # Create AWS credentials file (encrypted with git-crypt)
-    # IMPORTANT: Make sure git-crypt is unlocked before rebuilding
-    # Run: git-crypt unlock (if using GPG key) or git-crypt unlock <key-file>
-    # Using source instead of text because the file may contain binary data (git-crypt encrypted)
-    home.file.".aws/credentials" = {
-      source = ./config/credentials;
-    };
-
-    # Set restrictive permissions for credentials file (600 = rw-------)
-    # AWS CLI requires 600 permissions for security
-    # Using activation script to set permissions after file is created
-    # Resolve symlink to set permissions on the actual file
-    home.activation.setAwsCredentialsPermissions = lib.hm.dag.entryAfter ["writeBoundary"] ''
-      if [ -f "$HOME/.aws/credentials" ]; then
-        # Resolve symlink to get actual file path
-        creds_file=$(readlink -f "$HOME/.aws/credentials" 2>/dev/null || echo "$HOME/.aws/credentials")
-        chmod 600 "$creds_file" 2>/dev/null || true
-      fi
+    # Install AWS credentials directly (NOT via Nix store)
+    # home.file copies into /nix/store which is world-readable (0444).
+    # Instead, copy from the repo checkout and set restrictive permissions.
+    home.activation.installAwsCredentials = lib.hm.dag.entryAfter ["writeBoundary"] ''
+      src="${./config/credentials}"
+      dst="$HOME/.aws/credentials"
+      mkdir -p "$HOME/.aws"
+      install -m 600 "$src" "$dst"
     '';
   };
 }
