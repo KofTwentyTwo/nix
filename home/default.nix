@@ -30,6 +30,8 @@ in
     ./aws
     ./ca-certs
     ./claude
+    ./codex
+    ./gemini
     ./gpg
     ./k9s
     ./nvim
