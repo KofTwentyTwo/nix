@@ -167,6 +167,7 @@ let
       "Bash(nix profile list:*)"
       "Bash(darwin-rebuild check:*)"
       "Bash(home-manager build:*)"
+      "Bash(home-manager generations:*)"
 
       # Docker (read-only)
       "Bash(docker ps:*)"

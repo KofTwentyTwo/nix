@@ -32,8 +32,7 @@
       # Use Neovim from nixpkgs (or specify a different version)
       # package = pkgs.neovim-unwrapped;  # Uncomment to use unwrapped version
       
-      # Default editor settings (also set in zsh sessionVariables)
-      defaultEditor = true;
+      # Editor is set in home/default.nix via mkForce
     };
 
     # Install Neovim configuration directory

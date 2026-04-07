@@ -62,16 +62,12 @@ in
       # PATH configuration - paths are added to $PATH
       # Uses home directory for portability across machines
       sessionPath = [
-         "./bin/"                                    # Local bin in current directory
          "/opt/homebrew/opt/postgresql@17/bin"        # PostgreSQL 17 tools (keg-only)
          "/opt/homebrew/opt/node@22/bin"             # Node.js 22 as default
          "/opt/homebrew/bin/"                        # Homebrew (Apple Silicon)
          "${homeDir}/.local/bin"                     # User local binaries
          "/opt/homebrew/opt/llvm/bin"                # LLVM from Homebrew
-         "/opt/ansible-virtual/bin/"                 # Ansible virtualenv (if exists)
-         "${homeDir}/Library/Python/3.9/bin/"       # Python 3.9 user packages
          "$JAVA_HOME/bin"                            # Java (if JAVA_HOME is set)
-         "${homeDir}/.cargo/bin"                     # Rust/Cargo binaries
          "${qqqDevTools}/bin/"                       # QQQ dev tools (from userConfig in flake.nix)
       ];
 
