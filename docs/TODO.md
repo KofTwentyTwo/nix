@@ -7,10 +7,13 @@ Active tasks and future improvements for the Nix configuration.
 - [ ] Run `switch` to activate ls wrapper and shelp (changes written, not applied)
 - [ ] Test `ls -lsrt`, `ls -la`, `ls -lS` after switch
 - [ ] Test `shelp` and `shelp KEYWORD` after switch
+- [ ] Work through audit findings (`docs/AUDIT-2026-04-07.md`) -- 3 critical, 8 warnings
 - [ ] Diff remote machine (100.76.144.59) brew packages against flake when online
 
 ## Recently Completed
 
+- [x] Migrate session state from sidecar into repo (2026-04-08)
+- [x] Verify session-start and session-end skills wired up (2026-04-08)
 - [x] ls wrapper function: translates ls flags to eza (2026-03-13)
 - [x] shelp function: comprehensive tool/alias reference (2026-03-13)
 - [x] Replaced lss/lrt/llt aliases with ls-* naming convention (2026-03-13)
