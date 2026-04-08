@@ -94,11 +94,14 @@
       ## These settings configure Nix itself and system-level preferences  ##
       #######################################################################
       
-      # Enable Nix flakes and commands
+      # Nix flakes and modern CLI
       nix.settings.experimental-features = "nix-command flakes";
 
-      # Auto-deduplicate identical files in the store on each build
+      # Deduplicate identical files in the store on each build
       nix.settings.auto-optimise-store = true;
+
+      # Increase download buffer (default 64MB is too small for large fetches)
+      nix.settings.download-buffer-size = 536870912;
 
       # Automatic garbage collection - runs weekly, keeps last 7 days
       nix.gc = {
@@ -357,7 +360,6 @@
             configuration
                home-manager.darwinModules.home-manager  {
                   home-manager.useGlobalPkgs = true;
-                  nix.enable = false;
                   home-manager.useUserPackages = true;
                   home-manager.verbose = true;
                   # Backup existing files when Home Manager would overwrite them
@@ -373,7 +375,6 @@
             configuration
                home-manager.darwinModules.home-manager  {
                   home-manager.useGlobalPkgs = true;
-                  nix.enable = false;
                   home-manager.useUserPackages = true;
                   home-manager.verbose = true;
                   # Backup existing files when Home Manager would overwrite them
@@ -389,7 +390,6 @@
             configuration
                home-manager.darwinModules.home-manager  {
                   home-manager.useGlobalPkgs = true;
-                  nix.enable = false;
                   home-manager.useUserPackages = true;
                   home-manager.verbose = true;
                   # Backup existing files when Home Manager would overwrite them

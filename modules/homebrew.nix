@@ -96,7 +96,7 @@
       "go"
       "go-task"
       "gradle"
-      # "gping" -- conflicts with inetutils; run `brew link --overwrite gping` manually
+      "gping"
       "helm"
       "helmfile"
       "himalaya"
@@ -104,7 +104,7 @@
       "hyperfine"
       "imagemagick"
       "steipete/tap/imsg"
-      "inetutils"
+      { name = "inetutils"; link = false; }
       "iperf3"
       "jq"
       "julia"
@@ -132,6 +132,7 @@
       "neovim"
       "ninja"
       "nmap"
+      "node@20"
       "node@22"
       "numpy"
       "openai-whisper"
@@ -179,6 +180,7 @@
       "wget"
       "wimlib"
       "wireshark"
+      "xcodegen"
       "xh"
       "yamllint"
       "yq"

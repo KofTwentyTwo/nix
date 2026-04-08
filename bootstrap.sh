@@ -223,7 +223,6 @@ add_machine() {
             configuration
                home-manager.darwinModules.home-manager  {
                   home-manager.useGlobalPkgs = true;
-                  nix.enable = false;
                   home-manager.useUserPackages = true;
                   home-manager.verbose = true;
                   home-manager.backupFileExtension = "backup";
@@ -251,7 +250,6 @@ insertion = '''      darwinConfigurations.\"$hostname\" = nix-darwin.lib.darwinS
             configuration
                home-manager.darwinModules.home-manager  {
                   home-manager.useGlobalPkgs = true;
-                  nix.enable = false;
                   home-manager.useUserPackages = true;
                   home-manager.verbose = true;
                   home-manager.backupFileExtension = \"backup\";
