@@ -36,7 +36,8 @@ git-crypt unlock
 | File | Purpose |
 |------|---------|
 | `flake.nix` | Entry point: nix-darwin, Home Manager, machines, PAM/Touch ID |
-| `home/default.nix` | Imports modules, env vars (`QQQ_SELENIUM_HEADLESS`), programs |
+| `modules/homebrew.nix` | All brew formulae (137) and casks (47) |
+| `home/default.nix` | Imports modules, env vars, programs (bat, eza, zoxide, fzf, direnv) |
 | `home/*/default.nix` | Self-contained modules (one concern each) |
 
 ### Key Modules
@@ -44,25 +45,38 @@ git-crypt unlock
 | Module | Purpose |
 |--------|---------|
 | `ai/` | AI config files (`~/.ai/*`) - rules, preferences, profile |
-| `claude/` | MCP servers, permissions, settings |
+| `claude/` | MCP servers, permissions, settings, plugins |
 | `nvim/` | Neovim + LazyVim (config in `nvim/config/`) |
 | `wez/` | WezTerm with status bar |
-| `zsh/` | Shell config, aliases (`lss`, `lrt`, `llt`), SSH tracking |
+| `zsh/` | Shell config, ls wrapper, shelp, aliases, SSH tracking |
 | `scripts/` | Custom git commands (`ghelp`, `gclo`, etc.) |
+| `ohmyzsh/` | Oh-My-Zsh plugins (git, sudo, docker, kubectl, aws, helm, terraform, fzf, aliases) |
+
+### Eza/ls Setup (Important)
+
+`programs.eza.enableZshIntegration = false` in home/default.nix. Eza's auto-aliases are disabled because zsh aliases expand before function lookup, which breaks the ls wrapper function. All eza aliases (`ll`, `la`, `tree`, `ls-*`) are defined manually in home/zsh/default.nix.
+
+The `ls()` wrapper function in zsh initContent translates standard ls flags to eza:
+- `-t` becomes `--sort=modified`
+- `-S` becomes `--sort=size`
+- `-s` becomes `-S` (blocksize)
+- `-h` is skipped (eza default)
+- Everything else passes through
 
 ### Installed Tools
 
 | Tool | Alias | Purpose |
 |------|-------|---------|
 | `bat` | `cat` | Syntax-highlighted cat |
-| `eza` | `ls`, `ll`, `la`, `lss`, `lrt`, `llt` | Modern ls |
+| `eza` | `ls` (wrapper), `ll`, `la`, `tree`, `ls-*` | Modern ls |
 | `zoxide` | `z` | Smart cd |
-| `delta` | — | Git diff viewer |
-| `direnv` | — | Auto-load `.envrc` files |
+| `delta` | -- | Git diff viewer |
+| `direnv` | -- | Auto-load `.envrc` files |
+| `shelp` | -- | Help reference for all tools/aliases/scripts |
 
 ### Patterns
 
-- **Packages**: Homebrew in `flake.nix`, Nix in `home/default.nix`
+- **Packages**: Homebrew in `modules/homebrew.nix`, Nix in `home/default.nix`
 - **New modules**: Create `home/foo/default.nix`, import in `home/default.nix`
 - **Env vars**: Add to `home.sessionVariables` in `home/default.nix`
 - **Aliases**: Add to `shellAliases` in `home/zsh/default.nix`
@@ -91,7 +105,7 @@ git-crypt unlock
 
 **Tmux**: Auto-start disabled due to flickering/lag. See `./docs/TMUX-ISSUES.md`.
 
-**Neovim**: `lazy-lock.json` is NOT version controlled (deleted intentionally). Lazy.nvim manages plugin versions at runtime. After Neovim updates, may need to clear cache: `rm -rf ~/.local/share/nvim/lazy ~/.cache/nvim`
+**Neovim**: `lazy-lock.json` is NOT version controlled. After updates, may need: `rm -rf ~/.local/share/nvim/lazy ~/.cache/nvim`
 
 ## Docs Directory
 
@@ -100,4 +114,6 @@ git-crypt unlock
 | `SESSION-STATE.md` | Current session context (read on resume) |
 | `TODO.md` | Active tasks and backlog |
 | `TMUX-ISSUES.md` | Tmux performance investigation |
+| `FUTURE-IDEAS.md` | Enhancement ideas |
+| `AUDIT-2026-04-07.md` | Configuration audit with 23 findings |
 | `PLAN-*.md` | Task-specific plans (created as needed) |

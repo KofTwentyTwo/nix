@@ -1,7 +1,4 @@
 .last-update-check
 
-# Claude Code state files (stored in ClaudeCode repo)
-docs/SESSION-STATE.md
-docs/TODO.md
-docs/TMUX-ISSUES.md
-docs/FUTURE-IDEAS.md
+# Claude Code (keep settings.local.json out -- machine-specific permissions)
+.claude/settings.local.json
