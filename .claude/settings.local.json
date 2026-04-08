@@ -113,7 +113,21 @@
       "Bash(shasum -a 256)",
       "Bash(tmux show-option:*)",
       "Bash(tmux source-file:*)",
-      "Bash(command -v cmatrix)"
+      "Bash(command -v cmatrix)",
+      "Bash(find ~/.claude -name *.json -type f)",
+      "Bash(find ~/.claude -name *.json -path */projects/* -type f)",
+      "Skill(update-config)",
+      "WebFetch(domain:geminicli.com)",
+      "WebFetch(domain:developers.openai.com)",
+      "Bash(npm view:*)",
+      "mcp__claude_ai_Slack__slack_search_users",
+      "mcp__claude_ai_Slack__slack_send_message_draft",
+      "Bash(open:*)",
+      "Read(//nix/store/**)",
+      "Bash(gemini --version)",
+      "Bash(codex --version)",
+      "Bash(slack --version)",
+      "Bash(git branch:*)"
     ]
   }
 }
