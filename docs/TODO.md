@@ -4,14 +4,22 @@ Active tasks and future improvements for the Nix configuration.
 
 ## Active Tasks
 
-- [ ] Run `switch` to activate ls wrapper and shelp (changes written, not applied)
-- [ ] Test `ls -lsrt`, `ls -la`, `ls -lS` after switch
-- [ ] Test `shelp` and `shelp KEYWORD` after switch
+- [ ] Run `switch` to activate all pending changes
+- [ ] Test opencode launches without config errors
+- [ ] Test F12 nested tmux toggle via SSH
+- [ ] Test truecolor in tmux (no more 256-color warnings)
+- [ ] Test `ls -lsrt`, `ls -la`, `ls -lS`
+- [ ] Test `shelp` and `shelp KEYWORD`
+- [ ] Commit and push local changes
+- [ ] Set tmux lock PIN (`tmux-lock-set-pin.sh`)
 - [ ] Work through audit findings (`docs/AUDIT-2026-04-07.md`) -- 3 critical, 8 warnings
 - [ ] Diff remote machine (100.76.144.59) brew packages against flake when online
 
 ## Recently Completed
 
+- [x] Add opencode brew + config module with MCP servers (2026-04-08)
+- [x] Add F12 nested tmux toggle for SSH (2026-04-08)
+- [x] Add truecolor support to tmux + COLORTERM env var (2026-04-08)
 - [x] Migrate session state from sidecar into repo (2026-04-08)
 - [x] Verify session-start and session-end skills wired up (2026-04-08)
 - [x] ls wrapper function: translates ls flags to eza (2026-03-13)
