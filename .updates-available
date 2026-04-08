@@ -1,0 +1,5 @@
+# Update notifications - 2026-04-08 09:00:13
+# Run 'brew upgrade' to update brew packages
+# Run 'nix flake update ~/.config/nix && darwin-rebuild switch --flake ~/.config/nix' to update nix
+
+- brew: 1 package(s) outdated
