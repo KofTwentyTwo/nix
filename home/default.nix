@@ -36,6 +36,7 @@ in
     ./k9s
     ./nvim
     ./ohmyzsh
+    ./opencode
     ./python
     ./scripts
     ./sops

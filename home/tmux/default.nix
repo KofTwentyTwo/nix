@@ -52,6 +52,23 @@
       # Help menu - prefix+space shows a shortcut cheat sheet
       bind Space display-menu -T " Tmux Shortcuts " -x C -y C "Split Horizontal     |" '"' "split-window -h" "Split Vertical       -" '%' "split-window -v" "" "New Window           c" 'c' "new-window" "Next Window          n" 'n' "next-window" "Prev Window          p" 'p' "previous-window" "Pick Window          w" 'w' "choose-tree -Zw" "" "Pick Session         s" 's' "choose-tree -Zs" "New Session          S" 'S' "command-prompt -p 'new session:' 'new-session -s \"%%\"'" "Rename Session       $" '$' "command-prompt -I '#S' 'rename-session -- \"%%\"'" "Detach               d" 'd' "detach-client" "" "Zoom Pane            z" 'z' "resize-pane -Z" "Kill Pane            x" 'x' "confirm-before -p 'kill pane? (y/n)' kill-pane" "Break Pane to Window !" '!' "break-pane" "" "Copy Mode        Enter" '[' "copy-mode" "Screensaver          L" 'L' "lock-session" "" "All Keybindings      ?" '?' "list-keys"
 
+      # Nested tmux (SSH): F12 toggles local keys off so prefix reaches remote tmux
+      # Visual indicator: status bar dims to gray when in remote mode
+      bind -T root F12 \
+        set prefix None \;\
+        set key-table off \;\
+        set status-style "bg=black,fg=#555555" \;\
+        set status-format[1] "#[fg=#555555]  #S ░▒▓ #I:#W#[align=right]#[fg=#aa5500] REMOTE #[fg=#555555]│  %H:%M │ 󰃰 %d-%b-%y " \;\
+        if -F '#{pane_in_mode}' 'send-keys -X cancel' \;\
+        refresh-client -S
+
+      bind -T off F12 \
+        set -u prefix \;\
+        set -u key-table \;\
+        set -u status-style \;\
+        set status-format[1] "#[fg=green,bold]  #S #[fg=green]░▒▓ #[fg=white]#I:#W#[align=right]#[fg=yellow]#H #[fg=green]│ #[fg=cyan] %H:%M #[fg=green]│ #[fg=white]󰃰 %d-%b-%y " \;\
+        refresh-client -S
+
       # Lock screen: cmatrix + PIN after 15 minutes idle, prefix+L to trigger manually
       set -g lock-after-time 900
       set -g lock-command "$HOME/.local/bin/tmux-lock.sh"

@@ -137,6 +137,7 @@
       "node@22"
       "numpy"
       "openai-whisper"
+      "opencode"
       "openjdk@21"
       "opentofu"
       "pandoc"
