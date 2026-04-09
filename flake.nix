@@ -88,23 +88,26 @@
       username = userConfig.username;
       userHome = "/Users/${username}";
       
-   configuration = {pkgs, ... }: {
+   configuration = {pkgs, config, lib, ... }: {
       #######################################################################
       ## Nix Configuration & System Settings                              ##
       ## These settings configure Nix itself and system-level preferences  ##
+      ## Note: nix.settings and nix.gc only apply when nix.enable = true  ##
+      ## (standard Nix). Determinate Nix machines set nix.enable = false  ##
+      ## and manage these via their own daemon.                           ##
       #######################################################################
-      
+
       # Nix flakes and modern CLI
-      nix.settings.experimental-features = "nix-command flakes";
+      nix.settings.experimental-features = lib.mkIf config.nix.enable "nix-command flakes";
 
       # Deduplicate identical files in the store on each build
-      nix.settings.auto-optimise-store = true;
+      nix.settings.auto-optimise-store = lib.mkIf config.nix.enable true;
 
       # Increase download buffer (default 64MB is too small for large fetches)
-      nix.settings.download-buffer-size = 536870912;
+      nix.settings.download-buffer-size = lib.mkIf config.nix.enable 536870912;
 
       # Automatic garbage collection - runs weekly, keeps last 7 days
-      nix.gc = {
+      nix.gc = lib.mkIf config.nix.enable {
         automatic = true;
         interval = { Weekday = 0; Hour = 3; Minute = 0; };
         options = "--delete-older-than 7d";
@@ -358,6 +361,8 @@
       darwinConfigurations."Darth" = nix-darwin.lib.darwinSystem {
          modules = [
             configuration
+            # Darth uses Determinate Nix — disable nix-darwin's daemon management
+            { nix.enable = false; }
                home-manager.darwinModules.home-manager  {
                   home-manager.useGlobalPkgs = true;
                   home-manager.useUserPackages = true;
@@ -388,6 +393,8 @@
       darwinConfigurations."Renova" = nix-darwin.lib.darwinSystem {
          modules = [
             configuration
+            # Renova uses Determinate Nix — disable nix-darwin's daemon management
+            { nix.enable = false; }
                home-manager.darwinModules.home-manager  {
                   home-manager.useGlobalPkgs = true;
                   home-manager.useUserPackages = true;
