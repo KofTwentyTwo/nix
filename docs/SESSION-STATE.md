@@ -3,14 +3,13 @@
 **Last Updated:** 2026-04-08
 
 ## Current Status
-Migrated session state from ClaudeCode sidecar into repo. All state files now tracked in git.
+Resolved rebase conflict loop and merged divergent branches. Repo is clean and pushed.
 
 ## What Was Done This Session
-- Migrated `SESSION-STATE.md`, `TODO.md`, `FUTURE-IDEAS.md` from ClaudeCode sidecar into `docs/`
-- Updated `.gitignore` to allow state files (removed old exclusions)
-- Merged `CLAUDE.md` with more detailed sidecar version (adds homebrew.nix, eza/ls setup, shelp, ohmyzsh docs)
-- Verified `local--session-start` and `local--session-end` skills are wired up correctly
-- Committed and pushed migration to origin
+- Diagnosed stuck interactive rebase (main diverged from origin/main — 4 ahead, 2 behind)
+- Aborted rebase, merged origin/main into local main (clean merge via `ort` strategy)
+- Preserved all changes: local MCP consolidation + Gemini/Codex/Slack CLI + origin's opencode module
+- Pushed merged main to origin successfully
 
 ## Active Branches
 | Branch | Status |

@@ -127,7 +127,8 @@
       "Bash(gemini --version)",
       "Bash(codex --version)",
       "Bash(slack --version)",
-      "Bash(git branch:*)"
+      "Bash(git branch:*)",
+      "Bash(git fetch:*)"
     ]
   }
 }
