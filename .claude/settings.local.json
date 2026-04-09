@@ -128,7 +128,8 @@
       "Bash(codex --version)",
       "Bash(slack --version)",
       "Bash(git branch:*)",
-      "Bash(git fetch:*)"
+      "Bash(git fetch:*)",
+      "Bash(git pull:*)"
     ]
   }
 }
