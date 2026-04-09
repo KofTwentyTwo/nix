@@ -3,26 +3,33 @@
 **Last Updated:** 2026-04-08
 
 ## Current Status
-Resolved rebase conflict loop and merged divergent branches. Repo is clean and pushed.
+Three local changes (opencode, tmux, truecolor) need `switch` to activate, then commit+push.
 
 ## What Was Done This Session
-- Diagnosed stuck interactive rebase (main diverged from origin/main — 4 ahead, 2 behind)
-- Aborted rebase, merged origin/main into local main (clean merge via `ort` strategy)
-- Preserved all changes: local MCP consolidation + Gemini/Codex/Slack CLI + origin's opencode module
-- Pushed merged main to origin successfully
+- Migrated session state from ClaudeCode sidecar into repo `docs/`
+- Updated `.gitignore` to allow state files, merged CLAUDE.md with sidecar version
+- Verified session-start and session-end skills are wired up
+- Added opencode to brews + created `home/opencode/default.nix` module
+- Fixed opencode MCP config format (type=local, command=array, environment=object)
+- Added F12 nested tmux toggle (disables local prefix, dims status bar, REMOTE indicator)
+- Added truecolor support: RGB capability in tmux terminal-overrides, COLORTERM=truecolor, allow-passthrough
+- Pulled remote changes (codex, gemini-cli, slack-cli modules from other machine)
 
 ## Active Branches
 | Branch | Status |
 |--------|--------|
-| `main` | Clean, up to date with origin |
+| `main` | 3 uncommitted files, up to date with origin |
 
 ## Pending Work
-- [ ] Run `switch` to activate ls wrapper and shelp (from 2026-03-13 session)
-- [ ] Test `ls -lsrt`, `ls -la`, `ls -lS` after switch
-- [ ] Test `shelp` and `shelp KEYWORD` after switch
-- [ ] Work through audit findings (`docs/AUDIT-2026-04-07.md`) -- 3 critical, 8 warnings
-- [ ] Diff remote machine (100.76.144.59) brew packages when online
+- [ ] Run `sudo darwin-rebuild switch --flake ~/.config/nix` to activate all changes
+- [ ] Test opencode launches without config errors
+- [ ] Test F12 nested tmux toggle via SSH
+- [ ] Test truecolor in tmux (apps should stop showing 256-color warning)
+- [ ] Commit and push local changes
+- [ ] Set tmux lock PIN (`tmux-lock-set-pin.sh`)
+- [ ] Work through audit findings (`docs/AUDIT-2026-04-07.md`)
 
 ## Key Reference
-- Audit report: `docs/AUDIT-2026-04-07.md` (23 findings)
-- Sidecar source (read-only archive): `/Users/james.maes/Git.Local/kof22/ClaudeCode/nix/`
+- OpenCode MCP schema: type=`local` (not stdio), command=array, environment=object (not env)
+- Truecolor requires: `:RGB` in terminal-overrides + `COLORTERM=truecolor` + `allow-passthrough on`
+- Sidecar archive (read-only): `/Users/james.maes/Git.Local/kof22/ClaudeCode/nix/`

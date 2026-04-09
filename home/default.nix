@@ -60,6 +60,7 @@ in
         EDITOR = lib.mkForce "vi";    # Default editor (vi aliases to nvim)
         VISUAL = lib.mkForce "vi";    # Visual editor (same as EDITOR)
         PAGER  = "less -FR";  # Pager with colors and no pause on exit
+        COLORTERM = "truecolor";  # Signal 24-bit color support to CLI apps
         QQQ_SELENIUM_HEADLESS = "true";  # Run Selenium tests headless
       };
 

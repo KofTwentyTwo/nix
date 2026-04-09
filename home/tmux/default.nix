@@ -26,9 +26,11 @@
       set -sg escape-time 0
       set -g history-limit 50000
 
-      # Terminal capabilities
+      # Terminal capabilities - true color (24-bit) support
       set -g default-terminal "tmux-256color"
-      set -ga terminal-overrides ",xterm-256color:Tc,wezterm:Tc"
+      set -ga terminal-overrides ",xterm-256color:Tc:RGB,wezterm:Tc:RGB"
+      set -g allow-passthrough on
+      set -ga update-environment "COLORTERM"
 
       # Mouse support - scroll enters copy mode for terminal history
       set -g mouse on

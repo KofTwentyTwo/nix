@@ -426,3 +426,11 @@ For implementation details (code examples, field types, import order, flower box
 - Respect the existing Home Manager structure.
 - Place AI configuration in `~/config/nix/home/ai/default.nix`.
 - Use `home.file` for generating files in `~/.ai/`.
+
+---
+
+## 17. Skill Routing Overrides
+
+For PR reviews, ALWAYS invoke the `local--review-pr` skill first. It classifies the PR by size and routes to the appropriate review tool (Quick, Standard, Deep, or Focused). Do NOT invoke `code-review:code-review` or `pr-review-toolkit:review-pr` directly -- they are dispatched by the router when needed.
+
+This ensures the PR review router skill (~/.claude/skills/local--review-pr/SKILL.md) takes priority across all repos, not just the current project.
