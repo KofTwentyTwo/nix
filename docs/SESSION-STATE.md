@@ -1,16 +1,14 @@
 # Session State
 
-**Last Updated:** 2026-04-09
+**Last Updated:** 2026-04-11
 
 ## Current Status
-Repo is clean and fully synced with origin. All prior session changes are committed and pushed.
+Rolling PIN unlock implemented. Repo synced with origin.
 
 ## What Was Done This Session
-- Committed local changes (git fetch permission, session state update)
-- Resolved merge conflict in SESSION-STATE.md (took remote's more complete version)
-- Merged origin/main into local main (pull had rebase issues, used `--no-rebase`)
-- Added `git fetch` and `git pull` to Claude auto-allowed commands
-- Pushed all commits to origin — repo clean, up to date
+- Changed tmux lock to rolling PIN (no ENTER needed, last N chars match unlocks)
+- Updated PIN file format (length + hash) and set-pin script
+- Old format detected gracefully with fallback message
 
 ## Active Branches
 | Branch | Status |
@@ -18,14 +16,13 @@ Repo is clean and fully synced with origin. All prior session changes are commit
 | `main` | Clean, up to date with origin |
 
 ## Pending Work
-- [ ] Run `sudo darwin-rebuild switch --flake ~/.config/nix` to activate all changes
-- [ ] Test opencode launches without config errors
+- [ ] Re-set tmux lock PIN (file format changed)
 - [ ] Test F12 nested tmux toggle via SSH
-- [ ] Test truecolor in tmux (apps should stop showing 256-color warning)
-- [ ] Set tmux lock PIN (`tmux-lock-set-pin.sh`)
-- [ ] Work through audit findings (`docs/AUDIT-2026-04-07.md`)
+- [ ] Test truecolor in tmux (verify no 256-color warnings)
+- [ ] Test opencode launches and MCP servers connect
+- [ ] Work through audit findings (`docs/AUDIT-2026-04-07.md`) -- 3 critical, 8 warnings
 
 ## Key Reference
-- OpenCode MCP schema: type=`local` (not stdio), command=array, environment=object (not env)
-- Truecolor requires: `:RGB` in terminal-overrides + `COLORTERM=truecolor` + `allow-passthrough on`
-- Sidecar archive (read-only): `/Users/james.maes/Git.Local/kof22/ClaudeCode/nix/`
+- OpenCode MCP schema: type=`local`, command=array, environment=object
+- Truecolor: `:RGB` in terminal-overrides + `COLORTERM=truecolor` + `allow-passthrough on`
+- Audit report: `docs/AUDIT-2026-04-07.md` (23 findings)
