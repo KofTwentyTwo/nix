@@ -1,4 +1,5 @@
 .last-update-check
+.updates-available
 
 # Claude Code (keep settings.local.json out -- machine-specific permissions)
 .claude/settings.local.json

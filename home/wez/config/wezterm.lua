@@ -614,6 +614,21 @@ wezterm.on("gui-startup", function(cmd)
 	end)
 end)
 
+-- Split pane, starting tmux in the current working directory
+local function tmux_split(vertical)
+	return wezterm.action_callback(function(window, pane)
+		local cwd = pane:get_current_working_dir()
+		local cwd_path = (cwd and cwd.file_path) or os.getenv("HOME")
+		local spawn = {
+			args = { "/opt/homebrew/bin/tmux", "new-session", "-c", cwd_path },
+		}
+		local action = vertical
+			and wezterm.action.SplitVertical(spawn)
+			or wezterm.action.SplitHorizontal(spawn)
+		window:perform_action(action, pane)
+	end)
+end
+
 -- Action to cycle window to next screen
 local function cycle_screen_action()
 	return wezterm.action_callback(function(window, pane)
@@ -705,12 +720,12 @@ config.keys = {
 	{
 		key = "d",
 		mods = "SUPER|SHIFT",
-		action = wezterm.action.SplitVertical({ domain = "CurrentPaneDomain" }),
+		action = tmux_split(true),
 	},
 	{
 		key = "d",
 		mods = "SUPER",
-		action = wezterm.action.SplitHorizontal({ domain = "CurrentPaneDomain" }),
+		action = tmux_split(false),
 	},
 	{
 		key = "w",
