@@ -4,7 +4,7 @@ Active tasks and future improvements for the Nix configuration.
 
 ## Active Tasks
 
-- [ ] Set tmux lock PIN (`tmux-lock-set-pin.sh`)
+- [ ] Re-set tmux lock PIN (format changed, run `tmux-lock-set-pin.sh`)
 - [ ] Test F12 nested tmux toggle via SSH
 - [ ] Test truecolor in tmux (verify no 256-color warnings)
 - [ ] Test opencode launches and MCP servers connect
@@ -15,6 +15,7 @@ Active tasks and future improvements for the Nix configuration.
 
 ## Recently Completed
 
+- [x] Rolling PIN unlock for tmux lock screen (2026-04-11)
 - [x] Add PR review routing rule to 3-rules.md (2026-04-08)
 - [x] Fix gemini-cli brew/npm conflict (2026-04-08)
 - [x] Switch run + commit + push all changes (2026-04-08)
