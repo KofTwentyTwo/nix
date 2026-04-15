@@ -65,6 +65,24 @@
          url = "github:automazeio/ccpm";
          flake = false;
       };
+
+      # Creative writing skills, agents, and commands
+      claude-skills-creative-writing = {
+         url = "github:haowjy/creative-writing-skills";
+         flake = false;
+      };
+      claude-skills-humanizer = {
+         url = "github:blader/humanizer";
+         flake = false;
+      };
+      claude-skills-beautiful-prose = {
+         url = "github:SHADOWPR0/beautiful_prose";
+         flake = false;
+      };
+      claude-skills-obsidian = {
+         url = "github:kepano/obsidian-skills";
+         flake = false;
+      };
    };
 
    outputs = inputs@{ self, nix-darwin, nixpkgs, home-manager, ...}:

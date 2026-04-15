@@ -1,20 +1,24 @@
 # Claude Code Skills Module
 # =========================
-# Manages ~/.claude/skills/ with curated PM/PO/Agile skills from community repos.
+# Manages ~/.claude/skills/, ~/.claude/agents/, and ~/.claude/commands/
+# with curated skills from community repos.
 #
 # Skills are fetched as flake inputs (pinned in flake.lock) and symlinked
-# into ~/.claude/skills/ as read-only Nix store paths.
+# into ~/.claude/ subdirectories as read-only Nix store paths.
 #
 # To update skills: nix flake update
-# To add/remove skills: edit the `selectedSkills` list below.
+# To add/remove skills: edit the selected lists below.
 #
 # Skill sources:
-#   - phuryn/pm-skills: Sprint planning, PRDs, OKRs, discovery, strategy
-#   - alirezarezvani/claude-skills: Scrum master, Jira, Confluence, product toolkit
-#   - SpillwaveSolutions/jira: Deep Jira operations
-#   - product-on-purpose/pm-skills: Triple Diamond PM framework
-#   - deanpeters/Product-Manager-Skills: Interactive PM skills with templates
-#   - automazeio/ccpm: GitHub Issues-based PM workflow
+#   PM/PO/Agile:
+#     - phuryn/pm-skills, alirezarezvani/claude-skills, SpillwaveSolutions/jira
+#     - product-on-purpose/pm-skills, deanpeters/Product-Manager-Skills, automazeio/ccpm
+#   Creative writing:
+#     - haowjy/creative-writing-skills: 17 agents + 13 skills for fiction authoring
+#     - blader/humanizer: Strip AI-sounding patterns from prose
+#     - SHADOWPR0/beautiful_prose: Prose quality and style enforcement
+#   Obsidian:
+#     - kepano/obsidian-skills: Markdown, Bases, JSON Canvas, CLI
 
 { config, lib, inputs ? {}, ... }:
 
@@ -26,6 +30,10 @@ let
   pop = inputs.claude-skills-product-on-purpose or null;
   deanpeters = inputs.claude-skills-deanpeters or null;
   ccpm = inputs.claude-skills-ccpm or null;
+  creativew = inputs.claude-skills-creative-writing or null;
+  humanizer = inputs.claude-skills-humanizer or null;
+  beautifulProse = inputs.claude-skills-beautiful-prose or null;
+  obsidian = inputs.claude-skills-obsidian or null;
 
   # Helper: create a home.file entry for a skill directory
   # Maps source-repo/path -> ~/.claude/skills/<namespace>--<name>/
@@ -36,6 +44,18 @@ let
   # Helper: create a home.file entry for a single-directory skill (root level)
   mkRootSkill = namespace: name: src: {
     ".claude/skills/${namespace}--${name}".source = src;
+  };
+
+  # Helper: create a home.file entry for an agent (.md file)
+  # Maps source-repo/path/name.md -> ~/.claude/agents/<namespace>--<name>.md
+  mkAgent = namespace: name: src: path: {
+    ".claude/agents/${namespace}--${name}.md".source = "${src}/${path}";
+  };
+
+  # Helper: create a home.file entry for a command (.md file)
+  # Maps source-repo/path -> ~/.claude/commands/<name>.md
+  mkCommand = name: src: path: {
+    ".claude/commands/${name}.md".source = "${src}/${path}";
   };
 
   # ─────────────────────────────────────────────────────────────
@@ -194,6 +214,77 @@ let
     mkSkill "ccpm" "project-management" ccpm "skill/ccpm"
   );
 
+  # ─────────────────────────────────────────────────────────────
+  # CREATIVE WRITING
+  # ─────────────────────────────────────────────────────────────
+
+  # haowjy/creative-writing-skills: 13 skills (SKILL.md dirs)
+  cwSkills = lib.optionalAttrs (creativew != null) (lib.attrsets.mergeAttrsList [
+    (mkSkill "cw" "brainstorming" creativew "skills/brainstorming")
+    (mkSkill "cw" "knowledge-graph" creativew "skills/knowledge-graph")
+    (mkSkill "cw" "prose-analysis" creativew "skills/prose-analysis")
+    (mkSkill "cw" "prose-critique" creativew "skills/prose-critique")
+    (mkSkill "cw" "prose-writing" creativew "skills/prose-writing")
+    (mkSkill "cw" "story-architecture" creativew "skills/story-architecture")
+    (mkSkill "cw" "story-context" creativew "skills/story-context")
+    (mkSkill "cw" "story-decisions" creativew "skills/story-decisions")
+    (mkSkill "cw" "wiki-docs" creativew "skills/wiki-docs")
+    (mkSkill "cw" "writing-artifacts" creativew "skills/writing-artifacts")
+    (mkSkill "cw" "writing-issues" creativew "skills/writing-issues")
+    (mkSkill "cw" "writing-principles" creativew "skills/writing-principles")
+    (mkSkill "cw" "writing-staffing" creativew "skills/writing-staffing")
+    # Router skill (from cw/ namespace)
+    (mkSkill "cw" "cw-router" creativew "cw/cw-router")
+  ]);
+
+  # haowjy/creative-writing-skills: 17 agents
+  cwAgents = lib.optionalAttrs (creativew != null) (lib.attrsets.mergeAttrsList [
+    (mkAgent "cw" "brainstormer" creativew "agents/brainstormer.md")
+    (mkAgent "cw" "character-sim" creativew "agents/character-sim.md")
+    (mkAgent "cw" "chronicler" creativew "agents/chronicler.md")
+    (mkAgent "cw" "continuity-checker" creativew "agents/continuity-checker.md")
+    (mkAgent "cw" "critic" creativew "agents/critic.md")
+    (mkAgent "cw" "draft-orchestrator" creativew "agents/draft-orchestrator.md")
+    (mkAgent "cw" "explorer" creativew "agents/explorer.md")
+    (mkAgent "cw" "graph-maintainer" creativew "agents/graph-maintainer.md")
+    (mkAgent "cw" "knowledge-orchestrator" creativew "agents/knowledge-orchestrator.md")
+    (mkAgent "cw" "outliner" creativew "agents/outliner.md")
+    (mkAgent "cw" "reader-sim" creativew "agents/reader-sim.md")
+    (mkAgent "cw" "researcher" creativew "agents/researcher.md")
+    (mkAgent "cw" "session-miner" creativew "agents/session-miner.md")
+    (mkAgent "cw" "story-orchestrator" creativew "agents/story-orchestrator.md")
+    (mkAgent "cw" "style-creator" creativew "agents/style-creator.md")
+    (mkAgent "cw" "wiki-editor" creativew "agents/wiki-editor.md")
+    (mkAgent "cw" "writer" creativew "agents/writer.md")
+  ]);
+
+  # haowjy/creative-writing-skills: 4 slash commands (/bs, /write, /critique, /wiki)
+  cwCommands = lib.optionalAttrs (creativew != null) (lib.attrsets.mergeAttrsList [
+    (mkCommand "bs" creativew ".claude/commands/bs.md")
+    (mkCommand "write" creativew ".claude/commands/write.md")
+    (mkCommand "critique" creativew ".claude/commands/critique.md")
+    (mkCommand "wiki" creativew ".claude/commands/wiki.md")
+  ]);
+
+  # blader/humanizer: Single root-level skill
+  humanizerSkills = lib.optionalAttrs (humanizer != null) (
+    mkRootSkill "blader" "humanizer" humanizer
+  );
+
+  # SHADOWPR0/beautiful_prose: Single root-level skill (with references/)
+  beautifulProseSkills = lib.optionalAttrs (beautifulProse != null) (
+    mkRootSkill "shadowpr0" "beautiful-prose" beautifulProse
+  );
+
+  # kepano/obsidian-skills: 5 skills for Obsidian vault integration
+  obsidianSkills = lib.optionalAttrs (obsidian != null) (lib.attrsets.mergeAttrsList [
+    (mkSkill "obsidian" "defuddle" obsidian "skills/defuddle")
+    (mkSkill "obsidian" "json-canvas" obsidian "skills/json-canvas")
+    (mkSkill "obsidian" "obsidian-bases" obsidian "skills/obsidian-bases")
+    (mkSkill "obsidian" "obsidian-cli" obsidian "skills/obsidian-cli")
+    (mkSkill "obsidian" "obsidian-markdown" obsidian "skills/obsidian-markdown")
+  ]);
+
   # Local skills (managed in this repo, not fetched from GitHub)
   localSkillsDir = ./skills;
   localSkills = {
@@ -208,6 +299,12 @@ let
     // popSkills
     // deanpetersSkills
     // ccpmSkills
+    // cwSkills
+    // cwAgents
+    // cwCommands
+    // humanizerSkills
+    // beautifulProseSkills
+    // obsidianSkills
     // localSkills;
 in
 {

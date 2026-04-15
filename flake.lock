@@ -16,6 +16,22 @@
         "type": "github"
       }
     },
+    "claude-skills-beautiful-prose": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1767130148,
+        "narHash": "sha256-paT3oFBdurQIQQt+R30B5/XOUXeYwxf9qDHlym5SR5E=",
+        "owner": "SHADOWPR0",
+        "repo": "beautiful_prose",
+        "rev": "bf44efb7f9706f8f563af3b6913a3784c7c52a12",
+        "type": "github"
+      },
+      "original": {
+        "owner": "SHADOWPR0",
+        "repo": "beautiful_prose",
+        "type": "github"
+      }
+    },
     "claude-skills-ccpm": {
       "flake": false,
       "locked": {
@@ -32,6 +48,22 @@
         "type": "github"
       }
     },
+    "claude-skills-creative-writing": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1775825757,
+        "narHash": "sha256-EEcNK+5Mt04XZwZ68gHC9HxJLBWbOm4unQgMF2xe62k=",
+        "owner": "haowjy",
+        "repo": "creative-writing-skills",
+        "rev": "5e4003c32b2b3e1ec3902d4370491d8f109ba670",
+        "type": "github"
+      },
+      "original": {
+        "owner": "haowjy",
+        "repo": "creative-writing-skills",
+        "type": "github"
+      }
+    },
     "claude-skills-deanpeters": {
       "flake": false,
       "locked": {
@@ -45,6 +77,38 @@
       "original": {
         "owner": "deanpeters",
         "repo": "Product-Manager-Skills",
+        "type": "github"
+      }
+    },
+    "claude-skills-humanizer": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1775020197,
+        "narHash": "sha256-3yO13MKUK/zF36Sq+CACMM401BhtmYz5cZmC5FX4VQw=",
+        "owner": "blader",
+        "repo": "humanizer",
+        "rev": "8b3a17889fbf12bedae20974a3c9f9de746ed754",
+        "type": "github"
+      },
+      "original": {
+        "owner": "blader",
+        "repo": "humanizer",
+        "type": "github"
+      }
+    },
+    "claude-skills-obsidian": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1775150516,
+        "narHash": "sha256-/D5HKtLvVdBh7g7zCFDQmInL7/q8koiR6HL0ARmTCoE=",
+        "owner": "kepano",
+        "repo": "obsidian-skills",
+        "rev": "fa1e131a014576ff8f8919f191a7ca8d8fded39b",
+        "type": "github"
+      },
+      "original": {
+        "owner": "kepano",
+        "repo": "obsidian-skills",
         "type": "github"
       }
     },
@@ -171,8 +235,12 @@
     "root": {
       "inputs": {
         "claude-skills-alireza": "claude-skills-alireza",
+        "claude-skills-beautiful-prose": "claude-skills-beautiful-prose",
         "claude-skills-ccpm": "claude-skills-ccpm",
+        "claude-skills-creative-writing": "claude-skills-creative-writing",
         "claude-skills-deanpeters": "claude-skills-deanpeters",
+        "claude-skills-humanizer": "claude-skills-humanizer",
+        "claude-skills-obsidian": "claude-skills-obsidian",
         "claude-skills-phuryn": "claude-skills-phuryn",
         "claude-skills-product-on-purpose": "claude-skills-product-on-purpose",
         "claude-skills-spillwave-jira": "claude-skills-spillwave-jira",
