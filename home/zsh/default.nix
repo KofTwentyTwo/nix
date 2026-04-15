@@ -37,6 +37,17 @@ in
          initContent = lib.mkOrder 550 ''
            # Terminal type
            export TERM=wezterm
+
+           # Forward OSC 7 (cwd reporting) through tmux to WezTerm
+           # enableVteIntegration sends OSC 7 but tmux captures it for its own
+           # pane_current_path tracking. This re-sends via DCS passthrough so
+           # WezTerm also receives the cwd (needed for split-pane, status bar, etc.)
+           if [[ -n "$TMUX" ]]; then
+             _wezterm_osc7() {
+               printf '\ePtmux;\e\e]7;file://%s%s\a\e\\' "$(hostname)" "$PWD"
+             }
+             precmd_functions+=(_wezterm_osc7)
+           fi
            
            # Load completions
            eval "$(task --completion zsh)"

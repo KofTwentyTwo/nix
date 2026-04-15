@@ -617,8 +617,13 @@ end)
 -- Split pane, starting tmux in the current working directory
 local function tmux_split(vertical)
 	return wezterm.action_callback(function(window, pane)
-		local cwd = pane:get_current_working_dir()
-		local cwd_path = (cwd and cwd.file_path) or os.getenv("HOME")
+		-- Query tmux directly for the active pane's cwd (most reliable)
+		local cwd_path = shell_cmd("/opt/homebrew/bin/tmux display-message -p '#{pane_current_path}'")
+		if cwd_path == "" then
+			-- Fallback to WezTerm's OSC 7 tracking, then $HOME
+			local cwd = pane:get_current_working_dir()
+			cwd_path = (cwd and cwd.file_path) or os.getenv("HOME")
+		end
 		local spawn = {
 			args = { "/opt/homebrew/bin/tmux", "new-session", "-c", cwd_path },
 		}
