@@ -32,11 +32,11 @@ CYAN='\033[0;36m'
 BOLD='\033[1m'
 NC='\033[0m'
 
-info()    { echo -e "${CYAN}>>>${NC} $1"; }
-success() { echo -e "${GREEN}>>>${NC} $1"; }
-warn()    { echo -e "${YELLOW}>>>${NC} $1"; }
+info()    { echo -e "${CYAN}>>>${NC} $1" >&2; }
+success() { echo -e "${GREEN}>>>${NC} $1" >&2; }
+warn()    { echo -e "${YELLOW}>>>${NC} $1" >&2; }
 fail()    { echo -e "${RED}>>>${NC} $1" >&2; }
-step()    { echo -e "\n${BOLD}--- $1 ---${NC}\n"; }
+step()    { echo -e "\n${BOLD}--- $1 ---${NC}\n" >&2; }
 
 command_exists() { command -v "$1" >/dev/null 2>&1; }
 
