@@ -19,7 +19,7 @@ Personal Nix configuration for macOS using nix-darwin and Home Manager.
 Run this one-liner on a fresh macOS machine:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/KofTwentyTwo/nix/main/bootstrap.sh | bash
+curl -fsSL https://raw.githubusercontent.com/KofTwentyTwo/nix/main/bootstrap.sh -o /tmp/bootstrap.sh && bash /tmp/bootstrap.sh
 ```
 
 This script will:

@@ -1,15 +1,22 @@
 #!/usr/bin/env bash
 # Bootstrap script for Nix-Darwin & Home Manager configuration
-# Usage: curl -fsSL https://raw.githubusercontent.com/KofTwentyTwo/nix/main/bootstrap.sh | bash
+#
+# On a fresh machine (no SSH keys, no 1Password yet):
+#   1. Copy this script via AirDrop, USB, or paste from another device
+#   2. bash bootstrap.sh
+#
+# If the repo is already cloned to ~/.config/nix:
+#   bash ~/.config/nix/bootstrap.sh
 #
 # What this does:
-#   1. Installs Nix (Determinate Systems installer)
-#   2. Installs Homebrew (if missing)
-#   3. Clones this config repo to ~/.config/nix
-#   4. Unlocks git-crypt encrypted files
-#   5. Generates a sops-nix age key for this machine
-#   6. Adds this machine to flake.nix (if not already present)
-#   7. Builds and activates the configuration
+#   1. Installs Xcode CLI tools (for git)
+#   2. Installs Nix (Determinate Systems installer)
+#   3. Installs Homebrew (if missing)
+#   4. Clones this config repo to ~/.config/nix (SSH or HTTPS+PAT)
+#   5. Unlocks git-crypt encrypted files
+#   6. Generates a sops-nix age key for this machine
+#   7. Adds this machine to flake.nix (if not already present)
+#   8. Builds and activates the configuration
 
 set -euo pipefail
 
@@ -108,16 +115,37 @@ clone_repo() {
   fi
 
   step "Cloning config repo"
+  mkdir -p "$(dirname "$REPO_DIR")"
 
-  # Test SSH, fall back to HTTPS
-  if ! ssh -T git@github.com 2>&1 | grep -q "successfully authenticated"; then
-    warn "SSH auth to GitHub not available. Using HTTPS."
-    REPO_URL="https://github.com/KofTwentyTwo/nix.git"
+  # Try SSH first
+  if ssh -T git@github.com 2>&1 | grep -q "successfully authenticated"; then
+    info "Using SSH"
+    git clone "$REPO_URL" "$REPO_DIR"
+    success "Cloned to $REPO_DIR"
+    return 0
   fi
 
-  mkdir -p "$(dirname "$REPO_DIR")"
-  git clone "$REPO_URL" "$REPO_DIR"
-  success "Cloned to $REPO_DIR"
+  # No SSH — need HTTPS with a Personal Access Token (private repo)
+  warn "SSH auth to GitHub not available."
+  echo ""
+  info "This is a private repo, so HTTPS needs a GitHub Personal Access Token."
+  info "Create one at: https://github.com/settings/tokens"
+  info "  -> 'Generate new token (classic)' -> scope: 'repo' -> copy the token"
+  info "  (Tip: copy the URL and token on your other Mac — Universal Clipboard works)"
+  echo ""
+  read -rp "Paste your GitHub PAT (or Enter to skip clone): " pat
+
+  if [[ -z "$pat" ]]; then
+    fail "Cannot continue without the repo. Clone it manually and re-run."
+    exit 1
+  fi
+
+  git clone "https://${pat}@github.com/KofTwentyTwo/nix.git" "$REPO_DIR"
+
+  # Replace the token URL with plain HTTPS so the PAT isn't stored in .git/config
+  git -C "$REPO_DIR" remote set-url origin "https://github.com/KofTwentyTwo/nix.git"
+
+  success "Cloned to $REPO_DIR (token removed from remote URL)"
 }
 
 # --------------------------------------------------------------------------- #
@@ -214,47 +242,27 @@ add_machine() {
 
   info "Adding '$hostname' to flake.nix..."
 
-  # Insert a new darwinConfigurations block before the closing '};' of the output set.
-  # We copy the pattern from existing machines (Darth, Grogu, Renova).
-  local new_block
-  new_block=$(cat <<NIXEOF
-      darwinConfigurations."$hostname" = nix-darwin.lib.darwinSystem {
-         modules = [
-            configuration
-               home-manager.darwinModules.home-manager  {
-                  home-manager.useGlobalPkgs = true;
-                  home-manager.useUserPackages = true;
-                  home-manager.verbose = true;
-                  home-manager.backupFileExtension = "backup";
-                  home-manager.extraSpecialArgs = { inherit inputs userConfig; };
-                  home-manager.users."\\\${username}" = homeconfig;
-               }
-         ];
-      };
-NIXEOF
-)
-
-  # Find the last darwinConfigurations block and append after it
   # Use python for reliable multi-line insertion (sed is fragile for this)
   python3 -c "
-import re, sys
+import sys
 
 with open('flake.nix', 'r') as f:
     content = f.read()
 
-# Find the last '};' before the final '};' of outputs
-# Pattern: insert before the final closing of the outputs set
+# Insert before the final closing of the outputs set
 marker = '   };\\n}'
 insertion = '''      darwinConfigurations.\"$hostname\" = nix-darwin.lib.darwinSystem {
          modules = [
             configuration
+            # $hostname uses Determinate Nix - disable nix-darwin daemon management
+            { nix.enable = false; }
                home-manager.darwinModules.home-manager  {
                   home-manager.useGlobalPkgs = true;
                   home-manager.useUserPackages = true;
                   home-manager.verbose = true;
                   home-manager.backupFileExtension = \"backup\";
                   home-manager.extraSpecialArgs = { inherit inputs userConfig; };
-                  home-manager.users.\"\\\${username}\" = homeconfig;
+                  home-manager.users.\"\${username}\" = homeconfig;
                }
          ];
       };
@@ -286,11 +294,23 @@ build() {
 
   info "This will take a while on first run (downloading all packages)..."
 
-  if sudo darwin-rebuild switch --flake "$REPO_DIR#$hostname"; then
-    success "Configuration built and activated!"
+  if command_exists darwin-rebuild; then
+    # Subsequent builds — darwin-rebuild is already installed
+    if sudo darwin-rebuild switch --flake "$REPO_DIR#$hostname"; then
+      success "Configuration built and activated!"
+    else
+      fail "Build failed. Check errors above."
+      exit 1
+    fi
   else
-    fail "Build failed. Check errors above."
-    exit 1
+    # First build — darwin-rebuild doesn't exist yet, use nix run
+    info "First-time build: using 'nix run nix-darwin' (darwin-rebuild not yet installed)"
+    if nix run nix-darwin -- switch --flake "$REPO_DIR#$hostname"; then
+      success "Configuration built and activated!"
+    else
+      fail "Build failed. Check errors above."
+      exit 1
+    fi
   fi
 }
 
