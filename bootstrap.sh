@@ -305,7 +305,7 @@ build() {
   else
     # First build — darwin-rebuild doesn't exist yet, use nix run
     info "First-time build: using 'nix run nix-darwin' (darwin-rebuild not yet installed)"
-    if nix run nix-darwin -- switch --flake "$REPO_DIR#$hostname"; then
+    if sudo nix run nix-darwin -- switch --flake "$REPO_DIR#$hostname"; then
       success "Configuration built and activated!"
     else
       fail "Build failed. Check errors above."
