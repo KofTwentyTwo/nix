@@ -5,13 +5,31 @@
 
 PIN_FILE="$HOME/.config/tmux-lock-pin"
 
+# Read input one char at a time, printing * for each
+read_secret() {
+    local result=""
+    local char
+    while IFS= read -rsn1 char; do
+        [[ -z "$char" ]] && break
+        if [[ "$char" == $'\x7f' || "$char" == $'\b' ]]; then
+            if [[ -n "$result" ]]; then
+                result="${result%?}"
+                printf '\b \b'
+            fi
+            continue
+        fi
+        result="${result}${char}"
+        printf '*'
+    done
+    printf '\n'
+    eval "$1=\$result"
+}
+
 printf 'New PIN: '
-read -rs pin
-printf '\n'
+read_secret pin
 
 printf 'Confirm: '
-read -rs pin2
-printf '\n'
+read_secret pin2
 
 if [[ -z "$pin" ]]; then
     printf 'PIN cannot be empty.\n'

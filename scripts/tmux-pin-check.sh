@@ -2,6 +2,9 @@
 # Check for tmux lock PIN and prompt to set one if missing.
 # Called from tmux session-created hook.
 
+# Tmux hooks run with minimal PATH; ensure Homebrew/Nix bins are reachable
+export PATH="/opt/homebrew/bin:$HOME/.nix-profile/bin:/run/current-system/sw/bin:$PATH"
+
 PIN_FILE="$HOME/.config/tmux-lock-pin"
 
 [[ -f "$PIN_FILE" ]] && exit 0
