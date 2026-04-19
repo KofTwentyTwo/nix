@@ -9,9 +9,24 @@ export PATH="/opt/homebrew/bin:$HOME/.nix-profile/bin:/run/current-system/sw/bin
 
 PIN_FILE="$HOME/.config/tmux-lock-pin"
 
+# Build screensaver list from what's actually installed
+SCREENSAVERS=()
+command -v cmatrix      >/dev/null && SCREENSAVERS+=("cmatrix -s")
+command -v asciiquarium >/dev/null && SCREENSAVERS+=("asciiquarium")
+command -v cbonsai      >/dev/null && SCREENSAVERS+=("cbonsai --live --infinite")
+command -v pipes.sh     >/dev/null && SCREENSAVERS+=("pipes.sh")
+command -v lavat        >/dev/null && SCREENSAVERS+=("lavat")
+command -v tty-clock    >/dev/null && SCREENSAVERS+=("tty-clock -s -c")
+# Fallback if nothing is installed
+(( ${#SCREENSAVERS[@]} == 0 )) && SCREENSAVERS=("cmatrix -s")
+
+run_screensaver() {
+    eval "${SCREENSAVERS[RANDOM % ${#SCREENSAVERS[@]}]}" 2>/dev/null
+}
+
 # No PIN file = no lock, just screensaver
 if [[ ! -f "$PIN_FILE" ]]; then
-    exec cmatrix -s
+    eval "exec ${SCREENSAVERS[RANDOM % ${#SCREENSAVERS[@]}]}"
 fi
 
 # Read PIN file (format: line 1 = length, line 2 = hash)
@@ -109,7 +124,7 @@ show_denied() {
 }
 
 while true; do
-    cmatrix -s 2>/dev/null
+    run_screensaver
     show_lock_screen 0
 
     buffer=""

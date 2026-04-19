@@ -1,0 +1,216 @@
+Instead of: find . -name "*.nix"
+Try:        fd "*.nix"
+fd is faster, has simpler syntax, and respects .gitignore
+%
+Instead of: grep -r "pattern" .
+Try:        rg "pattern"  (grep is aliased to rg)
+ripgrep is faster and respects .gitignore by default
+%
+Instead of: du -sh *
+Try:        dust  (du is aliased to dust)
+dust shows a visual tree of disk usage, sorted by size
+%
+Instead of: df -h
+Try:        duf  (df is aliased to duf)
+duf shows disk space in a clean, colored table layout
+%
+Instead of: ps aux | grep process
+Try:        procs process  (ps is aliased to procs)
+procs has built-in search, tree view, and colored output
+%
+Instead of: dig example.com
+Try:        doggo example.com  (dig is aliased to doggo)
+doggo shows DNS results in a clean, colored table with JSON output
+%
+Instead of: diff file1 file2
+Try:        difft file1 file2  (diff is aliased to difft)
+difftastic understands syntax -- shows structural, not just text diffs
+%
+Instead of: traceroute example.com
+Try:        mtr example.com  (traceroute is aliased to mtr)
+mtr combines traceroute + ping with live updating statistics
+%
+Instead of: top (or htop)
+Try:        btop  (top and htop are aliased to btop)
+btop has graphs, mouse support, and per-process network/disk I/O
+%
+Instead of: cloc .
+Try:        tokei  (cloc is aliased to tokei)
+tokei counts lines of code by language, 10x faster than cloc
+%
+Instead of: history | grep ssh
+Try:        hg ssh
+hg searches your ENTIRE history (100k entries), not just the last 16
+%
+Instead of: command --help | less
+Try:        help command
+Pipes --help through bat for syntax highlighting and automatic paging
+%
+Instead of: tar xzf file.tar.gz (or unzip, 7z x...)
+Try:        extract file.tar.gz
+extract auto-detects format: tar, zip, 7z, rar, bz2, xz, and more
+%
+Instead of: git branch -a, then git checkout branch-name
+Try:        fco
+Fuzzy-searchable branch picker -- type to filter local + remote branches
+%
+Instead of: git log --oneline, find commit, git show SHA
+Try:        flog
+Interactive commit browser with inline diff preview via fzf
+%
+Instead of: man command (wall of plain text)
+Your man pages now have syntax highlighting automatically via bat
+The MANPAGER is set -- just use man normally and enjoy the colors
+%
+Instead of: cd ~/some/deep/frequently/used/path
+Try:        z path  (or z deep, or z freq)
+zoxide learns your habits -- partial names work after visiting once
+%
+Ctrl+T opens a fuzzy file picker with bat preview
+Browse files with syntax-highlighted preview, Enter inserts the path
+Works anywhere on the command line -- type a partial command first
+%
+Alt+C opens a fuzzy directory picker with tree preview
+Browse directories with eza tree preview, Enter to cd into it
+Much faster than cd + tab-completing deep paths
+%
+Ctrl+R opens fuzzy history search via fzf
+Type any fragment of a past command to filter instantly
+Much faster than pressing up-arrow repeatedly
+%
+Press ESC twice to prepend sudo to your last command
+This is the oh-my-zsh "sudo" plugin -- no need to retype anything
+Works on the current command line too, not just history
+%
+Type acs to search all your shell aliases
+The oh-my-zsh "aliases" plugin lets you discover shortcuts
+Example: acs kubectl  shows all kubectl-related aliases
+%
+shelp shows your complete tool/alias/function reference
+shelp KEYWORD filters it: try shelp git, shelp replace, shelp fzf
+This is your single source of truth for what's installed
+%
+sd is simpler than sed for find/replace
+Example: sd 'old_text' 'new_text' file.txt
+No regex escaping headaches -- just two strings and a file
+%
+xh is a friendlier HTTP client than curl
+Example: xh httpbin.org/get  or  xh POST api.example.com key=value
+Colored output, auto-formatted JSON, easy headers with key:value
+%
+glow renders markdown beautifully in your terminal
+Example: glow README.md
+Great for reading docs, changelogs, and notes without leaving the shell
+%
+tldr gives you simplified, example-based help for any command
+Example: tldr tar  (shows the 5 most common tar patterns)
+Much faster than reading full man pages when you just need examples
+%
+hyperfine benchmarks commands with statistical rigor
+Example: hyperfine 'fd -e nix' 'find . -name "*.nix"'
+Runs multiple iterations and shows min/mean/max with comparison
+%
+ncdu is aliased to gdu (colored interactive disk usage)
+Navigate with arrow keys, press d to delete files, q to quit
+Also try: dua i  for a Rust-based alternative (extremely fast scanning)
+%
+bat --diff file.txt shows git changes inline
+Highlights added/removed lines compared to the git index
+Combine with --style=changes for a minimal diff view
+%
+fd can filter by extension: fd -e nix
+Or by type: fd -t d (directories only), fd -t f (files only)
+Add -H to include hidden files, -I to ignore .gitignore
+%
+rg can search specific file types: rg "pattern" -t nix
+Combine with -l for just filenames, -c for counts
+Add -i for case-insensitive, --no-ignore to search gitignored files
+%
+dust -r reverses the sort (smallest first)
+dust -n 10 limits output to top 10 entries
+dust -d 2 limits directory depth
+%
+procs --tree shows process hierarchy
+procs --sortd cpu sorts by CPU usage descending
+procs -w shows full command lines without truncation
+%
+In tmux: prefix + Space shows a shortcut cheat sheet
+All common tmux operations in one menu -- splits, windows, sessions
+No more forgetting which key does what
+%
+In tmux: prefix + t activates tmux-thumbs
+Highlights URLs, paths, hashes, IPs on screen -- press a hint to copy
+Much faster than selecting text with the mouse
+%
+In tmux: prefix + S creates a new named session
+prefix + s shows the session/window tree picker
+Use sessions to organize different projects
+%
+In tmux: F12 toggles nested tmux mode for SSH
+Status bar dims to gray and all keys pass through to the remote tmux
+Press F12 again to switch back to local control
+%
+Your tmux lock screen picks a random screensaver each time
+cmatrix, asciiquarium, cbonsai, pipes.sh, lavat, or tty-clock
+Trigger it manually with prefix + L, or wait 15 minutes idle
+%
+gsa (git-sync-all) is your morning sync command
+Fetches, switches to default branch, and pulls all repos in one shot
+Run it in your Git.Local directory to update everything at once
+%
+gsall (git-status-all) checks all repos at once
+Quickly see which repos have uncommitted changes or are ahead/behind
+Run it before gsa to see what needs attention
+%
+gi (git-info) shows comprehensive info for the current repo
+Branch, remotes, recent commits, stash count, and more in one view
+Faster than running multiple git commands separately
+%
+gc opens commitizen for interactive conventional commits
+Walks you through type, scope, and description for consistent format
+Much easier than remembering feat/fix/chore/refactor prefixes
+%
+k is aliased to kubectl -- combine with other shortcuts:
+  ka FILE    kubectl apply -f
+  kns NAME   set current namespace
+  kshell POD exec into a pod interactively
+%
+direnv auto-loads .envrc files when you cd into a directory
+Create a .envrc with export VAR=value, then run: direnv allow
+Automatically unloads when you leave the directory
+%
+Use command <name> to bypass an alias and run the original
+Example: command grep uses /usr/bin/grep instead of rg
+Example: command du uses the original du instead of dust
+%
+zoxide keeps a ranked list of your directories
+z -l shows the full list with frecency scores
+zi opens an interactive fzf picker of your frequent directories
+%
+bat --list-themes shows all available color themes
+Current theme: TwoDark (configured in home/default.nix)
+Try: bat --theme=Dracula file.txt to preview a different theme
+%
+fzf works anywhere -- pipe anything into it for fuzzy selection
+Example: rg -l pattern | fzf --preview 'bat --color=always {}'
+Example: git stash list | fzf | cut -d: -f1 | xargs git stash show
+%
+The oh-my-zsh docker and helm plugins add tab completion
+Type docker<TAB> or helm<TAB> to see available subcommands
+Works for kubectl too (via the kubectl plugin)
+%
+secure (op-load-secrets) loads env vars from 1Password
+Run it once per session to populate API keys and tokens
+Secrets stay in memory only -- never written to disk
+%
+check-updates shows available brew and nix updates
+A notification banner appears on shell startup when updates exist
+Run: brew upgrade && nix flake update ~/.config/nix && switch
+%
+Your autosuggestions now prioritize history over completions
+The gray ghost text shows commands you've actually run before
+Press right-arrow or End to accept, or keep typing to ignore
+%
+History is now deduplicated -- no more 500 copies of ls
+ignoreAllDups removes the older copy when a new duplicate is added
+expireDuplicatesFirst removes dupes first when trimming to 100k limit

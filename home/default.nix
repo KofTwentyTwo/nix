@@ -145,9 +145,11 @@ in
       enable = true;
       enableZshIntegration = true;
       defaultOptions = [ "--height 40%" "--border" "--reverse" ];
-      defaultCommand = "fd --type f --hidden --follow --exclude .git";
-      fileWidgetCommand = "fd --type f --hidden --follow --exclude .git";
-      changeDirWidgetCommand = "fd --type d --hidden --follow --exclude .git";
+      defaultCommand = "fd --type f --hidden --follow --exclude .git --strip-cwd-prefix";
+      fileWidgetCommand = "fd --type f --hidden --follow --exclude .git --strip-cwd-prefix";
+      fileWidgetOptions = [ "--preview 'bat --style=numbers --color=always {} 2>/dev/null || echo {}'" ];
+      changeDirWidgetCommand = "fd --type d --hidden --follow --exclude .git --strip-cwd-prefix";
+      changeDirWidgetOptions = [ "--preview 'eza --tree --level=2 --color=always {} 2>/dev/null'" ];
     };
 
     # Auto-load .envrc files per directory

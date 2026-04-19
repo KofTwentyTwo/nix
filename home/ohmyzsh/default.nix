@@ -19,7 +19,7 @@
       enable = true;
       # Oh My Zsh plugins to load
       # Available plugins: https://github.com/ohmyzsh/ohmyzsh/wiki/Plugins
-      plugins = [ "git" "sudo" "docker" "kubectl" "aws" "helm" "terraform" "fzf" "aliases" ];
+      plugins = [ "git" "sudo" "docker" "kubectl" "aws" "helm" "terraform" "fzf" "aliases" "extract" ];
     };
   };
 }

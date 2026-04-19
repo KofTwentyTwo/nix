@@ -24,13 +24,16 @@ let
 in
 {
    config = {
+      # Shell tips file for MOTD display (fortune-style, % delimited)
+      home.file.".local/share/shell-tips".source = ./config/shell-tips;
+
       programs.zsh = {
          enable = true;
          enableCompletion = true;
          syntaxHighlighting.enable = true;
          enableVteIntegration = true;
          autosuggestion.enable = true;
-         autosuggestion.strategy = [ "completion" ];
+         autosuggestion.strategy = [ "history" "completion" ];
 
          # Shell initialization script (runs when zsh starts)
          # Order 550 ensures it runs after other init scripts
@@ -175,6 +178,13 @@ ALIASES - Task/History/Other
   check-updates   check-updates.sh       check brew/nix updates
   cr              claude-resume.sh       resume Claude session
 
+FUNCTIONS - Shell Helpers
+  help CMD        CMD --help | bat       colored, paged help output
+  hg PATTERN      search all history     rg-powered full history grep (replaces hist|grep)
+  fco             fzf git checkout       interactive branch picker
+  flog            fzf git log            interactive commit browser with diff preview
+  extract FILE    universal extract      handles tar.gz, zip, 7z, rar, etc. (OMZ plugin)
+
 TOOLS - Modern Replacements (installed via brew)
   bat             replaces cat           syntax highlighting, line numbers, paging
   eza             replaces ls            colors, git status, tree view, icons
@@ -189,7 +199,8 @@ TOOLS - Modern Replacements (installed via brew)
   xh              replaces curl/httpie   friendlier HTTP client, colored output
   doggo           replaces dig           modern DNS client, colored, JSON output
   difftastic      replaces diff          structural, syntax-aware, language-aware diffs
-  ncdu            replaces du            interactive disk usage explorer (ncurses)
+  gdu             replaces ncdu          interactive disk usage with colors (ncdu is aliased)
+  dua             replaces du            Rust-based disk analyzer (dua i for interactive)
   tokei           replaces cloc          fast line-of-code counter by language
   mtr             replaces traceroute    traceroute + ping combined, live updating
   hyperfine       replaces time          statistical benchmarking, multiple runs
@@ -317,11 +328,15 @@ TOOLS - TUI Applications
   btop            system monitor         terminal UI for system resources
   ncdu            disk usage             terminal UI for disk usage
 
-TOOLS - Fun
-  asciiquarium    aquarium               ASCII art aquarium animation
-  cmatrix         matrix                 matrix rain effect (tmux screensaver)
+TOOLS - Fun / Screensavers (tmux lock picks one randomly)
+  cmatrix         matrix rain            classic green rain (any key exits)
+  asciiquarium    aquarium               ASCII fish tank (any key exits)
+  cbonsai         bonsai tree            grows random ASCII bonsai (q to exit)
+  pipes.sh        animated pipes         colorful pipes fill the screen (q to exit)
+  lavat           lava lamp              terminal lava lamp (q to exit)
+  tty-clock       clock                  big terminal clock (q to exit)
+  genact          fake activity          pretend to compile/deploy (ctrl+c)
   cowsay          cow                    ASCII art cow with message
-  tty-clock       clock                  terminal clock display
   boxes           ASCII boxes            draw ASCII art boxes around text
 
 SCRIPTS - Custom (in ~/.local/bin)
@@ -468,6 +483,61 @@ TIP: shelp KEYWORD   filter output (e.g., shelp kubectl, shelp replace, shelp gi
              return $ssh_exit
            }
 
+           # Help - colored --help output via bat
+           help() { "$@" --help 2>&1 | bat -l help -p; }
+
+           # History grep - search ALL shell history with rg (replaces hist|grep)
+           hg() { fc -l 1 | rg --color=always "$@"; }
+
+           # fzf git checkout - interactive branch picker
+           fco() {
+             local branch=$(git branch --all | fzf --no-multi | sed 's/^[* ]*//' | sed 's|remotes/origin/||')
+             [[ -n "$branch" ]] && git checkout "$branch"
+           }
+
+           # fzf git log - interactive commit browser with diff preview
+           flog() {
+             git log --oneline --color=always | fzf --ansi --no-sort --preview 'git show --color=always {1}'
+           }
+
+           # MOTD: fastfetch + random shell tip on new sessions
+           _show_motd() {
+             fastfetch
+
+             local tips_file="$HOME/.local/share/shell-tips"
+             [[ -f "$tips_file" ]] || return
+
+             local tip=$(awk 'BEGIN{RS="\n%\n"; srand()} NF{a[++n]=$0} END{if(n>0) print a[int(rand()*n)+1]}' "$tips_file")
+             [[ -z "$tip" ]] && return
+
+             # Measure longest line to size the box dynamically
+             local max_len=0
+             while IFS= read -r line; do
+               (( ''${#line} > max_len )) && max_len=''${#line}
+             done <<< "$tip"
+             (( max_len < 40 )) && max_len=40
+
+             # Build borders: total width = "│  " (3) + max_len + " │" (2) = max_len + 5
+             # Top: "╭─ Shell Tip " (13) + dashes + "╮" (1) = 13 + D + 1
+             # So D = max_len + 5 - 14 = max_len - 9
+             local top_dashes=$(printf '─%.0s' $(seq 1 $(( max_len - 9 ))))
+             local bottom_dashes=$(printf '─%.0s' $(seq 1 $(( max_len + 3 ))))
+
+             echo ""
+             echo -e "\033[0;32m╭─ \033[1;32mShell Tip\033[0;32m ''${top_dashes}╮\033[0m"
+             while IFS= read -r line; do
+               printf "\033[0;32m│\033[0m  %-''${max_len}s \033[0;32m│\033[0m\n" "$line"
+             done <<< "$tip"
+             echo -e "\033[0;32m╰''${bottom_dashes}╯\033[0m"
+             echo ""
+           }
+
+           # Show MOTD for direct terminal sessions only
+           if [[ -t 1 ]]; then
+             _show_motd
+             unset -f _show_motd
+           fi
+
            # Check for available updates (similar to oh-my-zsh update notification)
            if [[ -f "$HOME/.config/nix/.updates-available" ]]; then
              echo ""
@@ -535,6 +605,19 @@ TIP: shelp KEYWORD   filter output (e.g., shelp kubectl, shelp replace, shelp gi
             "ls-lS"     = "eza -l --sort=size";               # ls -lS    (long, largest first)
             "ls-lSr"    = "eza -lr --sort=size";              # ls -lSr   (long, smallest first)
             
+            # Modern CLI replacements (originals still available via: command du, command grep, etc.)
+            du          = "dust";       # Visual disk usage, sorted, colored
+            df          = "duf";        # Disk free with colors, table layout
+            dig         = "doggo";      # Modern DNS client, colored output
+            top         = "btop";       # Resource monitor TUI with graphs
+            htop        = "btop";       # Resource monitor TUI with graphs
+            traceroute  = "mtr";        # Traceroute + ping combined, live updating
+            diff        = "difft";      # Structural, syntax-aware diffs
+            grep        = "rg";         # Faster, respects .gitignore, regex
+            ps          = "procs";      # Modern process viewer, tree, search
+            ncdu        = "gdu";        # Colored interactive disk usage (replaces ncdu)
+            cloc        = "tokei";      # Fast line-of-code counter by language
+
             # SSH utilities
             sshc        = "ssh-keygen -R";  # Remove host from known_hosts
             
@@ -569,6 +652,8 @@ TIP: shelp KEYWORD   filter output (e.g., shelp kubectl, shelp replace, shelp gi
          history = {
             size = 100000;  # Maximum number of entries in memory
             save = 100000;  # Maximum number of entries saved to file
+            ignoreAllDups = true;         # Remove older duplicate when new one added
+            expireDuplicatesFirst = true;  # Expire dupes first when trimming to size
          };
 
          # Environment variables
@@ -598,6 +683,9 @@ TIP: shelp KEYWORD   filter output (e.g., shelp kubectl, shelp replace, shelp gi
             # SSL certificate bundle (managed by ca-certs module)
             SSL_CERT_FILE = "${homeDir}/.config/ca-certs.pem";
             
+            # Man page viewer - syntax highlighting via bat
+            MANPAGER = "sh -c 'col -bx | bat -l man -p'";
+
             # Secrets are loaded via op-load-secrets function (see 1password module)
             # See: op-load-secrets --help or ~/.config/nix/SECRETS.md
          };
