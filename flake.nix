@@ -425,5 +425,20 @@
                }
          ];
       };
+      darwinConfigurations."Dark-Horse" = nix-darwin.lib.darwinSystem {
+         modules = [
+            configuration
+            # Dark-Horse uses Determinate Nix - disable nix-darwin daemon management
+            { nix.enable = false; }
+               home-manager.darwinModules.home-manager  {
+                  home-manager.useGlobalPkgs = true;
+                  home-manager.useUserPackages = true;
+                  home-manager.verbose = true;
+                  home-manager.backupFileExtension = "backup";
+                  home-manager.extraSpecialArgs = { inherit inputs userConfig; };
+                  home-manager.users."${username}" = homeconfig;
+               }
+         ];
+      };
    };
 }
