@@ -35,8 +35,11 @@ in
          # Shell initialization script (runs when zsh starts)
          # Order 550 ensures it runs after other init scripts
          initContent = lib.mkOrder 550 ''
-           # Terminal type
-           export TERM=wezterm
+           # Terminal type: set TERM=wezterm only outside tmux.
+           # Inside tmux, TERM is set by default-terminal (tmux-256color).
+           if [[ -z "$TMUX" ]]; then
+             export TERM=wezterm
+           fi
 
            # Forward OSC 7 (cwd reporting) through tmux to WezTerm
            # enableVteIntegration sends OSC 7 but tmux captures it for its own

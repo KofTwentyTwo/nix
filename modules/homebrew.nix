@@ -17,21 +17,17 @@
       "steipete/tap"
     ];
 
-    # masApps are intentionally commented out (mas CLI unreliable on recent macOS).
-    # Uncomment individually after signing into the Mac App Store.
+    # Mac App Store apps (managed via mas CLI 6.0+)
     masApps = {
-      ## Xcode                         = 497799835;
-      ## airmail-lightning-fast-email  = 918858936;
-      ## blackmagic-disk-speed-test    = 425264550;
-      ## ivory-for-mastodon-by-tapbots = 6444602274;
-      ## keynote                       = 409183694;
-      ## lanscan                       = 472226235;
-      ## numbers                       = 409203825;
-      ## pages                         = 409201541;
-      ## pagesi                        = 409201541;
-      ## parcel-delivery-tracking      = 639968404;
-      ## whatsapp-messenger            = 310633997;
-      ##wireguard                     = 1451685025;
+      "1Password for Safari"         = 1569813296;
+      "Airmail"                      = 918858936;
+      "GarageBand"                   = 682658836;
+      "iMovie"                       = 408981434;
+      "Keynote"                      = 409183694;
+      "Numbers"                      = 409203825;
+      "Pages"                        = 409201541;
+      "Parcel - Delivery Tracking"   = 375589283;
+      "Xcode"                        = 497799835;
     };
 
     brews = [

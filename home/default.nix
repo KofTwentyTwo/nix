@@ -85,7 +85,6 @@ in
       packages = with pkgs; let
         # Command-line utilities and tools
         commonPackages = [
-          delta        # Better git diff viewer (configured via git.delta.enable)
           comma        # Run programs without installing (Nix-specific)
         ];
 

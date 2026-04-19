@@ -1,14 +1,21 @@
 # Session State
 
-**Last Updated:** 2026-04-11
+**Last Updated:** 2026-04-19
 
 ## Current Status
-Rolling PIN unlock implemented. Repo synced with origin.
+Audit cleanup complete. 21/23 audit findings resolved. All manual tests passed. Repo synced with origin.
 
 ## What Was Done This Session
-- Changed tmux lock to rolling PIN (no ENTER needed, last N chars match unlocks)
-- Updated PIN file format (length + hash) and set-pin script
-- Old format detected gracefully with fallback message
+- Audited all active TODOs and 23 audit findings against current file state
+- Removed `delta` from Nix home.packages (Homebrew has it)
+- Enabled masApps with 8 installed apps + Parcel 2 (mas 6.0+ fixed reliability)
+- Deleted unused `user-config.nix`
+- Fixed tmux terminal-overrides duplication (`-ga` to `-g`)
+- Fixed TERM override inside tmux (only set `TERM=wezterm` outside tmux)
+- Redesigned tmux lock screen with box-drawing chars, PIN dots, ACCESS DENIED flash
+- Added tmux-thumbs plugin and OSC 52 clipboard (from between sessions)
+- Updated audit doc (21/23 marked resolved) and TODO
+- Verified: F12 toggle, ls wrapper, shelp, truecolor, masApps, lock screen PIN
 
 ## Active Branches
 | Branch | Status |
@@ -16,13 +23,10 @@ Rolling PIN unlock implemented. Repo synced with origin.
 | `main` | Clean, up to date with origin |
 
 ## Pending Work
-- [ ] Re-set tmux lock PIN (file format changed)
-- [ ] Test F12 nested tmux toggle via SSH
-- [ ] Test truecolor in tmux (verify no 256-color warnings)
 - [ ] Test opencode launches and MCP servers connect
-- [ ] Work through audit findings (`docs/AUDIT-2026-04-07.md`) -- 3 critical, 8 warnings
+- [ ] Remaining audit: #22 (permission drift), #23 (disk cleanup)
 
 ## Key Reference
-- OpenCode MCP schema: type=`local`, command=array, environment=object
-- Truecolor: `:RGB` in terminal-overrides + `COLORTERM=truecolor` + `allow-passthrough on`
-- Audit report: `docs/AUDIT-2026-04-07.md` (23 findings)
+- Audit report: `docs/AUDIT-2026-04-07.md` (21/23 resolved)
+- masApps enabled with mas 6.0.1 (9 apps including Parcel 2)
+- HM modules kept for config (bat, eza, zoxide, fzf, tmux, neovim, k9s); Homebrew binary wins in PATH

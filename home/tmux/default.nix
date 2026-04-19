@@ -21,6 +21,22 @@
   programs.tmux = {
     enable = true;
 
+    plugins = with pkgs.tmuxPlugins; [
+      {
+        plugin = tmux-thumbs;
+        extraConfig = ''
+          set-environment -g PATH "/opt/homebrew/bin:$HOME/.nix-profile/bin:/run/current-system/sw/bin:/usr/bin:/bin"
+          set -g @thumbs-key t
+          set -g @thumbs-command 'echo -n {} | pbcopy'
+          set -g @thumbs-upcase-command 'echo -n {} | pbcopy && tmux paste-buffer'
+          set -g @thumbs-alphabet colemak-homerow
+          set -g @thumbs-contrast 1
+          set -g @thumbs-fg-color green
+          set -g @thumbs-hint-fg-color yellow
+        '';
+      }
+    ];
+
     extraConfig = ''
       # Performance and responsiveness
       set -sg escape-time 0
@@ -28,9 +44,13 @@
 
       # Terminal capabilities - true color (24-bit) support
       set -g default-terminal "tmux-256color"
-      set -ga terminal-overrides ",xterm-256color:Tc:RGB,wezterm:Tc:RGB"
+      set -g terminal-overrides "xterm-256color:Tc:RGB,wezterm:Tc:RGB"
       set -g allow-passthrough on
       set -ga update-environment "COLORTERM"
+
+      # Clipboard: enable OSC 52 for WezTerm + pbcopy fallback
+      set -ga terminal-features 'wezterm:clipboard'
+      set -g copy-command 'pbcopy'
 
       # Mouse support - scroll enters copy mode for terminal history
       set -g mouse on
@@ -42,9 +62,6 @@
       # PageUp/PageDown - enter copy mode and scroll
       bind -n PageUp if-shell -F "#{pane_in_mode}" "send-keys PageUp" "copy-mode -eu"
       bind -n PageDown if-shell -F "#{pane_in_mode}" "send-keys PageDown" ""
-
-      # Stay in copy mode after mouse selection (don't auto-exit)
-      unbind -T copy-mode-vi MouseDragEnd1Pane
 
       # Session management
       # prefix+s: built-in session picker (tree view)

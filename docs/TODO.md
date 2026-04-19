@@ -5,16 +5,21 @@ Active tasks and future improvements for the Nix configuration.
 ## Active Tasks
 
 - [ ] Re-set tmux lock PIN (format changed, run `tmux-lock-set-pin.sh`)
-- [ ] Test F12 nested tmux toggle via SSH
-- [ ] Test truecolor in tmux (verify no 256-color warnings)
 - [ ] Test opencode launches and MCP servers connect
-- [ ] Test `ls -lsrt`, `ls -la`, `ls -lS`
-- [ ] Test `shelp` and `shelp KEYWORD`
-- [ ] Work through audit findings (`docs/AUDIT-2026-04-07.md`) -- 3 critical, 8 warnings
 - [ ] Diff remote machine (100.76.144.59) brew packages against flake when online
 
 ## Recently Completed
 
+- [x] Test F12 nested tmux toggle via SSH (2026-04-19)
+- [x] Test `ls -lsrt`, `ls -la`, `ls -lS` (2026-04-19)
+- [x] Test `shelp` and `shelp KEYWORD` (2026-04-19)
+- [x] Test truecolor in tmux (2026-04-19, also fixed TERM override inside tmux)
+- [x] Verify masApps install correctly (2026-04-19)
+- [x] Audit findings resolved: 21/23 complete (2026-04-19)
+- [x] Enable masApps (8 installed apps) with mas 6.0+ (2026-04-19)
+- [x] Remove dual-installed delta from Nix (Homebrew wins) (2026-04-19)
+- [x] Delete unused user-config.nix (2026-04-19)
+- [x] Fix tmux terminal-overrides accumulation (2026-04-19)
 - [x] Rolling PIN unlock for tmux lock screen (2026-04-11)
 - [x] Add PR review routing rule to 3-rules.md (2026-04-08)
 - [x] Fix gemini-cli brew/npm conflict (2026-04-08)
@@ -62,7 +67,7 @@ Add Linux support (Ubuntu, Debian, Fedora). Home Manager modules are mostly port
 - [ ] Periodically update flake inputs (`nix flake update`)
 - [ ] Review and remove unused packages
 - [ ] Test bootstrap script on fresh macOS install
-- [ ] Fix masApps reinstall-on-every-run issue
+- [x] Fix masApps reinstall-on-every-run issue (2026-04-19, enabled with mas 6.0+)
 
 ---
 
