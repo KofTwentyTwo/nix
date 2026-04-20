@@ -37,6 +37,7 @@ in
     ./nvim
     ./ohmyzsh
     ./opencode
+    ./procs
     ./python
     ./scripts
     ./sops

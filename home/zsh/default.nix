@@ -179,6 +179,7 @@ ALIASES - Task/History/Other
   cr              claude-resume.sh       resume Claude session
 
 FUNCTIONS - Shell Helpers
+  hint            show a random shell tip (same as login MOTD tip)
   help CMD        CMD --help | bat       colored, paged help output
   hg PATTERN      search all history     rg-powered full history grep (replaces hist|grep)
   fco             fzf git checkout       interactive branch picker
@@ -500,12 +501,10 @@ TIP: shelp KEYWORD   filter output (e.g., shelp kubectl, shelp replace, shelp gi
              git log --oneline --color=always | fzf --ansi --no-sort --preview 'git show --color=always {1}'
            }
 
-           # MOTD: fastfetch + random shell tip on new sessions
-           _show_motd() {
-             fastfetch
-
+           # Show a random shell tip in a bordered box
+           hint() {
              local tips_file="$HOME/.local/share/shell-tips"
-             [[ -f "$tips_file" ]] || return
+             [[ -f "$tips_file" ]] || { echo "No tips file found"; return 1; }
 
              local tip=$(awk 'BEGIN{RS="\n%\n"; srand()} NF{a[++n]=$0} END{if(n>0) print a[int(rand()*n)+1]}' "$tips_file")
              [[ -z "$tip" ]] && return
@@ -517,9 +516,6 @@ TIP: shelp KEYWORD   filter output (e.g., shelp kubectl, shelp replace, shelp gi
              done <<< "$tip"
              (( max_len < 40 )) && max_len=40
 
-             # Build borders: total width = "│  " (3) + max_len + " │" (2) = max_len + 5
-             # Top: "╭─ Shell Tip " (13) + dashes + "╮" (1) = 13 + D + 1
-             # So D = max_len + 5 - 14 = max_len - 9
              local top_dashes=$(printf '─%.0s' $(seq 1 $(( max_len - 9 ))))
              local bottom_dashes=$(printf '─%.0s' $(seq 1 $(( max_len + 3 ))))
 
@@ -532,10 +528,10 @@ TIP: shelp KEYWORD   filter output (e.g., shelp kubectl, shelp replace, shelp gi
              echo ""
            }
 
-           # Show MOTD for direct terminal sessions only
+           # MOTD: fastfetch + random shell tip on new sessions
            if [[ -t 1 ]]; then
-             _show_motd
-             unset -f _show_motd
+             fastfetch
+             hint
            fi
 
            # Check for available updates (similar to oh-my-zsh update notification)
