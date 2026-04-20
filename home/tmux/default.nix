@@ -95,6 +95,8 @@
 
       # Prompt to set lock PIN on first session if not configured
       set-hook -g session-created 'run-shell -b "$HOME/.local/bin/tmux-pin-check.sh"'
+      # Prompt to name sessions with default numeric names (Enter to skip)
+      set-hook -ga session-created 'run-shell -b "$HOME/.local/bin/tmux-session-name.sh"'
 
       # Status bar - hacker aesthetic matching starship prompt
       set -g status on

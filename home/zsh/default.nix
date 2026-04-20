@@ -616,6 +616,7 @@ TIP: shelp KEYWORD   filter output (e.g., shelp kubectl, shelp replace, shelp gi
             grep        = "rg";         # Faster, respects .gitignore, regex
             ps          = "procs";      # Modern process viewer, tree, search
 
+            ncdu        = "ncdu --color dark-bg --show-graph --apparent-size --show-percent";
             cloc        = "tokei";      # Fast line-of-code counter by language
 
             # SSH utilities

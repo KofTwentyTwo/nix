@@ -59,6 +59,7 @@ in
         "tmux-lock.sh"
         "tmux-lock-set-pin.sh"
         "tmux-pin-check.sh"
+        "tmux-session-name.sh"
         # Add more scripts as you create them:
         # "backup-config.sh"
         # "health-check.sh"
