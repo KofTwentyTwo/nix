@@ -1,21 +1,24 @@
 # Session State
 
-**Last Updated:** 2026-04-19
+**Last Updated:** 2026-04-20
 
 ## Current Status
-Audit cleanup complete. 21/23 audit findings resolved. All manual tests passed. Repo synced with origin.
+All changes committed and pushed. Repo hardened for public release (git-crypt on sensitive files, env vars for credentials). Tmux session naming and window titles working.
 
 ## What Was Done This Session
-- Audited all active TODOs and 23 audit findings against current file state
-- Removed `delta` from Nix home.packages (Homebrew has it)
-- Enabled masApps with 8 installed apps + Parcel 2 (mas 6.0+ fixed reliability)
-- Deleted unused `user-config.nix`
-- Fixed tmux terminal-overrides duplication (`-ga` to `-g`)
-- Fixed TERM override inside tmux (only set `TERM=wezterm` outside tmux)
-- Redesigned tmux lock screen with box-drawing chars, PIN dots, ACCESS DENIED flash
-- Added tmux-thumbs plugin and OSC 52 clipboard (from between sessions)
-- Updated audit doc (21/23 marked resolved) and TODO
-- Verified: F12 toggle, ls wrapper, shelp, truecolor, masApps, lock screen PIN
+- Added ncdu alias with dark-bg, graph, apparent-size, percent flags
+- Added tmux session-created hook that prompts for session name (Enter to skip)
+- Fixed session naming: %1 instead of %% for all-occurrence substitution
+- Fixed session naming: quoted %1 to support spaces in names
+- Added set-titles to tmux so WezTerm Cmd+Tab shows session name instead of "tmux"
+- Added ollama (cask) and jetbrains-toolbox to homebrew
+- Rewrote README as comprehensive "Ultimate AI Developer Terminal" showcase
+- Security audit: identified 5 blockers for public repo
+- Encrypted SSH config, AWS config, preferences.yaml via git-crypt
+- Parameterized confluence scripts (CONFLUENCE_BASE_URL, CONFLUENCE_EMAIL env vars)
+- Parameterized SonarQube org (SONARQUBE_ORG env var)
+- Committed and fixed neovim config (LazyVim compat, nil_ls for Nix, ts_ls)
+- Added sales-admin agent and skill
 
 ## Active Branches
 | Branch | Status |
@@ -23,10 +26,13 @@ Audit cleanup complete. 21/23 audit findings resolved. All manual tests passed. 
 | `main` | Clean, up to date with origin |
 
 ## Pending Work
+- [ ] Add CONFLUENCE_BASE_URL and CONFLUENCE_EMAIL to 1Password vault
+- [ ] Before making repo public: rewrite git history to remove plaintext of now-encrypted files (git filter-repo)
 - [ ] Test opencode launches and MCP servers connect
+- [ ] Re-set tmux lock PIN (format changed, run `tmux-lock-set-pin.sh`)
 - [ ] Remaining audit: #22 (permission drift), #23 (disk cleanup)
 
 ## Key Reference
-- Audit report: `docs/AUDIT-2026-04-07.md` (21/23 resolved)
-- masApps enabled with mas 6.0.1 (9 apps including Parcel 2)
-- HM modules kept for config (bat, eza, zoxide, fzf, tmux, neovim, k9s); Homebrew binary wins in PATH
+- Git-crypt encrypts: home/ssh/default.nix, home/aws/config/config, home/ai/4-preferences.yaml
+- New env vars needed: CONFLUENCE_BASE_URL, CONFLUENCE_EMAIL, SONARQUBE_ORG
+- Audit report: docs/AUDIT-2026-04-07.md (21/23 resolved)

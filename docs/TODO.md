@@ -4,12 +4,22 @@ Active tasks and future improvements for the Nix configuration.
 
 ## Active Tasks
 
+- [ ] Add CONFLUENCE_BASE_URL and CONFLUENCE_EMAIL to 1Password vault
+- [ ] Rewrite git history before making repo public (git filter-repo to remove plaintext of encrypted files)
 - [ ] Re-set tmux lock PIN (format changed, run `tmux-lock-set-pin.sh`)
 - [ ] Test opencode launches and MCP servers connect
 - [ ] Diff remote machine (100.76.144.59) brew packages against flake when online
 
 ## Recently Completed
 
+- [x] Tmux session naming prompt on create (2026-04-20)
+- [x] Tmux set-titles for Cmd+Tab session names (2026-04-20)
+- [x] ncdu alias with better defaults (2026-04-20)
+- [x] Ollama (cask) + JetBrains Toolbox added (2026-04-20)
+- [x] README rewritten as full environment showcase (2026-04-20)
+- [x] Security hardening: git-crypt SSH/AWS/preferences, env vars for scripts (2026-04-20)
+- [x] Neovim: LazyVim compat, nil_ls, ts_ls, nix treesitter (2026-04-20)
+- [x] Sales-admin agent and skill added (2026-04-20)
 - [x] Test F12 nested tmux toggle via SSH (2026-04-19)
 - [x] Test `ls -lsrt`, `ls -la`, `ls -lS` (2026-04-19)
 - [x] Test `shelp` and `shelp KEYWORD` (2026-04-19)
