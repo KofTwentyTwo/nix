@@ -2,19 +2,65 @@
 # tmux-help.sh - Interactive tmux command palette
 # Launched by prefix+Space, uses fzf inside a tmux popup.
 # Fuzzy search, arrow keys to navigate, Enter to execute.
+#
+# Interactive commands (rename, new session, etc.) prompt inside the popup
+# via bash read, then send the direct tmux command. This avoids context
+# issues with command-prompt running from inside display-popup.
 
-# Format: "hotkey | description | tmux-command"
-# Lines starting with # are section headers (rendered by fzf)
+# Capture current state for interactive prompts
+CURRENT_SESSION=$(tmux display-message -p '#S')
+CURRENT_WINDOW=$(tmux display-message -p '#W')
+
+# Interactive handlers - prompt inside the popup, run direct tmux command
+run_interactive() {
+  local action="$1"
+  case "$action" in
+    rename-session)
+      printf "Rename session [%s]: " "$CURRENT_SESSION"
+      read -r name
+      [[ -z "$name" ]] && exit 0
+      tmux rename-session -t "=$CURRENT_SESSION" -- "$name"
+      ;;
+    new-session)
+      printf "New session name: "
+      read -r name
+      [[ -z "$name" ]] && exit 0
+      tmux new-session -d -s "$name"
+      tmux switch-client -t "$name"
+      ;;
+    rename-window)
+      printf "Rename window [%s]: " "$CURRENT_WINDOW"
+      read -r name
+      [[ -z "$name" ]] && exit 0
+      tmux rename-window -- "$name"
+      ;;
+    find-window)
+      printf "Find window: "
+      read -r pattern
+      [[ -z "$pattern" ]] && exit 0
+      tmux find-window -Z -- "$pattern"
+      ;;
+    move-window)
+      printf "Move window to index: "
+      read -r idx
+      [[ -z "$idx" ]] && exit 0
+      tmux move-window -t "$idx"
+      ;;
+  esac
+}
+
+# Format: "hotkey | description | command"
+# command is either a tmux command or @action for interactive handlers
 commands=(
   "# Sessions"
   "prefix s       | Pick session (tree view)               | choose-tree -Zs"
-  "prefix S       | New named session                      | command-prompt -p 'session name:' 'new-session -s \"%%\"'"
-  "prefix \$       | Rename current session                 | command-prompt -I '#S' 'rename-session -- \"%%\"'"
+  "prefix S       | New named session                      | @new-session"
+  "prefix \$       | Rename current session                 | @rename-session"
   "prefix d       | Detach from session                    | detach-client"
   "prefix L       | Lock session (screensaver)             | lock-session"
   "# Windows"
   "prefix c       | New window                             | new-window"
-  "prefix ,       | Rename window                          | command-prompt -I '#W' 'rename-window -- \"%%\"'"
+  "prefix ,       | Rename window                          | @rename-window"
   "prefix n       | Next window                            | next-window"
   "prefix p       | Previous window                        | previous-window"
   "prefix w       | Pick window (tree view)                | choose-tree -Zw"
@@ -46,8 +92,8 @@ commands=(
   "prefix ?       | List all keybindings (raw)             | list-keys"
   "prefix :       | Command prompt                         | command-prompt"
   "prefix ~       | Show messages                          | show-messages"
-  "prefix f       | Find window by name                    | command-prompt 'find-window -Z -- \"%%\"'"
-  "prefix .       | Move window to index                   | command-prompt -p 'move to index:' 'move-window -t \"%%\"'"
+  "prefix f       | Find window by name                    | @find-window"
+  "prefix .       | Move window to index                   | @move-window"
 )
 
 # Build the list for fzf, skip section headers for execution but show them
@@ -96,7 +142,13 @@ for entry in "${commands[@]}"; do
   hotkey=$(echo "$entry" | cut -d'|' -f1 | sed 's/[[:space:]]*$//')
   cmd=$(echo "$entry" | cut -d'|' -f3 | sed 's/^[[:space:]]*//' | sed 's/[[:space:]]*$//')
   if [[ "$hotkey" == "$selected_hotkey" && -n "$cmd" ]]; then
-    tmux $cmd
+    if [[ "$cmd" == @* ]]; then
+      # Interactive handler - prompt inside the popup
+      run_interactive "${cmd#@}"
+    else
+      # Direct tmux command
+      eval "tmux $cmd"
+    fi
     exit 0
   fi
 done
