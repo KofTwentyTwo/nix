@@ -199,7 +199,7 @@ TOOLS - Modern Replacements (installed via brew)
   xh              replaces curl/httpie   friendlier HTTP client, colored output
   doggo           replaces dig           modern DNS client, colored, JSON output
   difftastic      replaces diff          structural, syntax-aware, language-aware diffs
-  gdu             replaces ncdu          interactive disk usage with colors (ncdu is aliased)
+  gdu             replaces ncdu          interactive disk usage with colors
   dua             replaces du            Rust-based disk analyzer (dua i for interactive)
   tokei           replaces cloc          fast line-of-code counter by language
   mtr             replaces traceroute    traceroute + ping combined, live updating
@@ -326,7 +326,7 @@ TOOLS - TUI Applications
   lazygit         git                    terminal UI for git
   lazydocker      docker                 terminal UI for docker
   btop            system monitor         terminal UI for system resources
-  ncdu            disk usage             terminal UI for disk usage
+  ncdu / gdu      disk usage             terminal UI for disk usage (gdu has colors)
 
 TOOLS - Fun / Screensavers (tmux lock picks one randomly)
   cmatrix         matrix rain            classic green rain (any key exits)
@@ -615,7 +615,7 @@ TIP: shelp KEYWORD   filter output (e.g., shelp kubectl, shelp replace, shelp gi
             diff        = "difft";      # Structural, syntax-aware diffs
             grep        = "rg";         # Faster, respects .gitignore, regex
             ps          = "procs";      # Modern process viewer, tree, search
-            ncdu        = "gdu";        # Colored interactive disk usage (replaces ncdu)
+
             cloc        = "tokei";      # Fast line-of-code counter by language
 
             # SSH utilities

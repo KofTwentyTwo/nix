@@ -110,7 +110,7 @@ hyperfine benchmarks commands with statistical rigor
 Example: hyperfine 'fd -e nix' 'find . -name "*.nix"'
 Runs multiple iterations and shows min/mean/max with comparison
 %
-ncdu is aliased to gdu (colored interactive disk usage)
+gdu is a colored alternative to ncdu for interactive disk usage
 Navigate with arrow keys, press d to delete files, q to quit
 Also try: dua i  for a Rust-based alternative (extremely fast scanning)
 %
