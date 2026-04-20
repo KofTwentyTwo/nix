@@ -380,7 +380,7 @@
          modules = [
             configuration
             # Darth uses Determinate Nix — disable nix-darwin's daemon management
-            { nix.enable = false; }
+            { nix.enable = false; networking.hostName = "Darth"; }
                home-manager.darwinModules.home-manager  {
                   home-manager.useGlobalPkgs = true;
                   home-manager.useUserPackages = true;
@@ -396,6 +396,7 @@
       darwinConfigurations."Grogu" = nix-darwin.lib.darwinSystem {
          modules = [
             configuration
+            { networking.hostName = "Grogu"; }
                home-manager.darwinModules.home-manager  {
                   home-manager.useGlobalPkgs = true;
                   home-manager.useUserPackages = true;
@@ -412,7 +413,7 @@
          modules = [
             configuration
             # Renova uses Determinate Nix — disable nix-darwin's daemon management
-            { nix.enable = false; }
+            { nix.enable = false; networking.hostName = "Renova"; }
                home-manager.darwinModules.home-manager  {
                   home-manager.useGlobalPkgs = true;
                   home-manager.useUserPackages = true;
@@ -429,7 +430,7 @@
          modules = [
             configuration
             # Dark-Horse uses Determinate Nix - disable nix-darwin daemon management
-            { nix.enable = false; }
+            { nix.enable = false; networking.hostName = "Dark-Horse"; }
                home-manager.darwinModules.home-manager  {
                   home-manager.useGlobalPkgs = true;
                   home-manager.useUserPackages = true;
