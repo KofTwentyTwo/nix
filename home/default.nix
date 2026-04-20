@@ -63,6 +63,10 @@ in
         PAGER  = "less -FR";  # Pager with colors and no pause on exit
         COLORTERM = "truecolor";  # Signal 24-bit color support to CLI apps
         QQQ_SELENIUM_HEADLESS = "true";  # Run Selenium tests headless
+
+        # Confluence API config (token loaded separately via 1Password)
+        CONFLUENCE_BASE_URL = "https://greatergoods.atlassian.net/wiki";
+        CONFLUENCE_EMAIL = "jmaes@greatergoods.com";
       };
 
       # PATH configuration - paths are added to $PATH
