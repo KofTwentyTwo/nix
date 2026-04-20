@@ -55,6 +55,7 @@ in
         "claude-resume.sh"
         "confluence-blog.sh"
         "confluence.sh"
+        "tmux-help.sh"
         "tmux-lock.sh"
         "tmux-lock-set-pin.sh"
         "tmux-pin-check.sh"

@@ -68,8 +68,8 @@
       # prefix+S: create a new named session interactively
       bind S command-prompt -p "new session name:" "new-session -s '%%'"
 
-      # Help menu - prefix+space shows a shortcut cheat sheet
-      bind Space display-menu -T " Tmux Shortcuts " -x C -y C "Split Horizontal     |" '"' "split-window -h" "Split Vertical       -" '%' "split-window -v" "" "New Window           c" 'c' "new-window" "Next Window          n" 'n' "next-window" "Prev Window          p" 'p' "previous-window" "Pick Window          w" 'w' "choose-tree -Zw" "" "Pick Session         s" 's' "choose-tree -Zs" "New Session          S" 'S' "command-prompt -p 'new session:' 'new-session -s \"%%\"'" "Rename Session       $" '$' "command-prompt -I '#S' 'rename-session -- \"%%\"'" "Detach               d" 'd' "detach-client" "" "Zoom Pane            z" 'z' "resize-pane -Z" "Kill Pane            x" 'x' "confirm-before -p 'kill pane? (y/n)' kill-pane" "Break Pane to Window !" '!' "break-pane" "" "Copy Mode        Enter" '[' "copy-mode" "Screensaver          L" 'L' "lock-session" "" "All Keybindings      ?" '?' "list-keys"
+      # Help menu - prefix+space shows searchable command palette via fzf popup
+      bind Space display-popup -E -w 70 -h 30 -T " Tmux Help " -b rounded "$HOME/.local/bin/tmux-help.sh"
 
       # Nested tmux (SSH): F12 toggles local keys off so prefix reaches remote tmux
       # Visual indicator: status bar dims to gray when in remote mode
