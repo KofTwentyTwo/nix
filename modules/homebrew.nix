@@ -245,6 +245,7 @@
       "slack-cli"
       "tailscale-app"
       "tunnelblick"
+      "typora"
       "visual-studio-code"
       "warp"
       "wezterm"
