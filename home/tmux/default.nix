@@ -48,6 +48,10 @@
       set -g allow-passthrough on
       set -ga update-environment "COLORTERM"
 
+      # Window title: show session name in WezTerm's Cmd+Tab / title bar
+      set -g set-titles on
+      set -g set-titles-string "#{session_name}"
+
       # Clipboard: enable OSC 52 for WezTerm + pbcopy fallback
       set -ga terminal-features 'wezterm:clipboard'
       set -g copy-command 'pbcopy'
