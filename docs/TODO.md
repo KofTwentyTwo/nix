@@ -4,14 +4,15 @@ Active tasks and future improvements for the Nix configuration.
 
 ## Active Tasks
 
-- [ ] Add CONFLUENCE_BASE_URL and CONFLUENCE_EMAIL to 1Password vault
-- [ ] Rewrite git history before making repo public (git filter-repo to remove plaintext of encrypted files)
-- [ ] Re-set tmux lock PIN (format changed, run `tmux-lock-set-pin.sh`)
-- [ ] Test opencode launches and MCP servers connect
+- [ ] Test opencode TUI launch and MCP server connections (interactive)
 - [ ] Diff remote machine (100.76.144.59) brew packages against flake when online
+- [ ] Remaining audit: #22 (permission drift), #23 (disk cleanup)
 
 ## Recently Completed
 
+- [x] Confluence env vars added as nix session variables (2026-04-20)
+- [x] Git history rewritten with filter-repo, encrypted files clean (2026-04-20)
+- [x] Tmux lock PIN re-set (2026-04-20)
 - [x] Tmux session naming prompt on create (2026-04-20)
 - [x] Tmux set-titles for Cmd+Tab session names (2026-04-20)
 - [x] ncdu alias with better defaults (2026-04-20)

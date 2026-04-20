@@ -3,22 +3,25 @@
 **Last Updated:** 2026-04-20
 
 ## Current Status
-All changes committed and pushed. Repo hardened for public release (git-crypt on sensitive files, env vars for credentials). Tmux session naming and window titles working.
+All active tasks complete. Repo is safe for public release. Git history rewritten (no plaintext sensitive files). All changes committed and pushed.
 
 ## What Was Done This Session
 - Added ncdu alias with dark-bg, graph, apparent-size, percent flags
 - Added tmux session-created hook that prompts for session name (Enter to skip)
-- Fixed session naming: %1 instead of %% for all-occurrence substitution
-- Fixed session naming: quoted %1 to support spaces in names
-- Added set-titles to tmux so WezTerm Cmd+Tab shows session name instead of "tmux"
+- Fixed session naming: %1 for all-occurrence substitution, quoted for spaces
+- Added set-titles to tmux so WezTerm Cmd+Tab shows session name
 - Added ollama (cask) and jetbrains-toolbox to homebrew
 - Rewrote README as comprehensive "Ultimate AI Developer Terminal" showcase
-- Security audit: identified 5 blockers for public repo
+- Security audit: identified and resolved 5 blockers for public repo
 - Encrypted SSH config, AWS config, preferences.yaml via git-crypt
-- Parameterized confluence scripts (CONFLUENCE_BASE_URL, CONFLUENCE_EMAIL env vars)
+- Parameterized confluence scripts (CONFLUENCE_BASE_URL, CONFLUENCE_EMAIL)
 - Parameterized SonarQube org (SONARQUBE_ORG env var)
-- Committed and fixed neovim config (LazyVim compat, nil_ls for Nix, ts_ls)
+- Added CONFLUENCE_BASE_URL and CONFLUENCE_EMAIL as nix session variables
+- Rewrote git history with git-filter-repo (removed plaintext of encrypted files)
+- Fixed git-crypt key corruption after filter-repo, re-encrypted with valid key
+- Neovim config updated (LazyVim compat, nil_ls for Nix, ts_ls)
 - Added sales-admin agent and skill
+- Tmux lock PIN re-set
 
 ## Active Branches
 | Branch | Status |
@@ -26,13 +29,12 @@ All changes committed and pushed. Repo hardened for public release (git-crypt on
 | `main` | Clean, up to date with origin |
 
 ## Pending Work
-- [ ] Add CONFLUENCE_BASE_URL and CONFLUENCE_EMAIL to 1Password vault
-- [ ] Before making repo public: rewrite git history to remove plaintext of now-encrypted files (git filter-repo)
-- [ ] Test opencode launches and MCP servers connect
-- [ ] Re-set tmux lock PIN (format changed, run `tmux-lock-set-pin.sh`)
+- [ ] Test opencode TUI launch and MCP server connections (interactive test)
+- [ ] Diff remote machine (100.76.144.59) brew packages when online
 - [ ] Remaining audit: #22 (permission drift), #23 (disk cleanup)
 
 ## Key Reference
-- Git-crypt encrypts: home/ssh/default.nix, home/aws/config/config, home/ai/4-preferences.yaml
-- New env vars needed: CONFLUENCE_BASE_URL, CONFLUENCE_EMAIL, SONARQUBE_ORG
-- Audit report: docs/AUDIT-2026-04-07.md (21/23 resolved)
+- Git-crypt encrypts: home/ssh/default.nix, home/aws/config/config, home/ai/4-preferences.yaml, home/aws/config/credentials
+- Git history is clean (filter-repo removed plaintext of encrypted files)
+- Repo is safe for public release on GitHub
+- Other machines (Grogu, Renova, Dark-Horse) need fresh clone after history rewrite
