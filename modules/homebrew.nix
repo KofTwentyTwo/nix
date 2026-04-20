@@ -54,6 +54,7 @@
       "cbonsai"
       "charmbracelet/tap/gum"
       "circleci"
+      "cloudflare-speed-cli"
       "clang-format"
       "cloc"
       "cmake"

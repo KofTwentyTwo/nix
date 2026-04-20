@@ -313,6 +313,7 @@ TOOLS - Code Quality
   sqlfluff        SQL linter             lint and format SQL
 
 TOOLS - Network & System
+  fast            internet speed test    Cloudflare-based speed test (alias for cloudflare-speed-cli)
   iperf3          bandwidth test         network throughput measurement
   arping          ARP ping               ping at the ARP layer
   inetutils       network utils          telnet, ftp, ping, traceroute, etc.
@@ -601,6 +602,9 @@ TIP: shelp KEYWORD   filter output (e.g., shelp kubectl, shelp replace, shelp gi
             "ls-lS"     = "eza -l --sort=size";               # ls -lS    (long, largest first)
             "ls-lSr"    = "eza -lr --sort=size";              # ls -lSr   (long, smallest first)
             
+            # Network
+            fast        = "cloudflare-speed-cli"; # Internet speed test via Cloudflare
+
             # Modern CLI replacements (originals still available via: command du, command grep, etc.)
             du          = "dust";       # Visual disk usage, sorted, colored
             df          = "duf";        # Disk free with colors, table layout

@@ -112,8 +112,10 @@ in
     ## Enable various Home Manager programs                              ##
     #######################################################################
     
-    # Enable nix-index for command lookup (faster than nix-locate)
-    programs.nix-index.enable = true;
+    # nix-index disabled: packages are managed via Homebrew, not nix-env.
+    # The command-not-found handler requires a large local database and
+    # produces broken output when the index is missing or stale.
+    programs.nix-index.enable = false;
 
     # Better cat with syntax highlighting
     programs.bat = {
