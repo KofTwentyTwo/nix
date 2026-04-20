@@ -317,7 +317,7 @@ let
         args = [
           "run" "-i" "--rm"
           "-e" ("SONARQUBE_TOKEN=$" + "{SONARQUBE_TOKEN}")
-          "-e" "SONARQUBE_ORG=dmdbrands"
+          "-e" ("SONARQUBE_ORG=$" + "{SONARQUBE_ORG}")
           "mcp/sonarqube"
         ];
       };

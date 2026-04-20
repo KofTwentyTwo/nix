@@ -10,9 +10,9 @@
 
 set -euo pipefail
 
-BASE_URL="https://greatergoods.atlassian.net/wiki/rest/api/content"
-EMAIL="jmaes@greatergoods.com"
-TOKEN="$CONFLUENCE_API_TOKEN"
+BASE_URL="${CONFLUENCE_BASE_URL:?Set CONFLUENCE_BASE_URL}/rest/api/content"
+EMAIL="${CONFLUENCE_EMAIL:?Set CONFLUENCE_EMAIL}"
+TOKEN="${CONFLUENCE_API_TOKEN:?Set CONFLUENCE_API_TOKEN}"
 AUTH_HEADER="Authorization: Basic $(echo -n "${EMAIL}:${TOKEN}" | base64)"
 
 usage() {

@@ -13,9 +13,9 @@
 
 set -euo pipefail
 
-BASE_URL="https://greatergoods.atlassian.net/wiki"
+BASE_URL="${CONFLUENCE_BASE_URL:?Set CONFLUENCE_BASE_URL (e.g. https://yoursite.atlassian.net/wiki)}"
 V1_API="${BASE_URL}/rest/api/content"
-EMAIL="jmaes@greatergoods.com"
+EMAIL="${CONFLUENCE_EMAIL:?Set CONFLUENCE_EMAIL}"
 
 if [[ -z "${CONFLUENCE_API_TOKEN:-}" ]]; then
     echo "Error: CONFLUENCE_API_TOKEN env var is not set" >&2
@@ -42,9 +42,9 @@ run_python() {
 import json, sys, urllib.request, urllib.error, base64, re
 
 # ── Config ──────────────────────────────────────────────────────────────────
-EMAIL = "jmaes@greatergoods.com"
+EMAIL = __import__("os").environ["CONFLUENCE_EMAIL"]
 TOKEN = __import__("os").environ["CONFLUENCE_API_TOKEN"]
-BASE = "https://greatergoods.atlassian.net/wiki"
+BASE = __import__("os").environ["CONFLUENCE_BASE_URL"]
 V1 = f"{BASE}/rest/api/content"
 AUTH = "Basic " + base64.b64encode(f"{EMAIL}:{TOKEN}".encode()).decode()
 HEADERS = {"Authorization": AUTH, "Content-Type": "application/json"}
