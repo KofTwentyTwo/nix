@@ -287,9 +287,14 @@ let
 
   # Local skills (managed in this repo, not fetched from GitHub)
   localSkillsDir = ./skills;
+  localAgentsDir = ./agents;
   localSkills = {
     ".claude/skills/local--session-start".source = "${localSkillsDir}/session-start";
     ".claude/skills/local--session-end".source = "${localSkillsDir}/session-end";
+    ".claude/skills/local--sales-admin".source = "${localSkillsDir}/sales-admin";
+  };
+  localAgents = {
+    ".claude/agents/local--sales-admin.md".source = "${localAgentsDir}/sales-admin.md";
   };
 
   # Merge all skill sets into one attrset
@@ -305,7 +310,8 @@ let
     // humanizerSkills
     // beautifulProseSkills
     // obsidianSkills
-    // localSkills;
+    // localSkills
+    // localAgents;
 in
 {
   home.file = allSkills;
