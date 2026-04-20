@@ -59,6 +59,7 @@ return {
         "terraform",
         "hcl",
         "nginx",
+        "nix",
         
         -- Other
         "gitignore",
@@ -139,46 +140,16 @@ return {
         swap = {
           enable = true,
           swap_next = {
-            ["<leader>a"] = "@parameter.inner",
+            ["]x"] = "@parameter.inner",
           },
           swap_previous = {
-            ["<leader>A"] = "@parameter.inner",
+            ["[x"] = "@parameter.inner",
           },
         },
       },
       
-      -- Context commenting
-      context_commentstring = {
-        enable = true,
-        enable_autocmd = false,
-      },
-      
-      -- Rainbow parentheses
-      rainbow = {
-        enable = true,
-        disable = { "jsx", "cpp" },
-        extended_mode = true,
-        max_file_lines = nil,
-      },
     },
   },
-  
-  -- TreeSitter context for showing current context
-  {
-    "nvim-treesitter/nvim-treesitter-context",
-    opts = {
-      enable = true,
-      max_lines = 0,
-      min_window_height = 0,
-      line_numbers = true,
-      multiline_threshold = 20,
-      trim_scope = "outer",
-      mode = "cursor",
-      separator = nil,
-      zindex = 20,
-    },
-  },
-  
   
   -- Autotag for HTML/JSX
   {

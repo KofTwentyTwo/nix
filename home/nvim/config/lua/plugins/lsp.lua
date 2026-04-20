@@ -40,7 +40,7 @@ return {
           },
         },
         -- JavaScript/TypeScript
-        tsserver = {
+        ts_ls = {
           settings = {
             typescript = {
               inlayHints = {
@@ -97,6 +97,8 @@ return {
         clangd = {},
         -- Shell
         bashls = {},
+        -- Nix
+        nil_ls = {},
       },
     },
   },
@@ -118,6 +120,7 @@ return {
         "rust-analyzer",
         "clangd",
         "bash-language-server",
+        "nil",
         -- Formatters
         "stylua",
         "black",
@@ -145,7 +148,7 @@ return {
           border = "rounded",
         },
         hint_enable = true,
-        hint_prefix = "💡 ",
+        hint_prefix = ">> ",
         hint_scheme = "String",
         hi_parameter = "LspSignatureActiveParameter",
         max_height = 12,

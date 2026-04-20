@@ -38,14 +38,8 @@ map("n", "<leader>r", ":%s/\\<<C-r><C-w>\\>/<C-r><C-w>/gI<Left><Left><Left>", { 
 -- Clear search highlights
 map("n", "<leader>h", ":nohlsearch<CR>", { desc = "Clear search highlights" })
 
--- Toggle line numbers
-map("n", "<leader>n", ":set number!<CR>", { desc = "Toggle line numbers" })
-
--- Toggle relative line numbers
-map("n", "<leader>rn", ":set relativenumber!<CR>", { desc = "Toggle relative line numbers" })
-
--- Toggle wrap
-map("n", "<leader>w", ":set wrap!<CR>", { desc = "Toggle wrap" })
+-- Toggle wrap (line number toggles: <leader>ul / <leader>uL via LazyVim)
+map("n", "<leader>uw", ":set wrap!<CR>", { desc = "Toggle wrap" })
 
 -- Quick save
 map("n", "<C-s>", ":w<CR>", opts)
@@ -82,7 +76,7 @@ map("n", "K", vim.lsp.buf.hover, { desc = "Hover" })
 map("n", "<C-k>", vim.lsp.buf.signature_help, { desc = "Signature help" })
 map("n", "<leader>rn", vim.lsp.buf.rename, { desc = "Rename" })
 map("n", "<leader>ca", vim.lsp.buf.code_action, { desc = "Code action" })
-map("n", "<leader>f", vim.lsp.buf.format, { desc = "Format" })
+map("n", "<leader>cf", vim.lsp.buf.format, { desc = "Format" })
 
 -- Diagnostic keymaps
 map("n", "]d", vim.diagnostic.goto_next, { desc = "Next diagnostic" })
@@ -90,12 +84,7 @@ map("n", "[d", vim.diagnostic.goto_prev, { desc = "Previous diagnostic" })
 map("n", "<leader>de", vim.diagnostic.open_float, { desc = "Open diagnostic" })
 map("n", "<leader>q", vim.diagnostic.setloclist, { desc = "Set location list" })
 
--- Toggle diagnostics
-map("n", "<leader>td", function()
-  local current = vim.diagnostic.is_disabled()
-  vim.diagnostic.enable(not current)
-  print("Diagnostics " .. (current and "enabled" or "disabled"))
-end, { desc = "Toggle diagnostics" })
+-- Toggle diagnostics: use LazyVim's <leader>ud (handles API changes across Neovim versions)
 
 -- Markdown preview keymaps
 map("n", "<leader>mp", ":MarkdownPreviewToggle<CR>", { desc = "Toggle markdown preview" })
