@@ -78,6 +78,7 @@
       "eksctl"
       "fastfetch"
       "fd"
+      "firebase-cli"
       "ffmpeg"
       "gemini-cli"
       "fish"
