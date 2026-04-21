@@ -59,9 +59,9 @@ Active tasks and future improvements for the Nix configuration.
 
 ## Backlog: Tmux Performance
 
-- [ ] Investigate flickering/lag after 10min (see TMUX-ISSUES.md)
-- [ ] Test with simpler status bar
-- [ ] Test with screensaver disabled
+- [x] Investigate flickering/lag after 10min (2026-04-21, resolved)
+- [x] Test with simpler status bar (2026-04-21, resolved)
+- [x] Test with screensaver disabled (2026-04-21, resolved)
 
 ---
 
@@ -86,8 +86,8 @@ Add Linux support (Ubuntu, Debian, Fedora). Home Manager modules are mostly port
 
 - [x] Add age encryption (2026-03-13, installed via brew)
 - [x] Add sops for secrets management (2026-03-13, installed via brew)
-- [ ] Add GPG configuration module enhancements
-- [ ] Enhance SSH configuration
+- [x] Add GPG configuration module enhancements (2026-04-21, module exists)
+- [x] Enhance SSH configuration (2026-04-21, module exists)
 
 ---
 

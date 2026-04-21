@@ -1,32 +1,24 @@
 # Session State
 
-**Last Updated:** 2026-04-20
+**Last Updated:** 2026-04-21
 
 ## Current Status
-All active tasks complete. Repo is safe for public release. Git history rewritten (no plaintext sensitive files). All changes committed and pushed.
+Session work complete. Committing and pushing.
 
 ## What Was Done This Session
-- Added ncdu alias with dark-bg, graph, apparent-size, percent flags
-- Added tmux session-created hook that prompts for session name (Enter to skip)
-- Fixed session naming: %1 for all-occurrence substitution, quoted for spaces
-- Added set-titles to tmux so WezTerm Cmd+Tab shows session name
-- Added ollama (cask) and jetbrains-toolbox to homebrew
-- Rewrote README as comprehensive "Ultimate AI Developer Terminal" showcase
-- Security audit: identified and resolved 5 blockers for public repo
-- Encrypted SSH config, AWS config, preferences.yaml via git-crypt
-- Parameterized confluence scripts (CONFLUENCE_BASE_URL, CONFLUENCE_EMAIL)
-- Parameterized SonarQube org (SONARQUBE_ORG env var)
-- Added CONFLUENCE_BASE_URL and CONFLUENCE_EMAIL as nix session variables
-- Rewrote git history with git-filter-repo (removed plaintext of encrypted files)
-- Fixed git-crypt key corruption after filter-repo, re-encrypted with valid key
-- Neovim config updated (LazyVim compat, nil_ls for Nix, ts_ls)
-- Added sales-admin agent and skill
-- Tmux lock PIN re-set
+- Replaced Tunnelblick with Viscosity VPN client
+- Created home/viscosity/ module with 5 VPN connections (dev, prod, staging, st-marys-lan, galaxy-lan)
+- Added activation script to auto-register connections in Viscosity plist on switch
+- All VPN config files git-crypt encrypted via .gitattributes wildcard
+- Added /opt/homebrew/sbin to PATH (for mtr and other sbin tools)
+- Added prettyping, aliased ping and traceroute to modern alternatives
+- Fixed tmux session naming: split rename into helper script, handle duplicate names, fix grep regex issue with session IDs containing $
+- Marked tmux performance and GPG/SSH backlog items as done
 
 ## Active Branches
 | Branch | Status |
 |--------|--------|
-| `main` | Clean, up to date with origin |
+| `main` | Committing |
 
 ## Pending Work
 - [ ] Test opencode TUI launch and MCP server connections (interactive test)

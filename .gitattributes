@@ -16,3 +16,6 @@ home/ssh/default.nix filter=git-crypt diff=git-crypt
 
 # AI Preferences - Jira cloud IDs, org-specific config
 home/ai/4-preferences.yaml filter=git-crypt diff=git-crypt
+
+# Viscosity VPN - private keys, certs, endpoint topology
+home/viscosity/configs/** filter=git-crypt diff=git-crypt

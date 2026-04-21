@@ -611,7 +611,8 @@ TIP: shelp KEYWORD   filter output (e.g., shelp kubectl, shelp replace, shelp gi
             dig         = "doggo";      # Modern DNS client, colored output
             top         = "btop";       # Resource monitor TUI with graphs
             htop        = "btop";       # Resource monitor TUI with graphs
-            traceroute  = "mtr";        # Traceroute + ping combined, live updating
+            ping        = "prettyping"; # Colorized ping with compact loss indicators
+            traceroute  = "sudo mtr -b -z";  # Traceroute + ping, show IPs + hostnames + AS numbers
             diff        = "difft";      # Structural, syntax-aware diffs
             grep        = "rg";         # Faster, respects .gitignore, regex
             ps          = "procs";      # Modern process viewer, tree, search
