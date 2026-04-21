@@ -10,6 +10,9 @@ Active tasks and future improvements for the Nix configuration.
 
 ## Recently Completed
 
+- [x] Switch claude-code from Homebrew cask to npm (faster release cadence) (2026-04-21)
+- [x] Add firebase-cli to homebrew (2026-04-21)
+- [x] Add opencode Ollama provider config (2026-04-21)
 - [x] Confluence env vars added as nix session variables (2026-04-20)
 - [x] Git history rewritten with filter-repo, encrypted files clean (2026-04-20)
 - [x] Tmux lock PIN re-set (2026-04-20)

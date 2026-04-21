@@ -485,6 +485,18 @@ TIP: shelp KEYWORD   filter output (e.g., shelp kubectl, shelp replace, shelp gi
              return $ssh_exit
            }
 
+           # Brew wrapper - clears update notification after upgrade/update
+           brew() {
+             command brew "$@"
+             local brew_exit=$?
+             case "$1" in
+               upgrade|update)
+                 rm -f "$HOME/.config/nix/.updates-available"
+                 ;;
+             esac
+             return $brew_exit
+           }
+
            # Help - colored --help output via bat
            help() { "$@" --help 2>&1 | bat -l help -p; }
 
@@ -502,6 +514,58 @@ TIP: shelp KEYWORD   filter output (e.g., shelp kubectl, shelp replace, shelp gi
              git log --oneline --color=always | fzf --ansi --no-sort --preview 'git show --color=always {1}'
            }
 
+           # Draw a bordered box with optional title
+           # Usage: echo "content" | draw_box [--color green|yellow|red|cyan] [--title "Title"]
+           draw_box() {
+             local color="green" title=""
+             while [[ $# -gt 0 ]]; do
+               case "$1" in
+                 --color) color="$2"; shift 2 ;;
+                 --title) title="$2"; shift 2 ;;
+                 *) shift ;;
+               esac
+             done
+
+             local c_border c_title c_reset=$'\033[0m'
+             case "$color" in
+               green)  c_border=$'\033[0;32m'; c_title=$'\033[1;32m' ;;
+               yellow) c_border=$'\033[0;33m'; c_title=$'\033[1;33m' ;;
+               red)    c_border=$'\033[0;31m'; c_title=$'\033[1;31m' ;;
+               cyan)   c_border=$'\033[0;36m'; c_title=$'\033[1;36m' ;;
+             esac
+
+             local -a lines=()
+             while IFS= read -r line || [[ -n "$line" ]]; do
+               lines+=("$line")
+             done
+
+             local max_len=0
+             for line in "''${lines[@]}"; do
+               (( ''${#line} > max_len )) && max_len=''${#line}
+             done
+             if [[ -n "$title" ]]; then
+               (( ''${#title} > max_len )) && max_len=''${#title}
+             fi
+             (( max_len < 40 )) && max_len=40
+
+             echo ""
+             if [[ -n "$title" ]]; then
+               local title_dashes=$(printf '─%.0s' $(seq 1 $(( max_len - ''${#title} ))))
+               echo -e "''${c_border}╭─ ''${c_title}''${title}''${c_border} ''${title_dashes}╮''${c_reset}"
+             else
+               local top_dashes=$(printf '─%.0s' $(seq 1 $(( max_len + 3 ))))
+               echo -e "''${c_border}╭''${top_dashes}╮''${c_reset}"
+             fi
+
+             for line in "''${lines[@]}"; do
+               printf "''${c_border}│''${c_reset}  %-''${max_len}s ''${c_border}│''${c_reset}\n" "$line"
+             done
+
+             local bottom_dashes=$(printf '─%.0s' $(seq 1 $(( max_len + 3 ))))
+             echo -e "''${c_border}╰''${bottom_dashes}╯''${c_reset}"
+             echo ""
+           }
+
            # Show a random shell tip in a bordered box
            hint() {
              local tips_file="$HOME/.local/share/shell-tips"
@@ -510,23 +574,7 @@ TIP: shelp KEYWORD   filter output (e.g., shelp kubectl, shelp replace, shelp gi
              local tip=$(awk 'BEGIN{RS="\n%\n"; srand()} NF{a[++n]=$0} END{if(n>0) print a[int(rand()*n)+1]}' "$tips_file")
              [[ -z "$tip" ]] && return
 
-             # Measure longest line to size the box dynamically
-             local max_len=0
-             while IFS= read -r line; do
-               (( ''${#line} > max_len )) && max_len=''${#line}
-             done <<< "$tip"
-             (( max_len < 40 )) && max_len=40
-
-             local top_dashes=$(printf '─%.0s' $(seq 1 $(( max_len - 9 ))))
-             local bottom_dashes=$(printf '─%.0s' $(seq 1 $(( max_len + 3 ))))
-
-             echo ""
-             echo -e "\033[0;32m╭─ \033[1;32mShell Tip\033[0;32m ''${top_dashes}╮\033[0m"
-             while IFS= read -r line; do
-               printf "\033[0;32m│\033[0m  %-''${max_len}s \033[0;32m│\033[0m\n" "$line"
-             done <<< "$tip"
-             echo -e "\033[0;32m╰''${bottom_dashes}╯\033[0m"
-             echo ""
+             echo "$tip" | draw_box --color green --title "Shell Tip"
            }
 
            # MOTD: fastfetch + random shell tip on new sessions
@@ -537,23 +585,16 @@ TIP: shelp KEYWORD   filter output (e.g., shelp kubectl, shelp replace, shelp gi
 
            # Check for available updates (similar to oh-my-zsh update notification)
            if [[ -f "$HOME/.config/nix/.updates-available" ]]; then
-             echo ""
-             echo -e "\033[0;33m╭─────────────────────────────────────────────────────────╮\033[0m"
-             echo -e "\033[0;33m│\033[0m \033[1;33m⚠️  Updates Available\033[0m                                    \033[0;33m│\033[0m"
-             echo -e "\033[0;33m├─────────────────────────────────────────────────────────┤\033[0m"
-             # Display update messages (skip comment lines)
-             grep -v "^#" "$HOME/.config/nix/.updates-available" | while IFS= read -r line; do
-               if [[ -n "$line" ]]; then
-                 echo -e "\033[0;33m│\033[0m $line"
-               fi
-             done
-             echo -e "\033[0;33m│\033[0m                                                         \033[0;33m│\033[0m"
-             echo -e "\033[0;33m│\033[0m To update:                                            \033[0;33m│\033[0m"
-             echo -e "\033[0;33m│\033[0m   • Brew:    \033[0;36mbrew upgrade\033[0m                              \033[0;33m│\033[0m"
-             echo -e "\033[0;33m│\033[0m   • Nix:     \033[0;36mnix flake update ~/.config/nix && switch\033[0m     \033[0;33m│\033[0m"
-             echo -e "\033[0;33m│\033[0m   • Check:   \033[0;36mcheck-updates.sh\033[0m                           \033[0;33m│\033[0m"
-             echo -e "\033[0;33m╰─────────────────────────────────────────────────────────╯\033[0m"
-             echo ""
+             {
+               grep -v "^#" "$HOME/.config/nix/.updates-available" | while IFS= read -r line; do
+                 [[ -n "$line" ]] && echo "$line"
+               done
+               echo ""
+               echo "To update:"
+               echo "  • Brew:    brew upgrade"
+               echo "  • Nix:     nix flake update ~/.config/nix && switch"
+               echo "  • Check:   check-updates.sh"
+             } | draw_box --color yellow --title "⚠️  Updates Available"
            fi
          '';
 

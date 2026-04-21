@@ -3,22 +3,17 @@
 **Last Updated:** 2026-04-21
 
 ## Current Status
-Session work complete. Committing and pushing.
+Session complete. Added firebase-cli and opencode Ollama provider, committed and pushed.
 
 ## What Was Done This Session
-- Replaced Tunnelblick with Viscosity VPN client
-- Created home/viscosity/ module with 5 VPN connections (dev, prod, staging, st-marys-lan, galaxy-lan)
-- Added activation script to auto-register connections in Viscosity plist on switch
-- All VPN config files git-crypt encrypted via .gitattributes wildcard
-- Added /opt/homebrew/sbin to PATH (for mtr and other sbin tools)
-- Added prettyping, aliased ping and traceroute to modern alternatives
-- Fixed tmux session naming: split rename into helper script, handle duplicate names, fix grep regex issue with session IDs containing $
-- Marked tmux performance and GPG/SSH backlog items as done
+- Added firebase-cli to homebrew.nix, ran darwin-rebuild switch
+- Committed opencode Ollama provider config (was previously unstaged)
+- Pushed both commits to origin/main
 
 ## Active Branches
 | Branch | Status |
 |--------|--------|
-| `main` | Committing |
+| `main` | Up to date with origin |
 
 ## Pending Work
 - [ ] Test opencode TUI launch and MCP server connections (interactive test)

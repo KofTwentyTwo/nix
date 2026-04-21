@@ -208,7 +208,8 @@
       "bambu-studio"
       "bettertouchtool"
       "claude"
-      "claude-code"
+      # claude-code: installed via npm (-g @anthropic-ai/claude-code) instead of Homebrew
+      # Reason: Homebrew cask lags Anthropic's release cadence. npm gives same-day releases.
       "cleanshot"
       "codex"
       "connectmenow"

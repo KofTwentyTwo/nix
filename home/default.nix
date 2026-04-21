@@ -34,6 +34,7 @@ in
     ./gemini
     ./gpg
     ./k9s
+    ./npm-globals
     ./nvim
     ./ohmyzsh
     ./opencode
