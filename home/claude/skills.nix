@@ -19,6 +19,9 @@
 #     - SHADOWPR0/beautiful_prose: Prose quality and style enforcement
 #   Obsidian:
 #     - kepano/obsidian-skills: Markdown, Bases, JSON Canvas, CLI
+#   Spec-driven dev:
+#     - gsd-build/get-shit-done: 33 agents + 77 slash commands + engine (contexts,
+#       references, templates, workflows) for phased spec-driven execution
 
 { config, lib, inputs ? {}, ... }:
 
@@ -34,6 +37,7 @@ let
   humanizer = inputs.claude-skills-humanizer or null;
   beautifulProse = inputs.claude-skills-beautiful-prose or null;
   obsidian = inputs.claude-skills-obsidian or null;
+  gsd = inputs.claude-skills-gsd or null;
 
   # Helper: create a home.file entry for a skill directory
   # Maps source-repo/path -> ~/.claude/skills/<namespace>--<name>/
@@ -285,6 +289,40 @@ let
     (mkSkill "obsidian" "obsidian-markdown" obsidian "skills/obsidian-markdown")
   ]);
 
+  # gsd-build/get-shit-done: spec-driven dev — engine, slash commands, agents, hooks.
+  # GSD files are NOT namespaced like other skills (e.g. `gsd--foo`); they use
+  # their canonical paths so slash commands resolve as `/gsd:<name>`, agents
+  # match GSD's installer layout (`~/.claude/agents/gsd-<name>.md`), and hooks
+  # can locate siblings via `__dirname` (gsd-context-monitor.js reads
+  # `../get-shit-done/bin/gsd-tools.cjs`, so hooks/ and get-shit-done/ must
+  # remain siblings under ~/.claude/).
+  #
+  # Hook registration in settings.json lives in home/claude/default.nix so the
+  # activation script owns the merge with any existing user settings.
+  gsdDirs = lib.optionalAttrs (gsd != null) {
+    # Engine: contexts/, references/, templates/, workflows/, bin/gsd-tools.cjs
+    ".claude/get-shit-done".source = "${gsd}/get-shit-done";
+    # Slash commands: ~/.claude/commands/gsd/<name>.md → /gsd:<name>
+    ".claude/commands/gsd".source = "${gsd}/commands/gsd";
+    # Runtime hooks (statusline, context monitor, guards, etc.)
+    ".claude/hooks".source = "${gsd}/hooks";
+  };
+
+  # Enumerate agents so each lands flat at ~/.claude/agents/gsd-<name>.md
+  gsdAgents = lib.optionalAttrs (gsd != null) (
+    let
+      agentDir = "${gsd}/agents";
+      entries = builtins.readDir agentDir;
+      mdFiles = lib.filter
+        (n: lib.hasSuffix ".md" n && entries.${n} == "regular")
+        (builtins.attrNames entries);
+    in
+      lib.listToAttrs (map (f: {
+        name = ".claude/agents/${f}";
+        value = { source = "${agentDir}/${f}"; };
+      }) mdFiles)
+  );
+
   # Local skills (managed in this repo, not fetched from GitHub)
   localSkillsDir = ./skills;
   localAgentsDir = ./agents;
@@ -310,6 +348,8 @@ let
     // humanizerSkills
     // beautifulProseSkills
     // obsidianSkills
+    // gsdDirs
+    // gsdAgents
     // localSkills
     // localAgents;
 in

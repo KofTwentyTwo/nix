@@ -277,11 +277,81 @@ let
     ];
   };
 
+  # GSD hook paths — resolved via ~/.claude/hooks/ symlink mounted in skills.nix.
+  # Scripts use __dirname to locate sibling files, so paths must go through the
+  # user-level symlink (not through the /nix/store realpath) to keep hooks/ and
+  # get-shit-done/ as siblings in the resolved directory tree.
+  gsdHooksDir = "${homeDir}/.claude/hooks";
+  gsdNode = hook: ''node "${gsdHooksDir}/${hook}"'';
+  gsdBash = hook: ''bash "${gsdHooksDir}/${hook}"'';
+
+  # GSD hook registration — replicates `npx get-shit-done-cc --claude --global`.
+  # Structure matches Claude Code hook spec: each event gets an array of
+  # entries, each with an optional tool-name `matcher` regex and a list of
+  # `hooks` (type=command, optional timeout in seconds).
+  # See /tmp/gsd-inspect/bin/install.js lines 6112-6369 for the source of truth.
+  gsdHooksConfig = {
+    SessionStart = [
+      # Update check — notifies if a newer GSD version is available
+      { hooks = [ { type = "command"; command = gsdNode "gsd-check-update.js"; } ]; }
+      # Session state orientation — reads .planning/STATE.md if present (opt-in per project)
+      { hooks = [ { type = "command"; command = gsdBash "gsd-session-state.sh"; } ]; }
+    ];
+    PreToolUse = [
+      # Prompt-injection guard on Write|Edit
+      {
+        matcher = "Write|Edit";
+        hooks = [ { type = "command"; command = gsdNode "gsd-prompt-guard.js"; timeout = 5; } ];
+      }
+      # Read-before-edit advisory on Write|Edit
+      {
+        matcher = "Write|Edit";
+        hooks = [ { type = "command"; command = gsdNode "gsd-read-guard.js"; timeout = 5; } ];
+      }
+      # Workflow guard on Write|Edit (opt-in via .planning/config.json hooks.workflow_guard)
+      {
+        matcher = "Write|Edit";
+        hooks = [ { type = "command"; command = gsdNode "gsd-workflow-guard.js"; timeout = 5; } ];
+      }
+      # Conventional-commits validator on Bash (opt-in via .planning/config.json)
+      {
+        matcher = "Bash";
+        hooks = [ { type = "command"; command = gsdBash "gsd-validate-commit.sh"; timeout = 5; } ];
+      }
+    ];
+    PostToolUse = [
+      # Context-window monitor
+      {
+        matcher = "Bash|Edit|Write|MultiEdit|Agent|Task";
+        hooks = [ { type = "command"; command = gsdNode "gsd-context-monitor.js"; timeout = 10; } ];
+      }
+      # Read-time injection scanner
+      {
+        matcher = "Read";
+        hooks = [ { type = "command"; command = gsdNode "gsd-read-injection-scanner.js"; timeout = 5; } ];
+      }
+      # Phase boundary detection (opt-in)
+      {
+        matcher = "Write|Edit";
+        hooks = [ { type = "command"; command = gsdBash "gsd-phase-boundary.sh"; timeout = 5; } ];
+      }
+    ];
+  };
+
   # User preferences - consistent across machines
   userPrefs = {
     theme = "dark";
     terminalBellOnPrompt = true;
     effortLevel = "high";
+
+    # GSD statusline — shows context %, phase, todos, update notice
+    statusLine = {
+      type = "command";
+      command = gsdNode "gsd-statusline.js";
+    };
+
+    # GSD hooks (see gsdHooksConfig above)
+    hooks = gsdHooksConfig;
 
     # Plugins from anthropics/claude-plugins-official marketplace
     enabledPlugins = {

@@ -83,6 +83,12 @@
          url = "github:kepano/obsidian-skills";
          flake = false;
       };
+
+      # GSD (Get Shit Done): spec-driven dev workflow — agents, commands, engine
+      claude-skills-gsd = {
+         url = "github:gsd-build/get-shit-done";
+         flake = false;
+      };
    };
 
    outputs = inputs@{ self, nix-darwin, nixpkgs, home-manager, ...}:

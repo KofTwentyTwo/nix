@@ -80,6 +80,22 @@
         "type": "github"
       }
     },
+    "claude-skills-gsd": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1776877032,
+        "narHash": "sha256-URnxjYanyk0H64kI3GyumCqtJymSMW1yKbdHaCW1aM8=",
+        "owner": "gsd-build",
+        "repo": "get-shit-done",
+        "rev": "b35fdd51f3a2e4c8b8ae4b240c44c8190c3a2509",
+        "type": "github"
+      },
+      "original": {
+        "owner": "gsd-build",
+        "repo": "get-shit-done",
+        "type": "github"
+      }
+    },
     "claude-skills-humanizer": {
       "flake": false,
       "locked": {
@@ -239,6 +255,7 @@
         "claude-skills-ccpm": "claude-skills-ccpm",
         "claude-skills-creative-writing": "claude-skills-creative-writing",
         "claude-skills-deanpeters": "claude-skills-deanpeters",
+        "claude-skills-gsd": "claude-skills-gsd",
         "claude-skills-humanizer": "claude-skills-humanizer",
         "claude-skills-obsidian": "claude-skills-obsidian",
         "claude-skills-phuryn": "claude-skills-phuryn",
