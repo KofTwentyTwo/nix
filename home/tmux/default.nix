@@ -9,13 +9,28 @@
 #   - Increased history-limit for Claude Code compatibility
 #   - Fast escape-time for responsive TUI apps
 
-{ pkgs, ... }:
+{ pkgs, lib, ... }:
 
 {
   # Install cmatrix for the lock screen effect
   home.packages = with pkgs; [
     cmatrix
   ];
+
+  # Auto-reload tmux config on `darwin-rebuild switch` if a server is running.
+  # tmux reads tmux.conf once at server start; without this, edits only apply
+  # to sessions created after the server restarts, which is confusing.
+  # Safe to re-source because `set-hook -g` on line 101 clears the hook array
+  # before `-ga` appends on line 103 — keep that invariant when editing hooks.
+  home.activation.reloadTmux = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    if ${pkgs.tmux}/bin/tmux list-sessions &>/dev/null; then
+      if ${pkgs.tmux}/bin/tmux source-file "$HOME/.config/tmux/tmux.conf" 2>/dev/null; then
+        echo "tmux: reloaded config in running server"
+      else
+        echo "tmux: server running but source-file failed (consider 'tmux kill-server')"
+      fi
+    fi
+  '';
 
   # Enable tmux with screensaver and status bar
   programs.tmux = {
