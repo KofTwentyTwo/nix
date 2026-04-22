@@ -256,7 +256,11 @@
       environment.systemPackages = [ ];
 
       # Homebrew packages managed in modules/homebrew.nix
-      imports = [ ./modules/homebrew.nix ];
+      # Rectangle window-manager preferences managed in modules/rectangle.nix
+      imports = [
+        ./modules/homebrew.nix
+        ./modules/rectangle.nix
+      ];
 
       #############################################################
       ## Launchd Agents                                            ##
