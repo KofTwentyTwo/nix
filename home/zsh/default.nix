@@ -44,6 +44,19 @@ in
              export TERM=wezterm
            fi
 
+           # Auto-attach tmux for interactive SSH sessions. Without this, an
+           # SSH login drops into a bare shell and the nested-tmux F12 toggle
+           # has nothing on the remote side to receive the prefix key — pressing
+           # C-b just moves the bash cursor. `new-session -A -s ssh` attaches
+           # to the "ssh" session if it exists, else creates it. Guards below
+           # prevent this from triggering on local shells, non-interactive
+           # commands, or scp/sftp (dumb terminals).
+           if [[ -n "$SSH_CONNECTION" ]] && [[ -z "$TMUX" ]] \
+              && [[ $- == *i* ]] && [[ "$TERM" != "dumb" ]] \
+              && command -v tmux >/dev/null 2>&1; then
+             exec tmux new-session -A -s ssh
+           fi
+
            # Forward OSC 7 (cwd reporting) through tmux to WezTerm
            # enableVteIntegration sends OSC 7 but tmux captures it for its own
            # pane_current_path tracking. This re-sends via DCS passthrough so
