@@ -156,7 +156,12 @@
       "Bash(git -C /Users/james.maes/.config/nix show HEAD:home/viscosity/configs/dev/key.key)",
       "Bash(firebase --version)",
       "Bash(npm config:*)",
-      "Read(//Users/james.maes/**)"
+      "Read(//Users/james.maes/**)",
+      "Bash(sudo -n darwin-rebuild switch --flake ~/.config/nix)",
+      "Read(//opt/homebrew/lib/node_modules/firebase-tools/lib/bin/**)",
+      "Bash(npm uninstall:*)",
+      "Bash(brew link:*)",
+      "Bash(tmux show-hooks:*)"
     ]
   }
 }

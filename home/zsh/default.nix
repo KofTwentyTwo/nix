@@ -497,6 +497,17 @@ TIP: shelp KEYWORD   filter output (e.g., shelp kubectl, shelp replace, shelp gi
              return $brew_exit
            }
 
+           # darwin-rebuild switch wrapper - bumps GSD flake input on every run
+           # so /gsd commands and agents stay current with upstream.
+           switch() {
+             (cd "$HOME/.config/nix" && nix flake update claude-skills-gsd) || {
+               echo "GSD flake update failed; aborting switch" >&2
+               return 1
+             }
+             clear
+             sudo darwin-rebuild switch --flake "$HOME/.config/nix"
+           }
+
            # Help - colored --help output via bat
            help() { "$@" --help 2>&1 | bat -l help -p; }
 
@@ -594,7 +605,7 @@ TIP: shelp KEYWORD   filter output (e.g., shelp kubectl, shelp replace, shelp gi
                echo "  • Brew:    brew upgrade"
                echo "  • Nix:     nix flake update ~/.config/nix && switch"
                echo "  • Check:   check-updates.sh"
-             } | draw_box --color yellow --title "⚠️  Updates Available"
+             } | draw_box --color yellow --title "Updates Available"
            fi
          '';
 
@@ -602,8 +613,8 @@ TIP: shelp KEYWORD   filter output (e.g., shelp kubectl, shelp replace, shelp gi
          # Shell aliases - shortcuts for common commands
          shellAliases = {
             # Nix/Darwin management
-            switch      = "clear;sudo darwin-rebuild switch --flake ~/.config/nix";
-            
+            # (switch is defined as a function above so it can run pre-rebuild steps)
+
             # History shortcuts
             hist        = "history";
             his         = "history";

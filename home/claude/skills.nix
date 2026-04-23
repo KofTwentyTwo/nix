@@ -23,7 +23,7 @@
 #     - gsd-build/get-shit-done: 33 agents + 77 slash commands + engine (contexts,
 #       references, templates, workflows) for phased spec-driven execution
 
-{ config, lib, inputs ? {}, ... }:
+{ config, lib, pkgs, inputs ? {}, ... }:
 
 let
   # Shorthand for the fetched source trees
@@ -299,9 +299,22 @@ let
   #
   # Hook registration in settings.json lives in home/claude/default.nix so the
   # activation script owns the merge with any existing user settings.
+  # GSD's upstream npm installer writes a VERSION file that gsd-check-update-worker.js
+  # reads to compare against the published npm version. Our symlink-from-source install
+  # skips that step, so without this VERSION file the update check sees installed=0.0.0
+  # and always reports "update available". Stamp it from package.json at build time.
+  gsdVersion = if gsd != null
+    then (builtins.fromJSON (builtins.readFile "${gsd}/package.json")).version
+    else null;
+  gsdEngine = if gsd != null
+    then pkgs.runCommand "gsd-engine-with-version" {} ''
+      cp -r --no-preserve=mode ${gsd}/get-shit-done $out
+      printf '%s\n' "${gsdVersion}" > $out/VERSION
+    ''
+    else null;
   gsdDirs = lib.optionalAttrs (gsd != null) {
-    # Engine: contexts/, references/, templates/, workflows/, bin/gsd-tools.cjs
-    ".claude/get-shit-done".source = "${gsd}/get-shit-done";
+    # Engine: contexts/, references/, templates/, workflows/, bin/gsd-tools.cjs, VERSION
+    ".claude/get-shit-done".source = gsdEngine;
     # Slash commands: ~/.claude/commands/gsd/<name>.md → /gsd:<name>
     ".claude/commands/gsd".source = "${gsd}/commands/gsd";
     # Runtime hooks (statusline, context monitor, guards, etc.)
