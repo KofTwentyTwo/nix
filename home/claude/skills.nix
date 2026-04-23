@@ -37,7 +37,6 @@ let
   humanizer = inputs.claude-skills-humanizer or null;
   beautifulProse = inputs.claude-skills-beautiful-prose or null;
   obsidian = inputs.claude-skills-obsidian or null;
-  gsd = inputs.claude-skills-gsd or null;
 
   # Helper: create a home.file entry for a skill directory
   # Maps source-repo/path -> ~/.claude/skills/<namespace>--<name>/
@@ -289,52 +288,11 @@ let
     (mkSkill "obsidian" "obsidian-markdown" obsidian "skills/obsidian-markdown")
   ]);
 
-  # gsd-build/get-shit-done: spec-driven dev — engine, slash commands, agents, hooks.
-  # GSD files are NOT namespaced like other skills (e.g. `gsd--foo`); they use
-  # their canonical paths so slash commands resolve as `/gsd:<name>`, agents
-  # match GSD's installer layout (`~/.claude/agents/gsd-<name>.md`), and hooks
-  # can locate siblings via `__dirname` (gsd-context-monitor.js reads
-  # `../get-shit-done/bin/gsd-tools.cjs`, so hooks/ and get-shit-done/ must
-  # remain siblings under ~/.claude/).
-  #
-  # Hook registration in settings.json lives in home/claude/default.nix so the
-  # activation script owns the merge with any existing user settings.
-  # GSD's upstream npm installer writes a VERSION file that gsd-check-update-worker.js
-  # reads to compare against the published npm version. Our symlink-from-source install
-  # skips that step, so without this VERSION file the update check sees installed=0.0.0
-  # and always reports "update available". Stamp it from package.json at build time.
-  gsdVersion = if gsd != null
-    then (builtins.fromJSON (builtins.readFile "${gsd}/package.json")).version
-    else null;
-  gsdEngine = if gsd != null
-    then pkgs.runCommand "gsd-engine-with-version" {} ''
-      cp -r --no-preserve=mode ${gsd}/get-shit-done $out
-      printf '%s\n' "${gsdVersion}" > $out/VERSION
-    ''
-    else null;
-  gsdDirs = lib.optionalAttrs (gsd != null) {
-    # Engine: contexts/, references/, templates/, workflows/, bin/gsd-tools.cjs, VERSION
-    ".claude/get-shit-done".source = gsdEngine;
-    # Slash commands: ~/.claude/commands/gsd/<name>.md → /gsd:<name>
-    ".claude/commands/gsd".source = "${gsd}/commands/gsd";
-    # Runtime hooks (statusline, context monitor, guards, etc.)
-    ".claude/hooks".source = "${gsd}/hooks";
-  };
-
-  # Enumerate agents so each lands flat at ~/.claude/agents/gsd-<name>.md
-  gsdAgents = lib.optionalAttrs (gsd != null) (
-    let
-      agentDir = "${gsd}/agents";
-      entries = builtins.readDir agentDir;
-      mdFiles = lib.filter
-        (n: lib.hasSuffix ".md" n && entries.${n} == "regular")
-        (builtins.attrNames entries);
-    in
-      lib.listToAttrs (map (f: {
-        name = ".claude/agents/${f}";
-        value = { source = "${agentDir}/${f}"; };
-      }) mdFiles)
-  );
+  # GSD is NOT symlinked via nix — see home/claude/default.nix for the
+  # brew-style activation script that runs `npx get-shit-done-cc@latest --global`
+  # on every rebuild. That lets GSD own its own file layout under ~/.claude/
+  # (hooks/, get-shit-done/, agents/gsd-*.md, commands/gsd/) the way upstream
+  # expects, so GSD's internal health checks pass.
 
   # Local skills (managed in this repo, not fetched from GitHub)
   localSkillsDir = ./skills;
@@ -361,8 +319,6 @@ let
     // humanizerSkills
     // beautifulProseSkills
     // obsidianSkills
-    // gsdDirs
-    // gsdAgents
     // localSkills
     // localAgents;
 in

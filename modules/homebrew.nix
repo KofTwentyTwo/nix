@@ -9,6 +9,12 @@
   homebrew = {
     enable = true;
     onActivation.cleanup = "uninstall";
+    # Auto-upgrade all brew formulae and casks on every `darwin-rebuild switch`.
+    # Keeps AI tools (claude, codex, gemini-cli, aicommits, ollama-app, openai-whisper)
+    # current; also upgrades all other brews as a side effect.
+    onActivation.upgrade = true;
+    # Refresh brew's package metadata before upgrading so we pull the latest versions.
+    onActivation.autoUpdate = true;
 
     taps = [
       "antoniorodr/memo"
@@ -236,7 +242,7 @@
       "notion-mail"
       "notion"
       "obsidian"
-      "ollama"
+      "ollama-app"
       "omnifocus"
       "omnigraffle"
       "omniplan"

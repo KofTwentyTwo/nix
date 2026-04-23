@@ -161,7 +161,9 @@
       "Read(//opt/homebrew/lib/node_modules/firebase-tools/lib/bin/**)",
       "Bash(npm uninstall:*)",
       "Bash(brew link:*)",
-      "Bash(tmux show-hooks:*)"
+      "Bash(tmux show-hooks:*)",
+      "Bash(gsd-sdk query *)",
+      "Bash(npm list *)"
     ]
   }
 }

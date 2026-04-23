@@ -84,11 +84,9 @@
          flake = false;
       };
 
-      # GSD (Get Shit Done): spec-driven dev workflow — agents, commands, engine
-      claude-skills-gsd = {
-         url = "github:gsd-build/get-shit-done";
-         flake = false;
-      };
+      # GSD (Get Shit Done) is installed via its own npx installer in
+      # home/claude/default.nix (brew-style: nix declares intent, upstream
+      # installer owns the file layout). No flake input needed.
    };
 
    outputs = inputs@{ self, nix-darwin, nixpkgs, home-manager, ...}:

@@ -10,8 +10,9 @@
 # How it works:
 #   - NPM_CONFIG_PREFIX=~/.npm-global puts all -g installs under the user dir
 #   - ~/.npm-global/bin is prepended to PATH (wins over /opt/homebrew/bin)
-#   - Activation script installs any declared package that isn't present yet
-#   - Updates are explicit: run `npm-globals-update` to pull @latest for all
+#   - Activation script installs `pkg@latest` on every `darwin-rebuild switch`,
+#     so declared AI CLIs stay fresh (same rationale as brew's
+#     onActivation.upgrade). A `npm-globals-update` helper stays for manual runs.
 
 { config, pkgs, lib, ... }:
 
@@ -71,8 +72,10 @@ in
     '';
   };
 
-  # Install declared packages if missing. Idempotent: re-running the
-  # activation is cheap when everything is already installed.
+  # Install/upgrade declared packages on every rebuild. Always resolves to
+  # @latest so AI CLIs stay current. npm's install is idempotent when the
+  # package is already at the latest version, so this is cheap when nothing
+  # changed. Non-fatal on network failures — logs a warning and continues.
   home.activation.installNpmGlobals = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     export NPM_CONFIG_PREFIX="${homeDir}/.npm-global"
     export PATH="${nodeBin}:$PATH"
@@ -84,13 +87,9 @@ in
     fi
 
     for pkg in ${packageList}; do
-      if "${nodeBin}/npm" ls -g --depth=0 "$pkg" >/dev/null 2>&1; then
-        echo "npm-globals: $pkg already installed, skipping"
-      else
-        echo "npm-globals: installing $pkg"
-        "${nodeBin}/npm" install -g "$pkg" || \
-          echo "npm-globals: WARN install of $pkg failed (offline?); continuing" >&2
-      fi
+      echo "npm-globals: installing/upgrading $pkg@latest"
+      "${nodeBin}/npm" install -g "$pkg@latest" || \
+        echo "npm-globals: WARN install of $pkg failed (offline?); continuing" >&2
     done
   '';
 }
