@@ -163,7 +163,10 @@
       "Bash(brew link:*)",
       "Bash(tmux show-hooks:*)",
       "Bash(gsd-sdk query *)",
-      "Bash(npm list *)"
+      "Bash(npm list *)",
+      "Bash(tmux show *)",
+      "Bash(tmux display-message *)",
+      "Bash(/bin/ps aux *)"
     ]
   }
 }

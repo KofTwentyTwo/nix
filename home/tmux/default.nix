@@ -4,7 +4,9 @@
 # Matches starship prompt aesthetic (bold green, nerd fonts, structured).
 #
 # Features:
-#   - Mouse scroll enters copy mode (scrolls terminal history)
+#   - Mouse OFF so WezTerm handles drag-to-select / Cmd+C natively
+#     (pre-tmux copy/paste UX). Shift+drag is the universal bypass if you
+#     ever need it inside copy-mode or Neovim. Scroll history via PageUp/PageDown.
 #   - PageUp/PageDown scroll terminal history
 #   - Increased history-limit for Claude Code compatibility
 #   - Fast escape-time for responsive TUI apps
@@ -20,15 +22,27 @@
   # Auto-reload tmux config on `darwin-rebuild switch` if a server is running.
   # tmux reads tmux.conf once at server start; without this, edits only apply
   # to sessions created after the server restarts, which is confusing.
-  # Safe to re-source because `set-hook -g` on line 101 clears the hook array
-  # before `-ga` appends on line 103 — keep that invariant when editing hooks.
+  #
+  # We prefer the brew-installed tmux binary (/opt/homebrew/bin/tmux) because
+  # that's what actually runs the user's server. Using pkgs.tmux here fails
+  # silently on macOS: nix tmux resolves TMPDIR differently than brew tmux, so
+  # list-sessions looks at the wrong socket path and returns no sessions even
+  # when one is running. Stderr is captured so failures surface in rebuild
+  # output instead of being swallowed.
   home.activation.reloadTmux = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    if ${pkgs.tmux}/bin/tmux list-sessions &>/dev/null; then
-      if ${pkgs.tmux}/bin/tmux source-file "$HOME/.config/tmux/tmux.conf" 2>/dev/null; then
-        echo "tmux: reloaded config in running server"
+    tmux_bin="/opt/homebrew/bin/tmux"
+    if [ ! -x "$tmux_bin" ]; then
+      tmux_bin="${pkgs.tmux}/bin/tmux"
+    fi
+
+    if "$tmux_bin" list-sessions >/dev/null 2>&1; then
+      if out=$("$tmux_bin" source-file "$HOME/.config/tmux/tmux.conf" 2>&1); then
+        echo "tmux: reloaded config in running server ($tmux_bin)"
       else
-        echo "tmux: server running but source-file failed (consider 'tmux kill-server')"
+        echo "tmux: source-file failed: $out" >&2
       fi
+    else
+      echo "tmux: no running server, skipping reload"
     fi
   '';
 
@@ -71,14 +85,13 @@
       set -ga terminal-features 'wezterm:clipboard'
       set -g copy-command 'pbcopy'
 
-      # Mouse support - scroll enters copy mode for terminal history
-      set -g mouse on
+      # Mouse OFF: let WezTerm own mouse input so drag-to-select + Cmd+C work
+      # natively, matching the pre-tmux UX. Shift+drag is the universal bypass
+      # (configured in home/wez/config/wezterm.lua) for selecting inside Neovim
+      # or tmux copy-mode. Scrollback is via PageUp/PageDown (below).
+      set -g mouse off
 
-      # Mouse wheel scrolling - enter copy mode and scroll
-      bind -n WheelUpPane if-shell -F -t = "#{mouse_any_flag}" "send-keys -M" "if -Ft= '#{pane_in_mode}' 'send-keys -M' 'select-pane -t=; copy-mode -e; send-keys -M'"
-      bind -n WheelDownPane select-pane -t= \; send-keys -M
-
-      # PageUp/PageDown - enter copy mode and scroll
+      # PageUp/PageDown - enter copy mode and scroll (keyboard-driven scrollback)
       bind -n PageUp if-shell -F "#{pane_in_mode}" "send-keys PageUp" "copy-mode -eu"
       bind -n PageDown if-shell -F "#{pane_in_mode}" "send-keys PageDown" ""
 
