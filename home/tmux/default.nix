@@ -4,10 +4,11 @@
 # Matches starship prompt aesthetic (bold green, nerd fonts, structured).
 #
 # Features:
-#   - Mouse OFF so WezTerm handles drag-to-select / Cmd+C natively
-#     (pre-tmux copy/paste UX). Shift+drag is the universal bypass if you
-#     ever need it inside copy-mode or Neovim. Scroll history via PageUp/PageDown.
-#   - PageUp/PageDown scroll terminal history
+#   - Mouse ON for scroll wheel (enter copy-mode + scroll pane history), but
+#     drag bindings are unbound so WezTerm still owns drag-to-select / Cmd+C
+#     natively (pre-tmux copy/paste UX). Shift+drag is the universal bypass
+#     if you ever need it inside copy-mode or Neovim.
+#   - PageUp/PageDown scroll terminal history (keyboard alternative)
 #   - Increased history-limit for Claude Code compatibility
 #   - Fast escape-time for responsive TUI apps
 
@@ -85,11 +86,18 @@
       set -ga terminal-features 'wezterm:clipboard'
       set -g copy-command 'pbcopy'
 
-      # Mouse OFF: let WezTerm own mouse input so drag-to-select + Cmd+C work
-      # natively, matching the pre-tmux UX. Shift+drag is the universal bypass
-      # (configured in home/wez/config/wezterm.lua) for selecting inside Neovim
-      # or tmux copy-mode. Scrollback is via PageUp/PageDown (below).
-      set -g mouse off
+      # Mouse ON for scroll-wheel scrollback, but drag bindings are unbound so
+      # WezTerm still owns drag-to-select + Cmd+C natively (matching pre-tmux
+      # UX). This walks the line between the two tmux mouse behaviors:
+      #   - Wheel in a tmux pane -> enter copy-mode, scroll pane history
+      #   - Drag in a tmux pane -> falls through to WezTerm as a raw selection
+      # Shift+drag in WezTerm remains the universal bypass (configured in
+      # home/wez/config/wezterm.lua) for selecting inside Neovim or copy-mode.
+      set -g mouse on
+      unbind -n MouseDrag1Pane
+      unbind -n MouseDown1Pane
+      unbind -T copy-mode MouseDrag1Pane
+      unbind -T copy-mode-vi MouseDrag1Pane
 
       # PageUp/PageDown - enter copy mode and scroll (keyboard-driven scrollback)
       bind -n PageUp if-shell -F "#{pane_in_mode}" "send-keys PageUp" "copy-mode -eu"
