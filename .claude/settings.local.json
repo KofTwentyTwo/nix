@@ -166,7 +166,14 @@
       "Bash(npm list *)",
       "Bash(tmux show *)",
       "Bash(tmux display-message *)",
-      "Bash(/bin/ps aux *)"
+      "Bash(/bin/ps aux *)",
+      "Bash(/opt/homebrew/bin/tmux list-sessions *)",
+      "Bash(/opt/homebrew/bin/tmux show-options *)",
+      "Bash(ps -Axo pid,comm,args)",
+      "Bash(/bin/ps axo *)",
+      "Bash(/opt/homebrew/bin/tmux display-message *)",
+      "Bash(sudo -n env -i PATH=/opt/homebrew/bin /opt/homebrew/bin/tmux list-sessions)",
+      "Bash(env -u TMPDIR /opt/homebrew/bin/tmux list-sessions)"
     ]
   }
 }
