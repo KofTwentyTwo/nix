@@ -301,6 +301,30 @@
           launchctl load -w /System/Library/LaunchDaemons/com.apple.screensharing.plist 2>/dev/null || true
         fi
       '';
+
+      # USB power management for peripherals across sleep/wake
+      # Apple Silicon defaults to deep sleep, which cuts USB power. The Razer
+      # Huntsman V3 Pro (and other Razer keyboards) lose RGB on wake because
+      # there is no Synapse on macOS to re-run the init sequence. Pushing the
+      # Mac into a lighter sleep keeps USB powered and enumerated, so the
+      # keyboard's onboard profile survives. Tradeoff: slightly higher idle
+      # drain (irrelevant on desktops, mild on laptops). proximitywake only
+      # exists on laptops; || true keeps the rebuild green on desktops.
+      #
+      # Manual recovery if RGB still dies (V3 Pro is not supported by 1kc-razer
+      # or OpenRGB on macOS as of 2026-04, so software control is unavailable):
+      # press FN + END (or FN + HOME) to cycle through onboard RGB effects.
+      # This unblocks the brightness-zero state and writes the chosen effect
+      # to onboard memory, so the firmware reloads it on subsequent reconnects.
+      system.activationScripts.pmsetUSBKeyboardFix.text = ''
+        echo "Configuring pmset for USB peripheral wake reliability..."
+        /usr/bin/pmset -a standby 0       || true
+        /usr/bin/pmset -a autopoweroff 0  || true
+        /usr/bin/pmset -a hibernatemode 0 || true
+        /usr/bin/pmset -a tcpkeepalive 1  || true
+        /usr/bin/pmset -a proximitywake 0 || true
+        /usr/bin/pmset -a powernap 0      || true
+      '';
    };
 
 

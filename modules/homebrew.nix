@@ -247,6 +247,12 @@
       "omnigraffle"
       "omniplan"
       "openwebstart"
+      # Not adding 1kc-razer or openrgb: neither supports the Huntsman V3 Pro
+      # (PID 0x02a6) as of 2026-04. Verified by inspecting 1kc-razer v0.4.10's
+      # bundled device list — covers V1/V2 families but not V3. Reliable fix
+      # for V3 Pro RGB-on-wake remains physical unplug/replug; pmset settings
+      # in flake.nix reduce how often that's needed. Re-evaluate when
+      # community Mac support catches up to V3 protocol.
       "rectangle"
       "rustdesk"
       "session-manager-plugin"
