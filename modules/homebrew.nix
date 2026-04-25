@@ -236,6 +236,7 @@
       "karabiner-elements"
       "keyboard-maestro"
       "lens"
+      "lm-studio"
       "loopback"
       "mactex-no-gui"
       "notion-calendar"
