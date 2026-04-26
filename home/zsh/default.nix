@@ -91,7 +91,7 @@ in
 
            # Completion UX tuning
            # menu select  : arrow-key navigable completion menu
-           # group-name '': group results under headers (e.g., "local branches", "remote branches")
+           # group-name "": group results under headers (e.g., local vs remote branches)
            # verbose      : show description for each candidate
            # matcher-list : case-insensitive + partial match (Feat<TAB> matches feature/foo)
            zstyle ':completion:*' menu select
