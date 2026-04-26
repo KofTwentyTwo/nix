@@ -180,6 +180,7 @@
       "stuntman"
       "talosctl"
       "terragrunt"
+      "tilt"
       "tokei"
       "tldr"
       "tmux"
