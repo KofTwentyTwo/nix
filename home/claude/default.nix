@@ -38,6 +38,9 @@ let
       # Linting
       "Bash(/opt/homebrew/bin/markdownlint-cli2:*)"
 
+      # AI agents
+      "Bash(pi:*)"
+
       # File exploration
       "Bash(ls:*)"
       "Bash(tree:*)"
@@ -51,21 +54,40 @@ let
       "Bash(lsd:*)"
       "Bash(readlink:*)"
       "Bash(ncdu:*)"
+      "Bash(gdu:*)"
+      "Bash(dua:*)"
+      "Bash(dust:*)"
+      "Bash(duf:*)"
+      "Bash(watch:*)"
 
       # File reading
       "Bash(cat:*)"
       "Bash(head:*)"
       "Bash(tail:*)"
       "Bash(less:*)"
+      "Bash(more:*)"
       "Bash(wc:*)"
       "Bash(file:*)"
       "Bash(stat:*)"
+      "Bash(bat:*)"
+      "Bash(glow:*)"
 
       # Search
       "Bash(grep:*)"
       "Bash(rg:*)"
       "Bash(ack:*)"
       "Bash(ag:*)"
+      "Bash(ast-grep:*)"
+      "Bash(sg:*)"
+
+      # Documentation/help
+      "Bash(man:*)"
+      "Bash(info:*)"
+      "Bash(tldr:*)"
+      "Bash(shelp:*)"
+      "Bash(ghelp:*)"
+      "Bash(git-help.sh:*)"
+      "Bash(tmux-help.sh:*)"
 
       # Git (all operations)
       "Bash(git:*)"
@@ -84,10 +106,45 @@ let
       "Bash(date:*)"
       "Bash(echo:*)"
       "Bash(printf:*)"
+      "Bash(whoami:*)"
+      "Bash(id:*)"
+      "Bash(groups:*)"
+      "Bash(uptime:*)"
+      "Bash(w:*)"
+      "Bash(tty:*)"
+      "Bash(locale:*)"
+
+      # macOS system info (read-only)
+      "Bash(sw_vers:*)"
+      "Bash(system_profiler:*)"
+      "Bash(defaults read:*)"
+      "Bash(defaults domains:*)"
+      "Bash(launchctl list:*)"
+      "Bash(mdfind:*)"
+      "Bash(fastfetch:*)"
 
       # Process info
       "Bash(ps:*)"
       "Bash(pgrep:*)"
+      "Bash(procs:*)"
+      "Bash(lsof:*)"
+
+      # Networking (read-only diagnostics)
+      "Bash(ping:*)"
+      "Bash(ping6:*)"
+      "Bash(gping:*)"
+      "Bash(prettyping:*)"
+      "Bash(traceroute:*)"
+      "Bash(mtr:*)"
+      "Bash(dig:*)"
+      "Bash(host:*)"
+      "Bash(nslookup:*)"
+      "Bash(doggo:*)"
+      "Bash(ifconfig:*)"
+      "Bash(netstat:*)"
+      "Bash(arp:*)"
+      "Bash(iperf3:*)"
+      "Bash(xh:*)"
 
       # Temp files (safe sandbox)
       "Bash(mktemp:*)"
@@ -139,11 +196,38 @@ let
       "Bash(nix flake show:*)"
       "Bash(nix flake metadata:*)"
       "Bash(nix search:*)"
+      "Bash(nix eval:*)"
+      "Bash(nix show-config:*)"
       "Bash(nix-env -q:*)"
       "Bash(nix profile list:*)"
+      "Bash(nix-store --query:*)"
+      "Bash(nix-instantiate --eval:*)"
       "Bash(darwin-rebuild check:*)"
       "Bash(home-manager build:*)"
       "Bash(home-manager generations:*)"
+      "Bash(home-manager packages:*)"
+      "Bash(home-manager option:*)"
+      "Bash(home-manager info:*)"
+
+      # Go (read-only)
+      "Bash(go version:*)"
+      "Bash(go env:*)"
+      "Bash(go list:*)"
+      "Bash(go doc:*)"
+      "Bash(go vet:*)"
+
+      # Read-only code analysis & linters
+      "Bash(tokei:*)"
+      "Bash(cloc:*)"
+      "Bash(shellcheck:*)"
+      "Bash(yamllint:*)"
+      "Bash(sqlfluff lint:*)"
+      "Bash(sqlfluff parse:*)"
+      "Bash(gitleaks detect:*)"
+      "Bash(gitleaks protect:*)"
+      "Bash(semgrep scan:*)"
+      "Bash(difft:*)"
+      "Bash(difftastic:*)"
 
       # Docker (read-only)
       "Bash(docker ps:*)"
@@ -159,9 +243,14 @@ let
       "Bash(kubectl logs:*)"
       "Bash(kubectl config:*)"
       "Bash(k9s:*)"
+      "Bash(kubectx:*)"
+      "Bash(kubens:*)"
+      "Bash(stern:*)"
       "Bash(helm list:*)"
       "Bash(helm status:*)"
       "Bash(helm get:*)"
+      "Bash(helm search:*)"
+      "Bash(helm repo list:*)"
 
       # Misc utilities
       "Bash(jq:*)"
@@ -188,6 +277,25 @@ let
       "Bash(pbcopy:*)"
       "Bash(pbpaste:*)"
       "Bash(open:*)"
+      "Bash(column:*)"
+      "Bash(nl:*)"
+      "Bash(fold:*)"
+      "Bash(expand:*)"
+      "Bash(unexpand:*)"
+      "Bash(strings:*)"
+      "Bash(xxd:*)"
+      "Bash(hexdump:*)"
+      "Bash(od:*)"
+      "Bash(rev:*)"
+      "Bash(tac:*)"
+      "Bash(paste:*)"
+      "Bash(join:*)"
+      "Bash(comm:*)"
+      "Bash(pv:*)"
+      "Bash(sleep:*)"
+      "Bash(seq:*)"
+      "Bash(true:*)"
+      "Bash(false:*)"
 
       # WezTerm
       "Bash(wezterm cli:*)"

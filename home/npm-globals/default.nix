@@ -23,6 +23,7 @@ let
   # automatically on darwin-rebuild switch.
   packages = [
     "@anthropic-ai/claude-code"
+    "@mariozechner/pi-coding-agent"
   ];
 
   # Node.js bin dir from Homebrew (node@22 in modules/homebrew.nix).
