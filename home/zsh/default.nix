@@ -88,7 +88,28 @@ in
              fi
              source /opt/homebrew/share/zsh/site-functions/aws_zsh_completer.sh
            fi
-           
+
+           # Completion UX tuning
+           # menu select  : arrow-key navigable completion menu
+           # group-name '': group results under headers (e.g., "local branches", "remote branches")
+           # verbose      : show description for each candidate
+           # matcher-list : case-insensitive + partial match (Feat<TAB> matches feature/foo)
+           zstyle ':completion:*' menu select
+           zstyle ':completion:*' group-name ""
+           zstyle ':completion:*' verbose yes
+           zstyle ':completion:*:descriptions' format $'\e[33m── %d ──\e[0m'
+           zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' 'r:|[._-]=* r:|=*' 'l:|=* r:|=*'
+
+           # Git completion: surface remote branches by tab.
+           # heads-remote-branches-noprefix => `git checkout feature<TAB>` resolves to a remote
+           # branch named "feature" without the origin/ prefix, and git auto-sets up tracking.
+           zstyle ':completion:*:*:git-checkout:*' tag-order 'heads-local heads-remote-branches-noprefix heads-remote-branches commits'
+           zstyle ':completion:*:*:git-switch:*'   tag-order 'heads-local heads-remote-branches-noprefix heads-remote-branches commits'
+           zstyle ':completion:*:*:git-merge:*'    tag-order 'heads-local heads-remote-branches commits'
+           zstyle ':completion:*:*:git-rebase:*'   tag-order 'heads-local heads-remote-branches commits'
+           zstyle ':completion:*:*:git-branch:*'   tag-order 'heads-local heads-remote-branches'
+           zstyle ':completion:*:*:git-*:*' verbose yes
+
            # Load QQQ dev tools (if present)
            if [[ -f "${qqqDevTools}/lib/qqq-shell-functions.sh" ]]; then
              . "${qqqDevTools}/lib/qqq-shell-functions.sh"
