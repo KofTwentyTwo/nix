@@ -88,7 +88,6 @@
       "ffmpeg"
       "gemini-cli"
       "fish"
-      "fzf"
       "gh"
       "git"
       "git-absorb"
