@@ -53,7 +53,9 @@
       "Read(//Users/james.maes/.config/nix/=== ~/.claude/templates/**)",
       "Read(//Users/james.maes/.config/nix/=== ~/.ai/**)",
       "Bash(python3 -c ' *)",
-      "Bash(rm -v /tmp/extract_tools.py /tmp/extract_subs.py /tmp/migrate_settings.py /tmp/jsonl_files.txt)"
+      "Bash(rm -v /tmp/extract_tools.py /tmp/extract_subs.py /tmp/migrate_settings.py /tmp/jsonl_files.txt)",
+      "Bash(date +%s echo \"---\" git status --short echo \"---\" git log --oneline @{u}..)",
+      "Bash(git log *)"
     ]
   }
 }
