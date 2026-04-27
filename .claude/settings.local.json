@@ -173,7 +173,13 @@
       "Bash(/bin/ps axo *)",
       "Bash(/opt/homebrew/bin/tmux display-message *)",
       "Bash(sudo -n env -i PATH=/opt/homebrew/bin /opt/homebrew/bin/tmux list-sessions)",
-      "Bash(env -u TMPDIR /opt/homebrew/bin/tmux list-sessions)"
+      "Bash(env -u TMPDIR /opt/homebrew/bin/tmux list-sessions)",
+      "Bash(aws --version)",
+      "Bash(aws configure *)",
+      "Bash(env)",
+      "Bash(grep -v \"\\\\.git/\" echo \"---\" grep -l \"AWS_ACCESS_KEY_ID\\\\|AWS_SECRET_ACCESS_KEY\" ~/.zshrc ~/.zshenv ~/.zprofile ~/.profile ~/.bash_profile echo \"---\" grep -rn \"AWS_ACCESS_KEY_ID\" ~/.config)",
+      "Bash(launchctl getenv *)",
+      "Bash(grep -v '#' echo \"---\" echo \"Check shell history of how this might have been set:\" grep -E \"export AWS_ACCESS|export AWS_SECRET\" ~/.zsh_history)"
     ]
   }
 }

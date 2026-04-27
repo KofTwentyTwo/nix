@@ -69,6 +69,10 @@ in
         # Confluence API config (token loaded separately via 1Password)
         CONFLUENCE_BASE_URL = "https://greatergoods.atlassian.net/wiki";
         CONFLUENCE_EMAIL = "jmaes@greatergoods.com";
+
+        # Default AWS profile for `aws` CLI commands
+        # Override per-shell with: AWS_PROFILE=other-profile aws ...
+        AWS_PROFILE = "greater_goods_control_tower";
       };
 
       # PATH configuration - paths are added to $PATH

@@ -219,6 +219,10 @@ FUNCTIONS - Shell Helpers
   fco             fzf git checkout       interactive branch picker
   flog            fzf git log            interactive commit browser with diff preview
   extract FILE    universal extract      handles tar.gz, zip, 7z, rar, etc. (OMZ plugin)
+  awsp            AWS SSO role picker    fzf-based (account, role) picker; queries IAM Identity Center
+  awsp -          unset AWS env creds    revert to AWS_PROFILE resolution
+  awsp -l         list accessible roles  show (account, role) combos without picking
+  awsp --login    aws sso login + pick   logs in first if token expired
 
 TOOLS - Modern Replacements (installed via brew)
   bat             replaces cat           syntax highlighting, line numbers, paging
@@ -620,6 +624,188 @@ TIP: shelp KEYWORD   filter output (e.g., shelp kubectl, shelp replace, shelp gi
              [[ -z "$tip" ]] && return
 
              echo "$tip" | draw_box --color green --title "Shell Tip"
+           }
+
+           # Internal: run a command in background with an animated spinner.
+           # Captures the command's stdout (echoed to caller) and shows ✓/✗ to stderr.
+           _awsp_run() {
+             emulate -L zsh
+             local msg="$1"; shift
+             local frames=( "⠋" "⠙" "⠹" "⠸" "⠼" "⠴" "⠦" "⠧" "⠇" "⠏" )
+             local tmp_out tmp_err pid rc i=0
+             tmp_out=$(mktemp); tmp_err=$(mktemp)
+             "$@" > "$tmp_out" 2> "$tmp_err" &
+             pid=$!
+             while kill -0 $pid 2>/dev/null; do
+               printf "\r\033[K\033[36m%s\033[0m %s" "''${frames[$((i % 10 + 1))]}" "$msg" >&2
+               sleep 0.08
+               (( i++ ))
+             done
+             wait $pid
+             rc=$?
+             if (( rc == 0 )); then
+               printf "\r\033[K\033[32m✓\033[0m %s\n" "$msg" >&2
+             else
+               printf "\r\033[K\033[31m✗\033[0m %s\n" "$msg" >&2
+               head -3 "$tmp_err" >&2
+             fi
+             cat "$tmp_out"
+             rm -f "$tmp_out" "$tmp_err"
+             return $rc
+           }
+
+           # Internal: fetch (account, role) combos for all accounts in parallel.
+           # Each list-account-roles call runs as a background subshell; wait collects them.
+           _awsp_fetch_roles() {
+             emulate -L zsh
+             local token=$1 sso_region=$2 accounts=$3
+             local tmp=$(mktemp)
+             echo "$accounts" | jq -r '.accountList[] | "\(.accountId)\t\(.accountName)"' | \
+               while IFS=$'\t' read -r acct name; do
+                 ( aws sso list-account-roles --access-token "$token" --region "$sso_region" \
+                     --account-id "$acct" --output json 2>/dev/null | \
+                   jq -r --arg acct "$acct" --arg name "$name" \
+                     '.roleList[]? | "\($acct)\t\($name)\t\(.roleName)"' >> "$tmp"
+                 ) &
+               done
+             wait
+             sort < "$tmp"
+             rm -f "$tmp"
+           }
+
+           # AWS SSO role picker — dynamic, queries IAM Identity Center at runtime
+           # so new (account, role) grants appear without editing the config.
+           # Usage:
+           #   awsp              pick (account, role) interactively, export temp creds
+           #   awsp -            unset AWS credential env vars (revert to AWS_PROFILE)
+           #   awsp -l           list accessible (account, role) combos without picking
+           #   awsp --login      run 'aws sso login' first, then pick
+           # Env:
+           #   AWSP_SSO_SESSION  override sso-session name (default: greater_goods)
+           awsp() {
+             local sso_session="''${AWSP_SSO_SESSION:-greater_goods}"
+             local mode="pick"
+
+             case "$1" in
+               -|--unset)
+                 unset AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN
+                 echo "AWS credential env vars unset (AWS_PROFILE=''${AWS_PROFILE:-unset})"
+                 return 0
+                 ;;
+               -h|--help)
+                 cat <<'EOF'
+awsp - AWS SSO role picker (queries IAM Identity Center at runtime)
+  awsp              pick (account, role) via fzf, export temp credentials
+  awsp -            unset credential env vars
+  awsp -l           list accessible (account, role) without picking
+  awsp --login      run aws sso login first, then pick
+
+Env:
+  AWSP_SSO_SESSION  sso-session name to use (default: greater_goods)
+EOF
+                 return 0
+                 ;;
+               --login)
+                 aws sso login --sso-session "$sso_session" || return 1
+                 ;;
+               -l|--list)
+                 mode="list"
+                 ;;
+             esac
+
+             # Read SSO session config from ~/.aws/config
+             local sso_start_url sso_region
+             sso_start_url=$(aws configure get sso_start_url --sso-session "$sso_session" 2>/dev/null)
+             sso_region=$(aws configure get sso_region --sso-session "$sso_session" 2>/dev/null)
+             if [[ -z "$sso_start_url" || -z "$sso_region" ]]; then
+               echo "awsp: sso-session '$sso_session' not found in ~/.aws/config" >&2
+               return 1
+             fi
+
+             # Find cached SSO token whose startUrl matches this session
+             local token_file token expires_at
+             token_file=$(grep -l "$sso_start_url" ~/.aws/sso/cache/*.json 2>/dev/null | head -1)
+             if [[ -z "$token_file" ]]; then
+               echo "awsp: no SSO token cached for '$sso_session'." >&2
+               echo "      Run: aws sso login --sso-session $sso_session" >&2
+               return 1
+             fi
+             token=$(jq -r '.accessToken // empty' "$token_file" 2>/dev/null)
+             expires_at=$(jq -r '.expiresAt // empty' "$token_file" 2>/dev/null)
+             if [[ -z "$token" ]]; then
+               echo "awsp: invalid token cache. Run: aws sso login --sso-session $sso_session" >&2
+               return 1
+             fi
+
+             # Check token expiration (BSD date for macOS)
+             if [[ -n "$expires_at" ]]; then
+               local exp_epoch now_epoch
+               exp_epoch=$(date -j -f "%Y-%m-%dT%H:%M:%SZ" "$expires_at" "+%s" 2>/dev/null)
+               now_epoch=$(date +%s)
+               if [[ -n "$exp_epoch" && "$exp_epoch" -lt "$now_epoch" ]]; then
+                 echo "awsp: SSO token expired. Run: aws sso login --sso-session $sso_session" >&2
+                 return 1
+               fi
+             fi
+
+             # Discover (account, role) combinations via SSO API (with spinner)
+             local accounts count labeled
+             accounts=$(_awsp_run "Fetching accounts via SSO" \
+               aws sso list-accounts --access-token "$token" --region "$sso_region" --output json) || return 1
+             if ! echo "$accounts" | jq -e '.accountList' >/dev/null 2>&1; then
+               echo "awsp: list-accounts returned invalid response" >&2
+               return 1
+             fi
+             count=$(echo "$accounts" | jq -r '.accountList | length')
+             labeled=$(_awsp_run "Discovering roles in $count accounts (parallel)" \
+               _awsp_fetch_roles "$token" "$sso_region" "$accounts") || return 1
+             if [[ -z "$labeled" ]]; then
+               echo "awsp: no roles accessible" >&2
+               return 1
+             fi
+
+             # 3-column display, header matches printf format
+             local display header
+             display=$(echo "$labeled" | awk -F'\t' '{ printf "%-14s  %-30s  %s\n", $1, $2, $3 }')
+             header=$(printf "%-14s  %-30s  %s" "account-id" "account" "role")
+
+             if [[ "$mode" == "list" ]]; then
+               echo "$header"
+               echo "$display"
+               return 0
+             fi
+
+             local selected picked_acct picked_role
+             selected=$(echo "$display" | fzf \
+               --prompt="AWS account / role: " \
+               --header="$header" \
+               --height=40% --reverse --border) || return 1
+             [[ -z "$selected" ]] && return 1
+             picked_acct=$(echo "$selected" | awk '{print $1}')
+             picked_role=$(echo "$selected" | awk '{print $NF}')
+
+             # Fetch temporary credentials for the chosen (account, role)
+             local creds
+             creds=$(_awsp_run "Fetching credentials for $picked_acct ($picked_role)" \
+               aws sso get-role-credentials \
+               --access-token "$token" --region "$sso_region" \
+               --account-id "$picked_acct" --role-name "$picked_role" \
+               --output json) || return 1
+             if ! echo "$creds" | jq -e '.roleCredentials' >/dev/null 2>&1; then
+               echo "awsp: invalid credential response" >&2
+               return 1
+             fi
+
+             export AWS_ACCESS_KEY_ID=$(echo "$creds" | jq -r '.roleCredentials.accessKeyId')
+             export AWS_SECRET_ACCESS_KEY=$(echo "$creds" | jq -r '.roleCredentials.secretAccessKey')
+             export AWS_SESSION_TOKEN=$(echo "$creds" | jq -r '.roleCredentials.sessionToken')
+
+             # Show summary with credential expiry
+             local exp_ms exp_human
+             exp_ms=$(echo "$creds" | jq -r '.roleCredentials.expiration')
+             exp_human=$(date -r $((exp_ms / 1000)) "+%H:%M:%S" 2>/dev/null)
+             echo "Active: $picked_acct ($picked_role)"
+             [[ -n "$exp_human" ]] && echo "Expires: $exp_human"
            }
 
            # MOTD: fastfetch + random shell tip on new sessions
