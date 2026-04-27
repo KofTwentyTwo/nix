@@ -373,3 +373,15 @@ For brownfield onboarding (picking up an unfamiliar repo), invoke `local--brownf
 QQQ-specific architecture rules (Core defines interfaces / implementations register, MetaDataProducers, RecordEntities, QInstanceValidator, flower-box javadoc, 3-space indentation, `com.kingsrook.*` import order, multi-module Maven structure) are project-scoped and live in `~/Git.Local/QRun-IO/qqq/CLAUDE.md`. They are NOT user-level rules and MUST NOT be applied to non-QQQ repos.
 
 The same principle applies to dmdbrands repos: per-repo `CLAUDE.md` files own their conventions. When picking up unfamiliar repos in any org, the `local--brownfield-onboarding` skill walks through the structured assessment that produces or updates a project-level `CLAUDE.md`.
+
+---
+
+## 17. Cross-Session Learnings Capture
+
+At session end -- when the user says "done", "wrap up", or otherwise concludes a working block -- the agent SHOULD write durable learnings to `~/.config/nix/learnings_to_process/<epoch-seconds>.md` (e.g. `1714242000.md`).
+
+A durable learning is one that would make a future session faster, better, or help avoid a mistake: a technique that worked, a pitfall to watch for, a user preference confirmed by feedback, a hidden constraint discovered. Routine task progress is NOT a learning.
+
+Each file SHOULD include the session's cwd, an absolute date (not "today"), and 1-N short paragraphs each capturing **what** was learned and **why** it matters. If nothing durable was learned, do not write a file.
+
+The directory is a queue. It is consolidated into `~/.ai/*` and other config when sessions run inside `~/.config/nix` (see that repo's `CLAUDE.md` for the ingestion rule). Sessions outside `~/.config/nix` MUST NOT write directly to `~/.ai/*` -- write to the queue and let the consolidation pass integrate.

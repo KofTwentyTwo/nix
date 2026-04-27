@@ -11,6 +11,23 @@ Say **"continue from last session"** to resume. Read these files first:
 
 **Never use `~/.claude/session-state.md`** - always use local `./docs/` files for state.
 
+## Learnings Ingestion
+
+On session start in this repo (or when the user says "process learnings"):
+
+1. Read each `.md` in `learnings_to_process/` (oldest first by epoch in filename).
+2. Integrate each into the right home:
+   - Preferences / identity / role → `home/ai/1-profile.md`
+   - Behavioral mandates (MUST / SHOULD) → `home/ai/3-rules.md`
+   - Operational ground truth / current setup → `home/ai/5-learnings.md`
+   - Project-specific facts about this repo → this `CLAUDE.md`
+   - Per-project memory → `~/.claude/projects/<sanitized-cwd>/memory/`
+   - Permissions / hooks / MCP servers → `~/.claude/settings.json` or `home/claude/default.nix`
+3. **Quality bar** — integrate only if the learning is durable, non-contradictory, non-duplicate, and concise. If a learning conflicts with an existing rule, surface it to the user — do NOT overwrite silently.
+4. Move processed files to `learnings_to_process/processed/<epoch>.md`. Leave malformed or contradictory files in place and report them.
+
+Goal: faster, better future sessions — not a wall of guidance text. If integrating a learning would bloat the target file, condense before adding.
+
 ## Commands
 
 ```bash

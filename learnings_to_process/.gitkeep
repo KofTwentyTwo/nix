@@ -1,0 +1,10 @@
+# Learnings Inbox
+
+Sessions across all projects drop durable learnings here as `<epoch-seconds>.md`
+(rule defined in `home/ai/3-rules.md` section 17).
+
+Sessions running inside this repo consolidate the queue into the right `home/ai/*`
+or `home/claude/*` files (rule defined in this repo's `CLAUDE.md` -> "Learnings Ingestion"),
+then move processed files to `processed/`.
+
+The `*.md` content is gitignored — only this README is checked in so the directory persists.

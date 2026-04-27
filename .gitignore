@@ -3,3 +3,8 @@
 
 # Claude Code (keep settings.local.json out -- machine-specific permissions)
 .claude/settings.local.json
+
+# Cross-session learnings inbox -- raw queue files are local-only;
+# durable content lands in home/ai/* via the ingestion rule
+learnings_to_process/*.md
+learnings_to_process/processed/
