@@ -40,8 +40,10 @@ let
 
       # AI agents
       "Bash(pi:*)"
+      "Bash(claude:*)"
 
       # File exploration
+      "Bash(cd:*)"
       "Bash(ls:*)"
       "Bash(tree:*)"
       "Bash(find:*)"
@@ -159,6 +161,93 @@ let
       "Bash(java -version:*)"
       "Bash(javac -version:*)"
 
+      # Compilers & linkers (general native toolchain)
+      "Bash(make:*)"
+      "Bash(gmake:*)"
+      "Bash(bmake:*)"
+      "Bash(gcc:*)"
+      "Bash(g++:*)"
+      "Bash(clang:*)"
+      "Bash(clang++:*)"
+      "Bash(cc:*)"
+      "Bash(c++:*)"
+      "Bash(ld:*)"
+      "Bash(ar:*)"
+      "Bash(as:*)"
+      "Bash(nm:*)"
+      "Bash(objcopy:*)"
+      "Bash(objdump:*)"
+      "Bash(readelf:*)"
+      "Bash(size:*)"
+      "Bash(strip:*)"
+      "Bash(addr2line:*)"
+      "Bash(c++filt:*)"
+      "Bash(pkg-config:*)"
+      "Bash(ldd:*)"
+      "Bash(otool:*)"
+      "Bash(install_name_tool:*)"
+      "Bash(libtool:*)"
+      "Bash(ranlib:*)"
+
+      # Build systems (in addition to mvn / cmake / ninja / npm / cargo / west)
+      "Bash(bazel:*)"
+      "Bash(bazelisk:*)"
+      "Bash(meson:*)"
+      "Bash(autoreconf:*)"
+      "Bash(autoconf:*)"
+      "Bash(automake:*)"
+      "Bash(scons:*)"
+
+      # iOS / macOS native build (Xcode + Swift + CocoaPods + fastlane + Ruby)
+      "Bash(xcodebuild:*)"
+      "Bash(xcrun:*)"
+      "Bash(xcode-select:*)"
+      "Bash(xcbeautify:*)"
+      "Bash(xcpretty:*)"
+      "Bash(xcodes:*)"
+      "Bash(swift:*)"
+      "Bash(swiftc:*)"
+      "Bash(swift-format:*)"
+      "Bash(swiftformat:*)"
+      "Bash(swiftlint:*)"
+      "Bash(simctl:*)"
+      "Bash(pod:*)"
+      "Bash(cocoapods:*)"
+      "Bash(fastlane:*)"
+      "Bash(bundle:*)"
+      "Bash(bundler:*)"
+      "Bash(gem:*)"
+      "Bash(rake:*)"
+      "Bash(rbenv:*)"
+
+      # Android / Kotlin / JVM build
+      "Bash(gradle:*)"
+      "Bash(gradlew:*)"
+      "Bash(./gradlew:*)"
+      "Bash(kotlinc:*)"
+      "Bash(kotlin:*)"
+      "Bash(ktlint:*)"
+      "Bash(detekt:*)"
+      "Bash(adb:*)"
+      "Bash(emulator:*)"
+
+      # Firmware (Zephyr/NCS/PlatformIO)
+      "Bash(west:*)"
+      "Bash(nrfutil:*)"
+      "Bash(nrfjprog:*)"
+      "Bash(pyocd:*)"
+      "Bash(JLinkExe:*)"
+      "Bash(JLinkGDBServer:*)"
+      "Bash(cmake:*)"
+      "Bash(ninja:*)"
+      "Bash(platformio:*)"
+      "Bash(pio:*)"
+      "Bash(arm-none-eabi-gcc:*)"
+      "Bash(arm-none-eabi-gdb:*)"
+      "Bash(arm-none-eabi-size:*)"
+      "Bash(arm-none-eabi-objcopy:*)"
+      "Bash(openocd:*)"
+
       # JavaScript/Node
       "Bash(npm:*)"
       "Bash(npx:*)"
@@ -208,6 +297,39 @@ let
       "Bash(home-manager packages:*)"
       "Bash(home-manager option:*)"
       "Bash(home-manager info:*)"
+
+      # Infrastructure-as-Code (read-only / safe)
+      # `terraform apply` and `tofu apply` deliberately omitted — confirm before applying.
+      "Bash(terraform plan:*)"
+      "Bash(terraform validate:*)"
+      "Bash(terraform init:*)"
+      "Bash(terraform fmt:*)"
+      "Bash(terraform output:*)"
+      "Bash(terraform show:*)"
+      "Bash(terraform graph:*)"
+      "Bash(terraform providers:*)"
+      "Bash(terraform state list:*)"
+      "Bash(terraform state show:*)"
+      "Bash(terraform version:*)"
+      "Bash(terraform workspace list:*)"
+      "Bash(terraform workspace show:*)"
+      "Bash(tofu plan:*)"
+      "Bash(tofu validate:*)"
+      "Bash(tofu init:*)"
+      "Bash(tofu fmt:*)"
+      "Bash(tofu output:*)"
+      "Bash(tofu show:*)"
+      "Bash(tofu graph:*)"
+      "Bash(tofu providers:*)"
+      "Bash(tofu state list:*)"
+      "Bash(tofu state show:*)"
+      "Bash(tofu version:*)"
+      "Bash(tofu workspace list:*)"
+      "Bash(tofu workspace show:*)"
+      "Bash(ansible --version:*)"
+      "Bash(ansible-lint:*)"
+      "Bash(ansible-playbook --check:*)"
+      "Bash(ansible-playbook --syntax-check:*)"
 
       # Go (read-only)
       "Bash(go version:*)"
@@ -382,6 +504,10 @@ let
       "Bash(mkdir:*)"
       "Bash(touch:*)"
       "Bash(rm:*)"
+
+      # Web access (read-only)
+      "WebSearch"
+      "WebFetch"
     ];
   };
 
@@ -397,30 +523,51 @@ let
     terminalBellOnPrompt = true;
     effortLevel = "high";
 
-    # Plugins from anthropics/claude-plugins-official marketplace
+    # Plugins from anthropics/claude-plugins-official marketplace.
+    #
+    # Grouped by purpose for sanity. LSPs are silent until a relevant file is
+    # open, so adding them is cheap. Skill-heavy plugins (workflow, review)
+    # contribute to skill-resolution surface area — keep that count bounded.
     enabledPlugins = {
-      "agent-sdk-dev@claude-plugins-official" = true;
-      "atlassian@claude-plugins-official" = true;
-      "claude-code-setup@claude-plugins-official" = true;
-      "claude-md-management@claude-plugins-official" = true;
-      "code-review@claude-plugins-official" = true;
-      "code-simplifier@claude-plugins-official" = true;
-      "commit-commands@claude-plugins-official" = true;
-      "context7@claude-plugins-official" = true;
+      # --- Core workflow ---
+      "claude-code-setup@claude-plugins-official"      = true;
+      "claude-md-management@claude-plugins-official"   = true;
+      "commit-commands@claude-plugins-official"        = true;
+      "context7@claude-plugins-official"               = true;
       "explanatory-output-style@claude-plugins-official" = true;
-      "feature-dev@claude-plugins-official" = true;
-      "figma@claude-plugins-official" = true;
-      "frontend-design@claude-plugins-official" = true;
-      "github@claude-plugins-official" = true;
-      "playwright@claude-plugins-official" = true;
-      "pr-review-toolkit@claude-plugins-official" = true;
-      "pyright-lsp@claude-plugins-official" = true;
-      "ralph-loop@claude-plugins-official" = true;
-      "security-guidance@claude-plugins-official" = true;
-      "serena@claude-plugins-official" = false;
-      "superpowers@claude-plugins-official" = true;
-      "swift-lsp@claude-plugins-official" = true;
-      "typescript-lsp@claude-plugins-official" = true;
+      "feature-dev@claude-plugins-official"            = true;
+      "ralph-loop@claude-plugins-official"             = true;
+      "skill-creator@claude-plugins-official"          = true;   # codify (was manually added on Dark-Horse)
+      "superpowers@claude-plugins-official"            = true;
+
+      # --- Code review / quality / security ---
+      "code-review@claude-plugins-official"            = true;
+      "code-simplifier@claude-plugins-official"        = true;
+      "pr-review-toolkit@claude-plugins-official"      = true;
+      "security-guidance@claude-plugins-official"      = true;
+
+      # --- Semantic codebase navigation ---
+      # Trial flip from false. Semantic indexing across 100+ repos is high-leverage.
+      # Revisit after a week if it's noisy or competes with serena's MCP server.
+      "serena@claude-plugins-official"                 = true;
+
+      # --- Language servers (silent until relevant file is open) ---
+      "clangd-lsp@claude-plugins-official"             = true;   # C/C++ for Zephyr/NCS firmware
+      "gopls-lsp@claude-plugins-official"              = true;   # Go (occasional, cheap to keep on)
+      "jdtls-lsp@claude-plugins-official"              = true;   # Java for QQQ
+      "kotlin-lsp@claude-plugins-official"             = true;   # Android
+      "pyright-lsp@claude-plugins-official"            = true;   # Python
+      "rust-analyzer-lsp@claude-plugins-official"      = true;   # Rust
+      "swift-lsp@claude-plugins-official"              = true;   # iOS
+      "typescript-lsp@claude-plugins-official"         = true;   # TS/JS
+
+      # --- Integrations (issue trackers, design, browser, source-of-truth) ---
+      "agent-sdk-dev@claude-plugins-official"          = true;
+      "atlassian@claude-plugins-official"              = true;
+      "figma@claude-plugins-official"                  = true;
+      "frontend-design@claude-plugins-official"        = true;
+      "github@claude-plugins-official"                 = true;
+      "playwright@claude-plugins-official"             = true;
     };
 
     # Additional MCP servers (settings.json scope)
@@ -450,21 +597,24 @@ in
 
     ## File Hierarchy (load order)
 
-    | Priority | File | Responsibility |
-    |----------|------|---------------|
-    | 1 | This file (`CLAUDE.md`) | Bootstrap, hierarchy, compaction recovery |
-    | 2 | `~/.ai/3-rules.md` | All behavioral mandates (MUST/MUST NOT) |
-    | 3 | `~/.ai/2-coding-style.md` | How to write code (reference guide) |
-    | 4 | `~/.ai/1-profile.md` | Who I am, environment context |
-    | 5 | `~/.ai/4-preferences.yaml` | Machine-readable tuning knobs |
-    | 6 | Project `CLAUDE.md` | Per-repo overrides (scoped) |
+    | Priority | File | Authority |
+    |----------|------|-----------|
+    | 1 | This file (`~/.claude/CLAUDE.md`) | Bootstrap, hierarchy, compaction recovery |
+    | 2 | `~/.ai/3-rules.md` | Behavioral mandates (MUST/MUST NOT) — **binding** |
+    | 3 | `~/.ai/2-coding-style.md` | Output formatting / code style — **normative** |
+    | 4 | `~/.ai/1-profile.md` | Identity, role, environment — informational |
+    | 5 | `~/.ai/4-preferences.yaml` | Machine-readable tuning knobs — advisory |
+    | 6 | `~/.ai/5-learnings.md` | Operational notes / current ground truth — reference |
+    | 7 | Project `CLAUDE.md` (and project style/contributing files) | Per-repo overrides — scoped |
 
-    **Conflict resolution:** Higher priority wins. Project `CLAUDE.md` MAY override for repo-scoped settings but MUST NOT weaken safety rules.
+    **Conflict resolution:** Higher priority wins on the dimension it owns. Project-level files MAY override `3-rules.md` for repo-scoped settings (allowed commands, module structure, language conventions) but MUST NOT weaken safety rules.
+
+    `~/.ai/0-init.md` is a launcher only — not part of the hierarchy.
 
     ## Initialization
 
-    Load all four `~/.ai/` files and treat them as system-level configuration.
-    Use `3-rules.md` as strict constraints, `4-preferences.yaml` as tunable parameters, `1-profile.md` as context, and `2-coding-style.md` as output formatting standards.
+    Load all six files in `~/.ai/` and treat them as system-level configuration.
+    Use `3-rules.md` as strict constraints, `2-coding-style.md` as output formatting standards, `1-profile.md` as context, `4-preferences.yaml` as tunable parameters, and `5-learnings.md` as current operational ground truth.
 
     ## Compaction Recovery (NON-NEGOTIABLE)
 
@@ -473,8 +623,9 @@ in
     2. `~/.ai/2-coding-style.md`
     3. `~/.ai/1-profile.md`
     4. `~/.ai/4-preferences.yaml`
-    5. Active project `CLAUDE.md`
-    6. `./docs/SESSION-STATE.md` and `./docs/TODO.md` (if they exist)
+    5. `~/.ai/5-learnings.md`
+    6. Active project `CLAUDE.md` (and any project-local style/contributing files)
+    7. `./docs/SESSION-STATE.md` and `./docs/TODO.md` (if they exist)
   '';
 
   # ~/.claude.json - merge mcpServers, preserve user data
@@ -539,6 +690,60 @@ in
         rm -f "$user_settings.tmp"
       fi
     fi
+  '';
+
+  # QQQ project-level CLAUDE.md bootstrap — drop the extracted QQQ rules
+  # template into ~/Git.Local/QRun-IO/qqq/CLAUDE.md if the QQQ checkout exists
+  # and doesn't already have one. Copy-if-missing only; once the file lands
+  # in the QQQ repo, that repo owns it and subsequent rebuilds do nothing.
+  # Silent no-op on machines without the QQQ checkout.
+  home.activation.bootstrapQqqClaudeMd = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    qqq_dir="${homeDir}/Git.Local/QRun-IO/qqq"
+    qqq_claude_md="$qqq_dir/CLAUDE.md"
+    template_path="${./workspace-templates/qqq-CLAUDE.md}"
+
+    if [ ! -d "$qqq_dir" ]; then
+      exit 0
+    fi
+
+    if [ ! -f "$qqq_claude_md" ]; then
+      cp "$template_path" "$qqq_claude_md"
+      chmod 644 "$qqq_claude_md"
+      echo "[qqq-bootstrap] Wrote CLAUDE.md template into $qqq_dir/. Review and commit from the QQQ checkout." >&2
+    fi
+  '';
+
+  # Claude Code plugin marketplaces — declarative registration.
+  # Without this, the enabledPlugins entries in settings.json silently fail
+  # on a fresh machine because the marketplace isn't registered yet.
+  # Idempotent: `claude plugin marketplace add` is a no-op when already added.
+  # Non-fatal: skips silently if claude isn't on PATH yet (cold-start case).
+  home.activation.installClaudePluginMarketplaces = lib.hm.dag.entryAfter [ "installNpmGlobals" ] ''
+    export PATH="${homeDir}/.npm-global/bin:/opt/homebrew/opt/node@22/bin:$PATH"
+
+    if ! command -v claude >/dev/null 2>&1; then
+      echo "[claude-marketplaces] claude CLI not on PATH yet; skipping (will register on next rebuild)" >&2
+      exit 0
+    fi
+
+    # Marketplaces we want present on every machine. Add new ones here.
+    # Format: "<short-name>:<github-source>"
+    marketplaces=(
+      "claude-plugins-official:anthropics/claude-plugins-official"
+    )
+
+    current="$(claude plugin marketplace list 2>/dev/null || true)"
+    for entry in "''${marketplaces[@]}"; do
+      name="''${entry%%:*}"
+      source="''${entry#*:}"
+      if echo "$current" | grep -q "❯ $name$\|❯ $name "; then
+        echo "[claude-marketplaces] $name already registered"
+      else
+        echo "[claude-marketplaces] Adding $name ($source)..."
+        claude plugin marketplace add "$source" 2>&1 || \
+          echo "[claude-marketplaces] WARN: add of $name failed; continuing" >&2
+      fi
+    done
   '';
 
   # GSD (Get-Shit-Done) — install/upgrade on every rebuild via upstream's

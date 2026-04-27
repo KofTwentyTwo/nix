@@ -179,7 +179,17 @@
       "Bash(env)",
       "Bash(grep -v \"\\\\.git/\" echo \"---\" grep -l \"AWS_ACCESS_KEY_ID\\\\|AWS_SECRET_ACCESS_KEY\" ~/.zshrc ~/.zshenv ~/.zprofile ~/.profile ~/.bash_profile echo \"---\" grep -rn \"AWS_ACCESS_KEY_ID\" ~/.config)",
       "Bash(launchctl getenv *)",
-      "Bash(grep -v '#' echo \"---\" echo \"Check shell history of how this might have been set:\" grep -E \"export AWS_ACCESS|export AWS_SECRET\" ~/.zsh_history)"
+      "Bash(grep -v '#' echo \"---\" echo \"Check shell history of how this might have been set:\" grep -E \"export AWS_ACCESS|export AWS_SECRET\" ~/.zsh_history)",
+      "Bash(pbcopy)",
+      "Bash(pbpaste)",
+      "Bash(claude plugin *)",
+      "Bash(sudo -n darwin-rebuild check --flake ~/.config/nix#Dark-Horse)",
+      "Read(//Users/james.maes/.config/nix/=== ~/.claude/commands/**)",
+      "Read(//Users/james.maes/.config/nix/=== ~/.claude/workspace-templates/**)",
+      "Read(//Users/james.maes/.config/nix/=== ~/.claude/templates/**)",
+      "Read(//Users/james.maes/.config/nix/=== ~/.ai/**)",
+      "Bash(pnpm --version)",
+      "Bash(grep -E '^\\(bs|write|critique|wiki\\)\\\\.md$')"
     ]
   }
 }

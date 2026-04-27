@@ -294,16 +294,52 @@ let
   # (hooks/, get-shit-done/, agents/gsd-*.md, commands/gsd/) the way upstream
   # expects, so GSD's internal health checks pass.
 
-  # Local skills (managed in this repo, not fetched from GitHub)
-  localSkillsDir = ./skills;
-  localAgentsDir = ./agents;
+  # Local skills, agents, commands, and templates (managed in this repo,
+  # not fetched from GitHub). Skills/agents use the `local--<name>` namespace
+  # to avoid collisions with upstream community skills. Commands use
+  # `local-<name>` since they become slash commands and the `--` separator
+  # would be awkward (`/local--standup`).
+  localSkillsDir   = ./skills;
+  localAgentsDir   = ./agents;
+  localCommandsDir = ./commands;
+  workspaceTemplatesDir = ./workspace-templates;
+  localTemplatesDir     = ./templates;
+
   localSkills = {
-    ".claude/skills/local--session-start".source = "${localSkillsDir}/session-start";
-    ".claude/skills/local--session-end".source = "${localSkillsDir}/session-end";
-    ".claude/skills/local--sales-admin".source = "${localSkillsDir}/sales-admin";
+    ".claude/skills/local--session-start".source           = "${localSkillsDir}/session-start";
+    ".claude/skills/local--session-end".source             = "${localSkillsDir}/session-end";
+    ".claude/skills/local--sales-admin".source             = "${localSkillsDir}/sales-admin";
+    ".claude/skills/local--review-pr".source               = "${localSkillsDir}/review-pr";
+    ".claude/skills/local--brownfield-onboarding".source   = "${localSkillsDir}/brownfield-onboarding";
+    ".claude/skills/local--pre-merge-checklist".source     = "${localSkillsDir}/pre-merge-checklist";
+    ".claude/skills/local--mqtt-topic-design".source       = "${localSkillsDir}/mqtt-topic-design";
+    ".claude/skills/local--circleci-mac-runner-debug".source = "${localSkillsDir}/circleci-mac-runner-debug";
   };
+
   localAgents = {
-    ".claude/agents/local--sales-admin.md".source = "${localAgentsDir}/sales-admin.md";
+    ".claude/agents/local--sales-admin.md".source          = "${localAgentsDir}/sales-admin.md";
+    ".claude/agents/local--firmware-build-doctor.md".source = "${localAgentsDir}/firmware-build-doctor.md";
+    ".claude/agents/local--hub-firmware-driver.md".source   = "${localAgentsDir}/hub-firmware-driver.md";
+    ".claude/agents/local--migration-planner.md".source     = "${localAgentsDir}/migration-planner.md";
+  };
+
+  # Slash commands. File name (minus .md) becomes the slash-command name
+  # (e.g., commands/standup.md -> /standup).
+  localCommands = {
+    ".claude/commands/standup.md".source     = "${localCommandsDir}/standup.md";
+    ".claude/commands/eod-handoff.md".source = "${localCommandsDir}/eod-handoff.md";
+  };
+
+  # Workspace CLAUDE.md templates — copy-paste reference docs for new repos.
+  # Symlinking the whole directory keeps it discoverable at a stable path.
+  workspaceTemplates = {
+    ".claude/workspace-templates".source = workspaceTemplatesDir;
+  };
+
+  # Project-level config templates (e.g., .mcp.json.example for per-project
+  # MCP server config). Same pattern as workspace-templates.
+  localTemplates = {
+    ".claude/templates".source = localTemplatesDir;
   };
 
   # Merge all skill sets into one attrset
@@ -320,7 +356,10 @@ let
     // beautifulProseSkills
     // obsidianSkills
     // localSkills
-    // localAgents;
+    // localAgents
+    // localCommands
+    // workspaceTemplates
+    // localTemplates;
 in
 {
   home.file = allSkills;

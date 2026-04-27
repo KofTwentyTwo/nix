@@ -4,12 +4,19 @@ Active tasks and future improvements for the Nix configuration.
 
 ## Active Tasks
 
+- [ ] Commit the 25 staged changes from 2026-04-27 Claude Code cleanup session and push to origin
+- [ ] After push, sync Grogu / Darth / Renova: `git pull && sudo darwin-rebuild switch --flake ~/.config/nix#$(hostname)`
+- [ ] From inside `~/Git.Local/QRun-IO/qqq/`: review the bootstrapped `CLAUDE.md` and commit it to QQQ's main branch so it travels with the codebase
+- [ ] (optional) Decide whether to put `claude-hud@claude-hud` and the `jarrodwatts/claude-hud` marketplace into Nix so claude-hud activates on every machine
+- [ ] (as projects come into rotation) Add additional Greater Goods Jira projects beyond `MH` to `home/ai/4-preferences.yaml`
+- [ ] (deferred) HIPAA / BAA / PHI policy layer for healthcare context — flagged as future work in `~/.ai/5-learnings.md`
 - [ ] Test opencode TUI launch and MCP server connections (interactive)
 - [ ] Diff remote machine (100.76.144.59) brew packages against flake when online
 - [ ] Remaining audit: #22 (permission drift), #23 (disk cleanup)
 
 ## Recently Completed
 
+- [x] Claude Code multi-domain rules cleanup + new local skills/agents/commands/templates + marketplace auto-register + pnpm + firmware/IaC perms (2026-04-27)
 - [x] Switch claude-code from Homebrew cask to npm (faster release cadence) (2026-04-21)
 - [x] Add firebase-cli to homebrew (2026-04-21)
 - [x] Add opencode Ollama provider config (2026-04-21)

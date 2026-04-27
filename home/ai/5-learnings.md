@@ -252,6 +252,79 @@ SealedSecrets controller mutates `/status` after apply. AppProject status fields
 - Authentik admin: `auth-dev.me.health` — username `akadmin`, password `MeHealth-Dev-2026`
 - Portal: `portal-dev.me.health` — requires Authentik user with Me Health group membership
 
+## Nix + Claude Code Configuration
+
+### Flake evaluator only sees git-tracked files
+
+Nix flakes evaluate against the git tree, not the working directory. New untracked files referenced by Nix paths (`${./path/to/file}`, `home.file."x".source = ./y`) are invisible to the evaluator and produce errors like:
+
+```
+error: Path 'home/claude/workspace-templates/qqq-CLAUDE.md' in the repository "..." is not tracked by Git.
+```
+
+Fix: `git add <path>` (no commit needed). Staging alone makes the file visible to flake evaluation. This bites whenever activation scripts or `home.file` entries reference newly-created files in this Nix repo. `nix flake check` may pass (it doesn't evaluate activation scripts) and the failure surfaces only at `darwin-rebuild switch`.
+
+### Claude Code plugin marketplace vs enabledPlugins
+
+`settings.json` `enabledPlugins.<name>@<marketplace> = true` only marks a plugin as enabled. The actual install requires the marketplace itself to be registered first. On a fresh machine without the marketplace, every entry in `enabledPlugins` silently fails to install.
+
+Fix in `home/claude/default.nix` is the `installClaudePluginMarketplaces` activation script: runs `claude plugin marketplace add anthropics/claude-plugins-official` idempotently. Add new marketplaces there, not just to `enabledPlugins`.
+
+CLI commands:
+- `claude plugin marketplace list` — inspect what's registered
+- `claude plugin marketplace add <github-org/repo>` — idempotent add
+- `claude plugin list` — see installed plugins
+- `claude plugin install <name>@<marketplace>` — manual install (the activation handles auto-install on enable)
+
+### Compound-command permission decomposition
+
+Claude Code splits commands separated by `&&`, `||`, `;`, and `|` and matches each part independently against `permissions.allow`. So `cd:*` plus `git:*` is enough to allow `cd /some/path && git status` without a separate compound-pattern entry. Keep the allowlist atomic; rely on decomposition for chains.
+
+This means `Bash(cd:*)` is broad in scope (allows any `cd`) but safe in practice because the chained command must also match an allowed pattern. Adding `cd:*` does not implicitly allow `cd /tmp && rm -rf ~` — the `rm -rf ~` part still needs to match an allow rule (it doesn't, so it'd prompt).
+
+### Defensive jq deep-merge for settings.json
+
+`home/claude/default.nix` uses defensive `jq` activation scripts to merge Nix-declared values over existing `settings.json` content rather than overwriting. Two patterns matter:
+
+1. **Preserve user state**: `enabledPlugins` is deep-merged so manually-added plugins (claude-hud, supabase, skill-creator on this machine) survive a rebuild even though they're not in the Nix-declared map.
+2. **Preserve foreign-managed sections**: `hooks` and `statusLine` are deliberately omitted from the Nix-declared `userPrefs` because GSD's `npx get-shit-done-cc` installer writes them. The `* (... | del(.enabledPlugins))` jq pattern lets the merge layer Nix values on top while leaving GSD's writes intact.
+
+Don't add `hooks` or `statusLine` management to the Nix module without rewriting the merge logic — you'll clobber GSD's authoritative entries.
+
+## QRun-IO Discussions (Daily Build Log)
+
+### Publishing recipe
+
+Daily build log posts go to the "Daily Build Log" category of the `QRun-IO/qqq` repo discussions. Voice/tone preferences live in `4-preferences.yaml` under `blog_writing`. Posting is a single GraphQL mutation:
+
+- **Location URL:** `https://github.com/orgs/QRun-IO/discussions/categories/daily-build-log`
+- **Repository ID:** `R_kgDOHu3fHQ`
+- **Category ID:** `DIC_kwDOHu3fHc4C0kC3`
+
+```bash
+gh api graphql -f query='
+mutation {
+  createDiscussion(input: {
+    repositoryId: "R_kgDOHu3fHQ",
+    categoryId: "DIC_kwDOHu3fHc4C0kC3",
+    title: "YOUR_TITLE",
+    body: "YOUR_BODY_WITH_ESCAPED_QUOTES"
+  }) {
+    discussion { url }
+  }
+}'
+```
+
+Body uses GitHub-flavored markdown. Escape internal double quotes when embedding in the GraphQL string. Returns the discussion URL on success.
+
+## Healthcare Context (dmdbrands)
+
+dmdbrands is a healthcare device company. HIPAA / BAA / PHI handling is a future layer not yet formalized in this rules system. Until that layer lands:
+
+- Treat any patient data, device telemetry tied to a person, or clinical metadata as sensitive — same caution level as credentials.
+- Don't include such data in logs, error messages, AI prompts to external services, or commit messages without explicit policy.
+- When in doubt, ask before logging or transmitting.
+
 ## Calico CNI / Kubernetes Networking
 
 ### `to: []` in Calico NetworkPolicy = DENY

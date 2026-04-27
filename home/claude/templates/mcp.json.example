@@ -1,0 +1,60 @@
+{
+  "_comment": "Project-level MCP servers. Drop this at <repo-root>/.mcp.json and fill in the servers this project needs. User-level MCP (always available) is configured by Nix at ~/.config/nix/home/claude/default.nix; this file is per-project additions only.",
+
+  "mcpServers": {
+    "_comment_aws": "Use when this project does AWS work and the user wants AWS API access from inside Claude Code. Credentials come from the active AWS profile (env or aws sso login). Remove if not needed.",
+    "aws": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": ["awslabs.aws-api-mcp-server@latest"],
+      "env": {
+        "AWS_PROFILE": "${AWS_PROFILE}",
+        "AWS_REGION": "${AWS_REGION}"
+      }
+    },
+
+    "_comment_postgres": "Use when this project has a Postgres dev database and you want Claude to be able to introspect schema / run read queries. Pin to read-only credentials.",
+    "postgres": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-postgres", "${DATABASE_URL_READONLY}"]
+    },
+
+    "_comment_filesystem": "Use to scope filesystem access to a specific subtree (e.g., a vendor SDK or a generated-code dir). Usually NOT needed since Claude Code already has filesystem access via Read/Write/Edit.",
+    "filesystem": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/absolute/path/to/scoped/dir"]
+    },
+
+    "_comment_datadog": "Use when this project's observability is on Datadog and you want Claude to query metrics/logs. Token must be a Datadog API key with appropriate scope.",
+    "datadog": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@datadog/mcp-server"],
+      "env": {
+        "DD_API_KEY": "${DD_API_KEY}",
+        "DD_APP_KEY": "${DD_APP_KEY}",
+        "DD_SITE": "datadoghq.com"
+      }
+    },
+
+    "_comment_slack_local": "Use ONLY if you need a project-specific Slack workspace beyond the user-level Slack MCP. Most projects don't need this — the user-level Slack MCP covers cross-workspace search.",
+    "slack-project": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-slack"],
+      "env": {
+        "SLACK_BOT_TOKEN": "${SLACK_BOT_TOKEN}",
+        "SLACK_TEAM_ID": "${SLACK_TEAM_ID}"
+      }
+    }
+  },
+
+  "_notes": [
+    "1. Remove servers you don't need. Don't ship dead config.",
+    "2. Never commit real credentials. Use ${VAR} interpolation; populate the vars in your shell, in direnv via .envrc, or in 1Password CLI.",
+    "3. For dmdbrands healthcare projects: any MCP that touches PHI must be reviewed by the user before adding. Most third-party MCP servers should NOT be used in PHI contexts.",
+    "4. Server names should be unique within the project. Don't shadow user-level server names — Claude Code resolves project-level first, which can mask the user-level config you actually want."
+  ]
+}

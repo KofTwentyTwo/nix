@@ -155,6 +155,7 @@
       "pipes-sh"
       "pipx"
       "platformio"
+      "pnpm"
       "poppler"
       "prettyping"
       "postgresql@17"

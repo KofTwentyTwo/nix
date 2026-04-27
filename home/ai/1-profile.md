@@ -3,71 +3,102 @@
 ## Overview
 
 **Name:** James Maes
-**Organization:** Kingsrook, LLC / QRun.IO
-**Role:** Software Engineer & Architect
-**Primary Focus:** Enterprise Java development, low-code framework engineering, and declarative infrastructure management
+**Roles:**
+- **CTO, dmdbrands** (operating co: Greater Goods) — hands-on technical leadership for a healthcare device company, ~25 engineers across mobile, web, firmware, and devops.
+- **Founder / Maintainer, Kingsrook, LLC / QRun.IO** — owner of the QQQ low-code framework (AGPL, open source) and supporting tooling.
 
-I am an experienced software engineer working on QQQ, an open-source low-code application framework for engineers. My work spans backend systems, middleware development, and developer tooling. I maintain a declarative development environment using Nix and Home Manager on macOS (Apple Silicon).
+I lead engineering at dmdbrands while remaining hands-on across the stack and continuing to maintain the QQQ ecosystem. Most working sessions are in one of three modes:
+
+1. **CTO mode** — architecture review, codebase audits, brownfield onboarding, cross-team coordination, hiring signal, devops/security oversight.
+2. **Builder mode (dmdbrands)** — hands-on work in mobile, web, firmware (Zephyr/NCS), or infrastructure (Terraform/AWS/CircleCI).
+3. **Builder mode (QQQ)** — Java framework engineering on the QQQ codebase.
+
+The active mode is usually obvious from the working directory and git remote. When ambiguous, ask.
+
+## Multi-Org Footprint
+
+| Org | GitHub | Atlassian/Jira | Role |
+|---|---|---|---|
+| Greater Goods (dmdbrands) | `dmdbrands` | `greatergoods.atlassian.net` | CTO, hands-on |
+| Kingsrook / QRun-IO | `QRun-IO` | -- (GitHub Issues) | Founder, maintainer |
+| Personal | `KofTwentyTwo` (`kof22.com`) | -- | Personal projects, tooling |
+
+Issue-tracker auto-detection lives in `3-rules.md` section 4. When the org isn't matched by that table, ask before assuming.
 
 ## Expertise
 
 ### Languages & Technologies
-- **Primary:** Java 17+ (expert level)
-- **Secondary:** Nix, Shell scripting (Bash/Zsh), Rust, Python, JavaScript
-- **Build Tools:** Maven, Homebrew
-- **Frameworks:** Javalin, Log4j2, JUnit, Spring-adjacent patterns
-- **Databases:** PostgreSQL, SQLite, MongoDB, generic RDBMS
-- **Infrastructure:** Docker, Kubernetes, AWS, Nix/NixOS, Home Manager
-- **Version Control:** Git (with GPG signing), GitHub
-- **IDEs:** IntelliJ IDEA (primary), VS Code, Neovim
+- **Daily:** Java 17+ (expert), TypeScript/JavaScript (Node + browser), Nix, Shell (Bash/Zsh)
+- **Active:** Swift/Kotlin (mobile), C/C++ (Zephyr firmware), Python, Rust, Terraform/HCL, YAML
+- **Build/runtime:** Maven, npm/pnpm/yarn, Cargo, west (Zephyr), CMake, Homebrew, Nix
+- **Frameworks:** QQQ, React/Next.js, Javalin, JUnit, Spring-adjacent patterns, Zephyr RTOS / nRF Connect SDK
+- **Data:** PostgreSQL, SQLite, MongoDB, Redis, generic RDBMS
+- **Infra:** AWS (multiple accounts via Control Tower), Docker, Kubernetes, CircleCI (incl. self-hosted Mac runners), Terraform, Helm, Argo
+- **IoT/messaging:** AWS IoT Core, MQTT, BLE
+- **Version control:** Git (GPG-signed commits, conventional commits), GitHub, gh CLI, GitHub Actions
+- **Editors:** Neovim/LazyVim (terminal), IntelliJ IDEA (Java), Xcode (iOS), VS Code (occasional)
 
 ### Domain Expertise
-- Low-code application framework design
-- Meta-data driven architectures
-- Backend module system design
-- Developer experience and tooling
-- Code quality enforcement (Checkstyle, testing standards)
-- Declarative configuration management (Nix)
+- **Low-code framework design** — meta-data-driven architectures, registration patterns, multi-module Maven (QQQ)
+- **Healthcare device software** — device-cloud sync, telemetry, OTA, embedded development
+- **Brownfield engineering** — picking up unfamiliar repos, framework migrations, dependency upgrades
+- **Developer experience** — declarative environments (Nix + Home Manager), CI/CD design, code-quality enforcement
+- **Engineering leadership** — code review at scale, technical interviewing, architectural decision records
 
 ## Communication Style
 
 ### Preferences
-- **Tone:** Professional, direct, and concise
-- **Verbosity:** Medium - provide context where needed, but avoid unnecessary elaboration
-- **Technical Depth:** Deep technical understanding is expected; don't oversimplify
-- **Code Examples:** Always use concrete examples from the actual codebase when relevant
-- **Documentation:** Value well-structured, maintainable documentation
+- **Tone:** Professional, direct, concise.
+- **Verbosity:** Medium. Context where it helps, no padding.
+- **Technical depth:** Deep — don't oversimplify or add disclaimers I don't need.
+- **Code examples:** Always concrete and from the actual codebase when relevant.
+- **Documentation:** Prefer structured, scannable, maintainable. Tables and short paragraphs over walls of prose.
 
 ### What I Appreciate
-- Solutions that align with existing patterns and conventions
-- Understanding of the broader architectural context
-- Recognition that I work in a multi-module Maven project
-- Awareness that code style is enforced via Checkstyle and IntelliJ formatting
-- Suggestions that consider maintainability and team consistency
+- Solutions that match existing patterns in the active codebase.
+- Honest assessment of trade-offs — even when the answer is "this is fine, leave it alone."
+- Push-back when my framing is wrong. I'd rather be corrected than humored.
+- Cross-domain context (e.g., flagging when a backend choice affects firmware OTA).
+- Awareness that I'm working across 100+ repos — I rely on patterns and tooling, not memorization.
 
 ### What I Don't Like
-- Generic advice that doesn't account for QQQ's specific patterns
-- Suggestions to deviate from established code style without justification
-- Over-engineering or unnecessary abstractions
-- Breaking changes without clear value proposition
+- Generic advice that ignores codebase-specific patterns.
+- Over-engineering, premature abstraction, or "future-proofing" for hypotheticals.
+- Breaking changes without clear value.
+- Long preambles, restatements of my question, or trailing summaries when the diff already shows the work.
+- Emoji in any generated content (rules, code, prose, commit messages).
 
 ## Development Environment
-- **Machine:** "Darth" (Apple Silicon Mac)
-- **Nix Config:** `/Users/james.maes/config/nix/`
-- **Workspace:** `/Users/james.maes/Git.Local/QRun-IO/qqq/`
-- **QQQ Dev Tools:** Installed and in PATH
-- **Declarative dotfile management:** Nix + Home Manager
-- **LLM tooling:** Integrated into development workflow
+
+- **Platform:** macOS Apple Silicon (`aarch64-darwin`), multiple machines (Darth, Grogu, Renova, Dark-Horse) — all synced via this Nix flake at `~/.config/nix`.
+- **Declarative dotfiles:** nix-darwin + Home Manager. AI rules, shell, editor, terminal, secrets, and Claude Code config are all version-controlled here.
+- **Shell:** zsh + Oh-My-Zsh, eza-as-ls wrapper, zoxide, fzf, direnv (with nix-direnv).
+- **Terminal:** WezTerm.
+- **Editor (terminal):** Neovim with LazyVim.
+- **AI tooling:** Claude Code (npm-globals, latest), GSD framework, Superpowers and 21 other official plugins, 100+ skills from upstream community repos plus local skills/agents/commands managed in this Nix repo.
+- **Secrets:** `git-crypt` for repo-internal secrets, SOPS-nix for secrets shipped through Home Manager, 1Password CLI for runtime credentials.
 
 ## Technical Philosophy
-- **Declarative over imperative:** Use Nix for reproducible environments
-- **Code quality matters:** Enforce standards through tooling, not just documentation
-- **Developer experience:** Invest in tools that make engineers more productive
-- **Open source first:** QQQ is AGPL-licensed and community-oriented
+
+- **Declarative over imperative.** Reproducible environments via Nix. Everything that can be config should be config.
+- **Convention over configuration when it earns its keep.** Choose patterns, then apply them consistently.
+- **Code quality is enforced, not requested.** Linters, formatters, type-checkers, CI gates — not docstrings asking nicely.
+- **Open source first** for foundational tooling (QQQ is AGPL). Closed only when there's a clear reason.
+- **Long-term maintenance over short-term cleverness.** I read more code than I write; so does the next person.
 
 ## Engineering Principles
-- Favor explicit over implicit
-- Write code for the next maintainer
-- Test at appropriate levels (unit, integration, system)
-- Document the "why" more than the "what"
-- Consistency is a feature, not a constraint
+
+- Favor explicit over implicit.
+- Write code for the next maintainer.
+- Test at the appropriate level (unit, integration, system, end-to-end).
+- Document the *why*, not the *what*. Names handle the "what."
+- Consistency is a feature.
+- When in doubt, match the surrounding code.
+
+## Reference Workspaces (when applicable)
+
+| Domain | Path | Notes |
+|---|---|---|
+| QQQ framework | `~/Git.Local/QRun-IO/qqq/` | QQQ-specific rules in that repo's `CLAUDE.md` |
+| Nix config | `~/.config/nix/` | This flake; primary across all machines |
+| dmdbrands repos | varies | Mobile, web, firmware, devops — see local `CLAUDE.md` per repo |
