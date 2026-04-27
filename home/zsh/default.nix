@@ -219,10 +219,9 @@ FUNCTIONS - Shell Helpers
   fco             fzf git checkout       interactive branch picker
   flog            fzf git log            interactive commit browser with diff preview
   extract FILE    universal extract      handles tar.gz, zip, 7z, rar, etc. (OMZ plugin)
-  awsp            AWS SSO role picker    fzf-based (account, role) picker; queries IAM Identity Center
+  awsp            AWS SSO role picker    fzf-based (account, role) picker; auto-logs-in if needed
   awsp -          unset AWS env creds    revert to AWS_PROFILE resolution
   awsp -l         list accessible roles  show (account, role) combos without picking
-  awsp --login    aws sso login + pick   logs in first if token expired
 
 TOOLS - Modern Replacements (installed via brew)
   bat             replaces cat           syntax highlighting, line numbers, paging
@@ -677,9 +676,9 @@ TIP: shelp KEYWORD   filter output (e.g., shelp kubectl, shelp replace, shelp gi
            # so new (account, role) grants appear without editing the config.
            # Usage:
            #   awsp              pick (account, role) interactively, export temp creds
+           #                     (auto-runs `aws sso login` if not authenticated)
            #   awsp -            unset AWS credential env vars (revert to AWS_PROFILE)
            #   awsp -l           list accessible (account, role) combos without picking
-           #   awsp --login      run 'aws sso login' first, then pick
            # Env:
            #   AWSP_SSO_SESSION  override sso-session name (default: greater_goods)
            awsp() {
@@ -696,17 +695,14 @@ TIP: shelp KEYWORD   filter output (e.g., shelp kubectl, shelp replace, shelp gi
                  cat <<'EOF'
 awsp - AWS SSO role picker (queries IAM Identity Center at runtime)
   awsp              pick (account, role) via fzf, export temp credentials
+                    (auto-runs `aws sso login` if not authenticated)
   awsp -            unset credential env vars
   awsp -l           list accessible (account, role) without picking
-  awsp --login      run aws sso login first, then pick
 
 Env:
   AWSP_SSO_SESSION  sso-session name to use (default: greater_goods)
 EOF
                  return 0
-                 ;;
-               --login)
-                 aws sso login --sso-session "$sso_session" || return 1
                  ;;
                -l|--list)
                  mode="list"
@@ -722,31 +718,33 @@ EOF
                return 1
              fi
 
-             # Find cached SSO token whose startUrl matches this session
-             local token_file token expires_at
-             token_file=$(grep -l "$sso_start_url" ~/.aws/sso/cache/*.json 2>/dev/null | head -1)
-             if [[ -z "$token_file" ]]; then
-               echo "awsp: no SSO token cached for '$sso_session'." >&2
-               echo "      Run: aws sso login --sso-session $sso_session" >&2
-               return 1
-             fi
-             token=$(jq -r '.accessToken // empty' "$token_file" 2>/dev/null)
-             expires_at=$(jq -r '.expiresAt // empty' "$token_file" 2>/dev/null)
-             if [[ -z "$token" ]]; then
-               echo "awsp: invalid token cache. Run: aws sso login --sso-session $sso_session" >&2
-               return 1
-             fi
+             # Find a valid SSO token; auto-run `aws sso login` if missing/expired.
+             # Two attempts: first reads cache, second re-checks after login.
+             local token_file token expires_at exp_epoch now_epoch attempt
+             for attempt in 1 2; do
+               token=""
+               token_file=$(grep -l "$sso_start_url" ~/.aws/sso/cache/*.json 2>/dev/null | head -1)
+               if [[ -n "$token_file" ]]; then
+                 token=$(jq -r '.accessToken // empty' "$token_file" 2>/dev/null)
+                 expires_at=$(jq -r '.expiresAt // empty' "$token_file" 2>/dev/null)
+                 if [[ -n "$token" && -n "$expires_at" ]]; then
+                   exp_epoch=$(date -j -f "%Y-%m-%dT%H:%M:%SZ" "$expires_at" "+%s" 2>/dev/null)
+                   now_epoch=$(date +%s)
+                   if [[ -n "$exp_epoch" && "$exp_epoch" -lt "$now_epoch" ]]; then
+                     token=""  # expired, force re-login on next iteration
+                   fi
+                 fi
+               fi
+               [[ -n "$token" ]] && break
 
-             # Check token expiration (BSD date for macOS)
-             if [[ -n "$expires_at" ]]; then
-               local exp_epoch now_epoch
-               exp_epoch=$(date -j -f "%Y-%m-%dT%H:%M:%SZ" "$expires_at" "+%s" 2>/dev/null)
-               now_epoch=$(date +%s)
-               if [[ -n "$exp_epoch" && "$exp_epoch" -lt "$now_epoch" ]]; then
-                 echo "awsp: SSO token expired. Run: aws sso login --sso-session $sso_session" >&2
+               if (( attempt == 1 )); then
+                 echo "\033[33m⚠\033[0m Not logged in to '$sso_session' — running aws sso login..." >&2
+                 aws sso login --sso-session "$sso_session" || return 1
+               else
+                 echo "awsp: login completed but no valid token found in cache" >&2
                  return 1
                fi
-             fi
+             done
 
              # Discover (account, role) combinations via SSO API (with spinner)
              local accounts count labeled
