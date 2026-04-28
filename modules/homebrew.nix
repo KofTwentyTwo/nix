@@ -219,6 +219,7 @@
       "cleanshot"
       "codex"
       "connectmenow"
+      "darktable"
       "dbeaver-community"
       "devonthink"
       "docker-desktop"
