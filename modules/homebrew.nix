@@ -179,6 +179,7 @@
       "stern"
       "stuntman"
       "talosctl"
+      "hashicorp/tap/terraform"
       "terragrunt"
       "tilt"
       "tokei"
