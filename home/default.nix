@@ -33,6 +33,7 @@ in
     ./codex
     ./gemini
     ./gpg
+    ./hermes
     ./k9s
     ./npm-globals
     ./nvim
