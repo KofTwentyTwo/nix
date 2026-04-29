@@ -425,33 +425,11 @@ let
       # Custom scripts (zsh functions)
       "Bash(zsh -ic:*)"
 
-      # MCP - Atlassian plugin (read operations)
-      "mcp__plugin_atlassian_atlassian__atlassianUserInfo"
-      "mcp__plugin_atlassian_atlassian__getAccessibleAtlassianResources"
-      "mcp__plugin_atlassian_atlassian__getConfluenceSpaces"
-      "mcp__plugin_atlassian_atlassian__getConfluencePage"
-      "mcp__plugin_atlassian_atlassian__getPagesInConfluenceSpace"
-      "mcp__plugin_atlassian_atlassian__getConfluencePageFooterComments"
-      "mcp__plugin_atlassian_atlassian__getConfluencePageInlineComments"
-      "mcp__plugin_atlassian_atlassian__getConfluencePageDescendants"
-      "mcp__plugin_atlassian_atlassian__searchConfluenceUsingCql"
-      "mcp__plugin_atlassian_atlassian__getJiraIssue"
-      "mcp__plugin_atlassian_atlassian__getTransitionsForJiraIssue"
-      "mcp__plugin_atlassian_atlassian__getJiraIssueRemoteIssueLinks"
-      "mcp__plugin_atlassian_atlassian__getVisibleJiraProjects"
-      "mcp__plugin_atlassian_atlassian__getJiraProjectIssueTypesMetadata"
-      "mcp__plugin_atlassian_atlassian__getJiraIssueTypeMetaWithFields"
-      "mcp__plugin_atlassian_atlassian__searchJiraIssuesUsingJql"
-      "mcp__plugin_atlassian_atlassian__lookupJiraAccountId"
-      "mcp__plugin_atlassian_atlassian__search"
-      "mcp__plugin_atlassian_atlassian__fetch"
-
-      # MCP - Atlassian plugin (Jira write operations for ticket tracking)
-      "mcp__plugin_atlassian_atlassian__createJiraIssue"
-      "mcp__plugin_atlassian_atlassian__editJiraIssue"
-      "mcp__plugin_atlassian_atlassian__addCommentToJiraIssue"
-      "mcp__plugin_atlassian_atlassian__transitionJiraIssue"
-      "mcp__plugin_atlassian_atlassian__addWorklogToJiraIssue"
+      # MCP - Atlassian plugin (all Jira + Confluence reads and writes)
+      # Wildcard covers every tool exposed by the atlassian plugin: issue CRUD,
+      # transitions, worklogs, comments, links, page CRUD, comment CRUD, search,
+      # CQL/JQL, plus any new tools added by future plugin releases.
+      "mcp__plugin_atlassian_atlassian__*"
 
       # MCP - CircleCI (read-only operations)
       "mcp__circleci-mcp-server__get_build_failure_logs"
