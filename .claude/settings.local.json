@@ -55,7 +55,21 @@
       "Bash(python3 -c ' *)",
       "Bash(rm -v /tmp/extract_tools.py /tmp/extract_subs.py /tmp/migrate_settings.py /tmp/jsonl_files.txt)",
       "Bash(date +%s echo \"---\" git status --short echo \"---\" git log --oneline @{u}..)",
-      "Bash(git log *)"
+      "Bash(git log *)",
+      "Bash(log show *)",
+      "Bash(home-manager generations *)",
+      "Bash(export PATH=\"/opt/homebrew/bin:$PATH\")",
+      "Bash(command -v uv)",
+      "Bash(command -v git)",
+      "Bash(git --version)",
+      "Bash(command -v curl)",
+      "Bash(curl -fsSL https://raw.githubusercontent.com/NousResearch/hermes-agent/main/scripts/install.sh -o /tmp/hermes-install.sh)",
+      "Read(//tmp/**)",
+      "Bash(bash /tmp/hermes-install.sh --skip-setup)",
+      "Bash(sed -n '415,425p' /nix/store/raam5q9xg3bnad14q6vga3z84xpg7d4m-home-manager-generation/activate)",
+      "Bash(sed -n '1,40p' /nix/store/raam5q9xg3bnad14q6vga3z84xpg7d4m-home-manager-generation/activate)",
+      "Bash(hermes --version)",
+      "Bash(hermes --help)"
     ]
   }
 }
