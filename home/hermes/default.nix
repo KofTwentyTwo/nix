@@ -64,26 +64,27 @@ in
   # interactive wizard doesn't block activation. Idempotent: skipped if
   # hermes-agent/.git already exists. Non-fatal on network failures so an
   # offline rebuild doesn't break.
+  #
+  # IMPORTANT: never use bare `exit 0` to skip a step here. Home-manager
+  # concatenates every `home.activation.*` block into a single bash process,
+  # so `exit 0` aborts the entire activation run — every activation that comes
+  # alphabetically after `installHermesAgent` (notably syncClaudeJson, which
+  # writes ~/.claude.json) silently never executes. Use if/elif/else with a
+  # no-op (`:`) branch for the skip cases instead.
   home.activation.installHermesAgent = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     export PATH="${brewBin}:$PATH"
 
     if [ -d "${installDir}/.git" ]; then
-      exit 0
-    fi
-
-    if ! command -v uv >/dev/null 2>&1; then
+      : # already installed; nothing to do
+    elif ! command -v uv >/dev/null 2>&1; then
       echo "hermes: uv not found on PATH; install uv via Homebrew first (declared in modules/homebrew.nix)" >&2
-      exit 0
-    fi
-
-    if ! command -v git >/dev/null 2>&1; then
+    elif ! command -v git >/dev/null 2>&1; then
       echo "hermes: git not found on PATH; skipping install" >&2
-      exit 0
+    else
+      echo "hermes: installing to ${installDir} via upstream install.sh (--skip-setup)"
+      curl -fsSL https://raw.githubusercontent.com/NousResearch/hermes-agent/main/scripts/install.sh \
+        | bash -s -- --skip-setup \
+        || echo "hermes: WARN install failed (offline?); rerun darwin-rebuild switch when network is available" >&2
     fi
-
-    echo "hermes: installing to ${installDir} via upstream install.sh (--skip-setup)"
-    curl -fsSL https://raw.githubusercontent.com/NousResearch/hermes-agent/main/scripts/install.sh \
-      | bash -s -- --skip-setup \
-      || echo "hermes: WARN install failed (offline?); rerun darwin-rebuild switch when network is available" >&2
   '';
 }

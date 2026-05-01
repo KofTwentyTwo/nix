@@ -24,6 +24,7 @@ let
   packages = [
     "@anthropic-ai/claude-code"
     "@mariozechner/pi-coding-agent"
+    "ruflo"
   ];
 
   # Node.js bin dir from Homebrew (node@22 in modules/homebrew.nix).
@@ -77,6 +78,11 @@ in
   # @latest so AI CLIs stay current. npm's install is idempotent when the
   # package is already at the latest version, so this is cheap when nothing
   # changed. Non-fatal on network failures — logs a warning and continues.
+  #
+  # NB: never use bare `exit 0` to skip — home-manager runs every
+  # `home.activation.*` block as one bash process, so `exit` aborts every
+  # downstream activation (notably syncClaudeJson, installClaudePluginMarketplaces).
+  # Use if/then/else with the body as the `else` branch to skip cleanly.
   home.activation.installNpmGlobals = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     export NPM_CONFIG_PREFIX="${homeDir}/.npm-global"
     export PATH="${nodeBin}:$PATH"
@@ -84,13 +90,12 @@ in
 
     if [ ! -x "${nodeBin}/npm" ]; then
       echo "npm-globals: ${nodeBin}/npm not found; skipping (install node@22 via Homebrew first)" >&2
-      exit 0
+    else
+      for pkg in ${packageList}; do
+        echo "npm-globals: installing/upgrading $pkg@latest"
+        "${nodeBin}/npm" install -g "$pkg@latest" || \
+          echo "npm-globals: WARN install of $pkg failed (offline?); continuing" >&2
+      done
     fi
-
-    for pkg in ${packageList}; do
-      echo "npm-globals: installing/upgrading $pkg@latest"
-      "${nodeBin}/npm" install -g "$pkg@latest" || \
-        echo "npm-globals: WARN install of $pkg failed (offline?); continuing" >&2
-    done
   '';
 }

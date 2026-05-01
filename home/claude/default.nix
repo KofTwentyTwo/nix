@@ -29,6 +29,25 @@ let
         CIRCLECI_TOKEN = "$" + "{CIRCLECI_TOKEN}";
       };
     };
+    # ruflo's multi-agent orchestration backbone. Uses the global CLI
+    # installed via home/npm-globals so the version stays unified with the
+    # `ruflo` shell command.
+    #
+    # Absolute path is intentional: Claude Code's MCP spawner inherits whatever
+    # PATH the parent Claude process had at launch. If Claude was launched from
+    # Spotlight/Dock/an IDE plugin instead of a login shell, ~/.npm-global/bin
+    # won't be on PATH and `command = "ruflo"` would fail with "command not
+    # found". The absolute path makes spawning deterministic regardless of how
+    # Claude was launched.
+    #
+    # Inherits Claude's env (ANTHROPIC_API_KEY etc.) — add explicit `env`
+    # entries here only for keys Claude doesn't already set (e.g. OPENAI_API_KEY,
+    # GOOGLE_API_KEY) if you want ruflo to drive other models.
+    ruflo = {
+      type = "stdio";
+      command = "${homeDir}/.npm-global/bin/ruflo";
+      args = [ "mcp" "start" ];
+    };
   };
 
   # Permissions - consistent across machines
@@ -431,6 +450,20 @@ let
       # CQL/JQL, plus any new tools added by future plugin releases.
       "mcp__plugin_atlassian_atlassian__*"
 
+      # MCP - Ruflo (intentionally NOT wildcarded yet)
+      # Ruflo exposes file-modifying / agent-spawning tools (mcp__ruflo__agent_spawn,
+      # mcp__ruflo__swarm_init, mcp__ruflo__memory_*, etc). Letting them auto-fire
+      # without prompts would let an orchestration loop write/refactor files
+      # without your sign-off. Strategy: leave the prompts on initially so you
+      # see what each tool actually does, then narrow this allow list to the
+      # specific ones you trust (read-only memory queries, status checks, etc.).
+      # When ready, replace the comment with either a wildcard:
+      #   "mcp__ruflo__*"
+      # or a specific subset, e.g.:
+      #   "mcp__ruflo__memory_search"
+      #   "mcp__ruflo__agent_list"
+      #   "mcp__ruflo__swarm_status"
+
       # MCP - CircleCI (read-only operations)
       "mcp__circleci-mcp-server__get_build_failure_logs"
       "mcp__circleci-mcp-server__find_flaky_tests"
@@ -675,16 +708,15 @@ in
   # and doesn't already have one. Copy-if-missing only; once the file lands
   # in the QQQ repo, that repo owns it and subsequent rebuilds do nothing.
   # Silent no-op on machines without the QQQ checkout.
+  # NB: never use bare `exit 0` to skip — home-manager runs all
+  # `home.activation.*` blocks as one bash process, so `exit` aborts every
+  # downstream activation (notably syncClaudeJson). Use if/then to skip.
   home.activation.bootstrapQqqClaudeMd = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     qqq_dir="${homeDir}/Git.Local/QRun-IO/qqq"
     qqq_claude_md="$qqq_dir/CLAUDE.md"
     template_path="${./workspace-templates/qqq-CLAUDE.md}"
 
-    if [ ! -d "$qqq_dir" ]; then
-      exit 0
-    fi
-
-    if [ ! -f "$qqq_claude_md" ]; then
+    if [ -d "$qqq_dir" ] && [ ! -f "$qqq_claude_md" ]; then
       cp "$template_path" "$qqq_claude_md"
       chmod 644 "$qqq_claude_md"
       echo "[qqq-bootstrap] Wrote CLAUDE.md template into $qqq_dir/. Review and commit from the QQQ checkout." >&2
@@ -696,32 +728,32 @@ in
   # on a fresh machine because the marketplace isn't registered yet.
   # Idempotent: `claude plugin marketplace add` is a no-op when already added.
   # Non-fatal: skips silently if claude isn't on PATH yet (cold-start case).
+  # NB: never use bare `exit 0` to skip — see bootstrapQqqClaudeMd note above.
   home.activation.installClaudePluginMarketplaces = lib.hm.dag.entryAfter [ "installNpmGlobals" ] ''
     export PATH="${homeDir}/.npm-global/bin:/opt/homebrew/opt/node@22/bin:$PATH"
 
     if ! command -v claude >/dev/null 2>&1; then
       echo "[claude-marketplaces] claude CLI not on PATH yet; skipping (will register on next rebuild)" >&2
-      exit 0
+    else
+      # Marketplaces we want present on every machine. Add new ones here.
+      # Format: "<short-name>:<github-source>"
+      marketplaces=(
+        "claude-plugins-official:anthropics/claude-plugins-official"
+      )
+
+      current="$(claude plugin marketplace list 2>/dev/null || true)"
+      for entry in "''${marketplaces[@]}"; do
+        name="''${entry%%:*}"
+        source="''${entry#*:}"
+        if echo "$current" | grep -q "❯ $name$\|❯ $name "; then
+          echo "[claude-marketplaces] $name already registered"
+        else
+          echo "[claude-marketplaces] Adding $name ($source)..."
+          claude plugin marketplace add "$source" 2>&1 || \
+            echo "[claude-marketplaces] WARN: add of $name failed; continuing" >&2
+        fi
+      done
     fi
-
-    # Marketplaces we want present on every machine. Add new ones here.
-    # Format: "<short-name>:<github-source>"
-    marketplaces=(
-      "claude-plugins-official:anthropics/claude-plugins-official"
-    )
-
-    current="$(claude plugin marketplace list 2>/dev/null || true)"
-    for entry in "''${marketplaces[@]}"; do
-      name="''${entry%%:*}"
-      source="''${entry#*:}"
-      if echo "$current" | grep -q "❯ $name$\|❯ $name "; then
-        echo "[claude-marketplaces] $name already registered"
-      else
-        echo "[claude-marketplaces] Adding $name ($source)..."
-        claude plugin marketplace add "$source" 2>&1 || \
-          echo "[claude-marketplaces] WARN: add of $name failed; continuing" >&2
-      fi
-    done
   '';
 
   # GSD (Get-Shit-Done) — install/upgrade on every rebuild via upstream's

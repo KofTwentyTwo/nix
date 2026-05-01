@@ -117,6 +117,7 @@ The `ls()` wrapper function in zsh initContent translates standard ls flags to e
 | `qqq-mcp` | Local QQQ at localhost:8080/mcp |
 | `circleci-mcp-server` | CircleCI integration |
 | `atlassian` | Jira/Confluence |
+| `ruflo` | Multi-agent orchestration (swarms, hive-mind, persistent memory). CLI installed via `home/npm-globals`. |
 
 ## Known Issues
 
