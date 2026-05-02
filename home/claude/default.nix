@@ -723,6 +723,34 @@ in
     fi
   '';
 
+  # Serena dashboard auto-open — pin to false so launching Claude (which
+  # spawns Serena's MCP server) doesn't pop the dashboard in the default
+  # browser every time. Serena owns ~/.serena/serena_config.yml (auto-
+  # generated on first run, occasionally rewritten with new options), so a
+  # home.file symlink would either go stale or block Serena's writes. An
+  # idempotent in-place patch is the right hammer: runs every rebuild,
+  # survives Serena regenerating the config, and only touches the one line.
+  # The dashboard remains reachable manually at http://localhost:24282/dashboard/.
+  # Warns (rather than failing) if upstream renames the key, so unrelated
+  # rebuilds don't break — we just lose dashboard suppression until the
+  # sed pattern is updated.
+  # NB: never use bare `exit 0` to skip — see bootstrapQqqClaudeMd note above.
+  home.activation.serenaDisableDashboardAutoOpen = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    cfg="${homeDir}/.serena/serena_config.yml"
+    if [ -f "$cfg" ]; then
+      if ! /usr/bin/grep -q '^web_dashboard_open_on_launch:' "$cfg"; then
+        echo "[serena] WARN: web_dashboard_open_on_launch key not found in $cfg — upstream may have renamed it" >&2
+      else
+        # BSD sed needs an empty backup-suffix arg for in-place edit; in
+        # Nix multiline strings, two single quotes is the close delimiter,
+        # so we emit the empty arg via three single quotes below.
+        /usr/bin/sed -i ''' \
+          's/^web_dashboard_open_on_launch:.*/web_dashboard_open_on_launch: false/' \
+          "$cfg"
+      fi
+    fi
+  '';
+
   # Claude Code plugin marketplaces — declarative registration.
   # Without this, the enabledPlugins entries in settings.json silently fail
   # on a fresh machine because the marketplace isn't registered yet.
