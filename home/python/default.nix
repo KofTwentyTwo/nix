@@ -20,12 +20,16 @@
   ];
 
   # pipx applications (isolated CLI tools, via Homebrew pipx)
+  # Skip install when the venv already exists so activation stays quiet.
   home.activation.pythonPackages = lib.hm.dag.entryAfter ["writeBoundary"] ''
     export PATH="/opt/homebrew/bin:$PATH"
 
     if command -v pipx &>/dev/null; then
-      pipx install ansible-builder 2>/dev/null || true
-      pipx install ansible-navigator 2>/dev/null || true
+      for pkg in ansible-builder ansible-navigator; do
+        if [ ! -d "$HOME/.local/pipx/venvs/$pkg" ]; then
+          pipx install "$pkg"
+        fi
+      done
     fi
   '';
 }
