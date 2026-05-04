@@ -69,7 +69,9 @@
       "Bash(sed -n '415,425p' /nix/store/raam5q9xg3bnad14q6vga3z84xpg7d4m-home-manager-generation/activate)",
       "Bash(sed -n '1,40p' /nix/store/raam5q9xg3bnad14q6vga3z84xpg7d4m-home-manager-generation/activate)",
       "Bash(hermes --version)",
-      "Bash(hermes --help)"
+      "Bash(hermes --help)",
+      "Bash(nix-instantiate --parse /Users/james.maes/.config/nix/home/python/default.nix)",
+      "Bash(git *)"
     ]
   }
 }
