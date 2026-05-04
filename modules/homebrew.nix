@@ -92,7 +92,6 @@
       "git"
       "git-absorb"
       "git-crypt"
-      "git-lfs"
       "gitea"
       "gitleaks"
       "gdu"

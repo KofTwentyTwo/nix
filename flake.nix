@@ -352,6 +352,7 @@
       #######################################################################
       programs.git = {
          enable = true;
+         lfs.enable = true;
          ignores = [ ".DS_Store" ];
          signing = {
             key = userConfig.git.signingKey;
