@@ -1,6 +1,14 @@
 {
   "permissions": {
     "allow": [
+      "Bash(git push:*)",
+      "Bash(git pull:*)",
+      "Bash(git rebase:*)",
+      "Bash(git fetch:*)",
+      "Bash(git -C /Users/james.maes/.config/nix push:*)",
+      "Bash(git -C /Users/james.maes/.config/nix pull:*)",
+      "Bash(git -C /Users/james.maes/.config/nix rebase:*)",
+      "Bash(git -C /Users/james.maes/.config/nix fetch:*)",
       "Bash(git -C /Users/james.maes/.config/nix status)",
       "Bash(git -C /Users/james.maes/.config/nix diff)",
       "Bash(git -C /Users/james.maes/.config/nix log --oneline -5)",
