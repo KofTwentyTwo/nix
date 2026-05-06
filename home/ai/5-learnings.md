@@ -337,3 +337,56 @@ dmdbrands is a healthcare device company. HIPAA / BAA / PHI handling is a future
 ### CoreDNS Override for Internal Service Access
 - Use CoreDNS `template` plugin to resolve specific hostnames to ClusterIPs, bypassing LoadBalancer VIP hairpin issues
 - Example: `auth.kof22.com` -> Authentik ClusterIP `172.19.49.208` so backend pods reach Authentik directly
+
+## AWS Control Tower / Security Hub / Audit Manager (verified 2026-05-03)
+
+### Security Hub central configuration requires a Finding Aggregator
+The 2024+ central configuration mode rejects configuration policies until an `aws_securityhub_finding_aggregator` resource exists. AWS provider docs do not surface this dependency. On apply you'll see `ResourceNotFoundException: Finding Aggregator must be created to enable Central Configuration`. Declare the aggregator before `aws_securityhub_organization_configuration`.
+
+### AWS Config has TWO Organizations service principals
+- `config.amazonaws.com` — used by the aggregator role + service-linked role
+- `config-multiaccountsetup.amazonaws.com` — REQUIRED for org-level Conformance Pack and Config Rule deployments
+
+Both need delegated-administrator records pointing at the Audit account. The second principal also needs `aws organizations enable-aws-service-access` first; it is NOT enabled by default after Control Tower install. Without it, `aws_config_organization_conformance_pack` returns `OrganizationAccessDeniedException` even though the aggregator works fine.
+
+### AWS Audit Manager has no HITRUST CSF in the standard catalog
+Verified in us-east-2 on 2026-05-03. Standard catalog includes HIPAA Omnibus, HIPAA Security Rule, NIST 800-53 r5, FedRAMP, CIS, GDPR, SSAE-18, ISO 27001, etc., but NOT HITRUST CSF. AWS marketing sometimes implies HITRUST is supported. In practice, combine HIPAA Omnibus + NIST 800-53 r5, or build a custom HITRUST framework via console/API.
+
+### Audit Manager registration: bootstrap via CLI, then import
+The TF `aws_auditmanager_account_registration` resource returns opaque errors on initial creation. Reliable pattern:
+1. Cross-account assume into the Audit account
+2. `aws auditmanager register-account` (one-shot)
+3. `aws organizations enable-aws-service-access --service-principal auditmanager.amazonaws.com`
+4. `aws organizations register-delegated-administrator --account-id <audit> --service-principal auditmanager.amazonaws.com`
+5. `terraform import aws_auditmanager_account_registration.audit <audit-account-id>`
+
+### `aws_*_organization_admin_account` is region-pinned despite the name
+For GuardDuty, Inspector v2, Detective: the "organization admin account" resources sound org-level but are actually pinned to the provider's region. To register the admin in multiple governed regions, declare one resource per region with the appropriate provider alias. The matching `aws_*_organization_configuration` in each region requires the per-region admin to exist, otherwise it fails with `BadRequestException: delegated administrator account has not been enabled`.
+
+### Control Tower "Mixed governance" status often = OU SCP region drift
+When a region shows "Mixed governance" rather than "Governed", check OU-level SCPs for stale `aws:RequestedRegion` allow-lists. After narrowing LZ governed regions, OU SCPs that allow a now-non-governed region (or deny a now-governed one) prevent CT from deploying Config recorders to that region in those OUs. Fix: align the SCP region list to LZ governance.
+
+### `terraform import` on recent AWS provider may not print "Successful"
+Recent AWS provider versions sometimes print only deprecation warnings about `-state` legacy options, with no explicit "Imported successfully" message. Verify with `terraform state list | grep <resource>` after the command.
+
+### AWS Config aggregator should aggregate ALL regions for HITRUST
+Even if the LZ governs only 2 regions, set the org-aggregator to `all_regions = true`. Defense-in-depth per CWE-778: catches drift in regions thought unused (rogue Config recorders, leftover resources). Semgrep flags `all_regions = false` for this reason.
+
+## AFT / Faber / DMD Pipeline (verified 2026-05-03)
+
+### AFT `custom_fields` are NOT auto-injected into Terraform tfvars
+AFT publishes account-request custom fields to SSM Parameter Store in the vended account at `/aft/account-request/custom-fields/<key>`. Customizations that need them must read SSM at runtime, not declare a `var.bu` (or similar) and expect it populated from the DDB account-request record. This was the OPS-55 root cause for DMD's workload-baseline.
+
+### Faber enforces GitFlow at validate-branch
+Allowed branch prefixes: `feature/`, `release/`, `hotfix/`, `dependabot/`. Reserved branch names: `main`, `develop`, `staging`. Anything else (e.g., `chore/`) is rejected before pipeline generation with exit code 1 from `validate_branch`. Name branches accordingly when working in Faber-orb repos.
+
+### Faber's actual emitted GitHub check contexts (current orb versions)
+- `ci/circleci: validate-repo`
+- `ci/circleci: tf-validate`
+- `ci/circleci: tf-security-scan`
+- `ci/circleci: secrets-scan`
+
+NOT the older `validate` / `security-scan` / `secrets-scan` names some legacy DMD repos (e.g., me-health) still protect against. When wiring branch protection on new repos, match the contexts the orb actually emits, not the legacy ones.
+
+### Audit findings on disk can contradict live AWS state
+A prior session's audit report claimed an SCP denied `kms:CreateKey` and `s3:Put*`; the live policy chain to the target accounts had nothing of the sort. When an audit verdict feels surprising, query AWS directly (`aws organizations describe-policy`, `aws organizations list-policies-for-target`) before acting on it. Treat on-disk audit artifacts as point-in-time, not authoritative.
