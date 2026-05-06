@@ -350,6 +350,15 @@ let
       "Bash(ansible-playbook --check:*)"
       "Bash(ansible-playbook --syntax-check:*)"
 
+      # AWS SSO credential rotation
+      # Lets the agent rotate workload-account role credentials from a fresh
+      # SSO bearer token without harness blocking. Used by the AWS infra
+      # workflow (terragrunt apply against vended workload accounts).
+      # The first rule reads the cached SSO bearer; the second exchanges it
+      # for short-lived role credentials.
+      "Bash(jq -r .accessToken /Users/james.maes/.aws/sso/cache/*.json)"
+      "Bash(aws sso get-role-credentials:*)"
+
       # Go (read-only)
       "Bash(go version:*)"
       "Bash(go env:*)"
