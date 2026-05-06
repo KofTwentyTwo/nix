@@ -128,8 +128,8 @@
         set status-format[1] "#[fg=green,bold]  #S #[fg=green]░▒▓ #[fg=white]#I:#W#[align=right]#[fg=yellow]#H #[fg=green]│ #[fg=cyan] %H:%M #[fg=green]│ #[fg=white]󰃰 %d-%b-%y " \;\
         refresh-client -S
 
-      # Lock screen: cmatrix + PIN after 15 minutes idle, prefix+L to trigger manually
-      set -g lock-after-time 900
+      # Lock screen: cmatrix + PIN after 30 minutes idle, prefix+L to trigger manually
+      set -g lock-after-time 1800
       set -g lock-command "$HOME/.local/bin/tmux-lock.sh"
       bind L lock-session
 
