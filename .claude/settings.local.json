@@ -79,7 +79,11 @@
       "Bash(hermes --version)",
       "Bash(hermes --help)",
       "Bash(nix-instantiate --parse /Users/james.maes/.config/nix/home/python/default.nix)",
-      "Bash(git *)"
+      "Bash(git *)",
+      "Bash(brew --version)",
+      "Bash(brew config *)",
+      "Read(//opt/homebrew/Library/Homebrew/api/cask/**)",
+      "Bash(HOMEBREW_NO_INSTALL_FROM_API=1 brew info --cask alfred)"
     ]
   }
 }
