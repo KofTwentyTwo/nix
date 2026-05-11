@@ -83,7 +83,8 @@
       "Bash(brew --version)",
       "Bash(brew config *)",
       "Read(//opt/homebrew/Library/Homebrew/api/cask/**)",
-      "Bash(HOMEBREW_NO_INSTALL_FROM_API=1 brew info --cask alfred)"
+      "Bash(HOMEBREW_NO_INSTALL_FROM_API=1 brew info --cask alfred)",
+      "Bash(xargs -I{} sh -c 'echo \"=== {} ===\"; grep -E \"verbose title|error|verbose exit\" {} | head -10')"
     ]
   }
 }
