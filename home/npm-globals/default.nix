@@ -21,8 +21,13 @@ let
 
   # Declared global npm packages. Add entries here to have them installed
   # automatically on darwin-rebuild switch.
+  #
+  # Claude Code (@anthropic-ai/claude-code) is NOT managed here anymore.
+  # Anthropic ships a self-updating native binary; its auto-migrator runs
+  # `npm uninstall -g` and fought our always-upgrade activation loop here,
+  # breaking the install on 2026-05-11. Bootstrap now lives in
+  # home/claude/default.nix:bootstrapClaude.
   packages = [
-    "@anthropic-ai/claude-code"
     "@mariozechner/pi-coding-agent"
     "ruflo"
   ];

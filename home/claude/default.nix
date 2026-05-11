@@ -1,6 +1,10 @@
 # Claude Code Configuration Module
 # ================================
-# Manages all Claude Code configuration files.
+# Manages Claude Code installation + configuration.
+#
+# Binary installation:
+#   - ~/.local/bin/claude → ~/.local/share/claude/versions/<ver>/ (native installer)
+#     Bootstrapped once via bootstrapClaude; self-updates afterward.
 #
 # Files managed:
 #   - ~/.claude.json: MCP servers for non-plugin services (activation script, writable)
@@ -760,14 +764,49 @@ in
     fi
   '';
 
+  # Claude Code native binary — bootstrap once, then hands-off.
+  # Anthropic ships claude as a self-updating native binary that lives at
+  # ~/.local/share/claude/versions/<ver>/ with a stable symlink at
+  # ~/.local/bin/claude. After bootstrap, the binary self-updates; we don't
+  # touch it on subsequent rebuilds.
+  #
+  # Why not npm: Anthropic is deprecating the npm channel in favor of the
+  # native installer. On 2026-05-11 the CLI's auto-migrator ran
+  # `npm uninstall -g @anthropic-ai/claude-code` mid-session, removed the
+  # ~/.npm-global/bin/claude symlink, then failed to clean up the package
+  # dir (ENOTEMPTY), leaving claude missing from PATH. Combining that
+  # auto-migrator with home/npm-globals' always-upgrade activation script
+  # was the root cause — keep them separated.
+  #
+  # Why not brew cask: same upstream-lag concern as the other AI CLIs
+  # (see home/npm-globals header). The native installer pulls same-day
+  # releases directly from Anthropic.
+  #
+  # Idempotent on existence: if ~/.local/bin/claude is already executable,
+  # we skip and let claude self-update.
+  # NB: never use bare `exit 0` to skip — see bootstrapQqqClaudeMd note above.
+  home.activation.bootstrapClaude = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    if [ -x "${homeDir}/.local/bin/claude" ]; then
+      echo "[claude] already installed at ${homeDir}/.local/bin/claude (self-updates)"
+    else
+      echo "[claude] not installed; running native installer (curl claude.ai/install.sh)"
+      if [ -x /usr/bin/curl ]; then
+        /usr/bin/curl -fsSL https://claude.ai/install.sh | /bin/bash \
+          || echo "[claude] WARN install failed (offline?); continuing" >&2
+      else
+        echo "[claude] WARN /usr/bin/curl not available; skipping" >&2
+      fi
+    fi
+  '';
+
   # Claude Code plugin marketplaces — declarative registration.
   # Without this, the enabledPlugins entries in settings.json silently fail
   # on a fresh machine because the marketplace isn't registered yet.
   # Idempotent: `claude plugin marketplace add` is a no-op when already added.
   # Non-fatal: skips silently if claude isn't on PATH yet (cold-start case).
   # NB: never use bare `exit 0` to skip — see bootstrapQqqClaudeMd note above.
-  home.activation.installClaudePluginMarketplaces = lib.hm.dag.entryAfter [ "installNpmGlobals" ] ''
-    export PATH="${homeDir}/.npm-global/bin:/opt/homebrew/opt/node@22/bin:$PATH"
+  home.activation.installClaudePluginMarketplaces = lib.hm.dag.entryAfter [ "bootstrapClaude" ] ''
+    export PATH="${homeDir}/.local/bin:${homeDir}/.npm-global/bin:/opt/homebrew/opt/node@22/bin:$PATH"
 
     if ! command -v claude >/dev/null 2>&1; then
       echo "[claude-marketplaces] claude CLI not on PATH yet; skipping (will register on next rebuild)" >&2
