@@ -12,10 +12,15 @@ Active tasks and future improvements for the Nix configuration.
 - [ ] (deferred) HIPAA / BAA / PHI policy layer for healthcare context — flagged as future work in `~/.ai/5-learnings.md`
 - [ ] Test opencode TUI launch and MCP server connections (interactive)
 - [ ] Diff remote machine (100.76.144.59) brew packages against flake when online
-- [ ] Remaining audit: #22 (permission drift), #23 (disk cleanup)
+- [ ] Remaining audit: #22 (permission drift)
+- [ ] (opt) Investigate `~/Git.Local/Kof22/Website-Backend/src/test` — 13 GB of "test source"; likely candidate for git-lfs or .gitignore
+- [ ] (opt) Clean `~/Library/Application Support/Claude` (14 GB of old project sessions + MCP caches)
+- [ ] (opt) Disable Docker Desktop Kubernetes to reclaim ~34% baseline VM CPU (control-plane idle cost)
 
 ## Recently Completed
 
+- [x] System maintenance pass: terragrunt+AWS perms, tmux-lock orphan fix, K8s teardown, +213 GiB disk reclaim (2026-05-13)
+- [x] Audit #23 disk cleanup — caches + Kof22 build artifacts + TM snapshots; disk 95% → 71% full (2026-05-13)
 - [x] Claude Code multi-domain rules cleanup + new local skills/agents/commands/templates + marketplace auto-register + pnpm + firmware/IaC perms (2026-04-27)
 - [x] Switch claude-code from Homebrew cask to npm (faster release cadence) (2026-04-21)
 - [x] Add firebase-cli to homebrew (2026-04-21)

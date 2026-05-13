@@ -1,73 +1,59 @@
 # Session State
 
-**Last Updated:** 2026-04-27
+**Last Updated:** 2026-05-13
 
 ## Current Status
-Major Claude Code infrastructure cleanup and multi-domain rules update landed on Dark-Horse and verified end-to-end. Changes are staged but uncommitted; other three hosts (Grogu, Darth, Renova) still need a `git pull && darwin-rebuild switch` after push.
+System maintenance pass: global permissions expanded, tmux-lock CPU-leak bug fixed at root, praesidium K8s cluster torn down, and ~213 GiB of disk reclaimed. All changes committed and pushed; `darwin-rebuild switch` already run by user.
 
 ## What Was Done This Session
 
-**Audit and discovery**
-- Full audit of existing Claude Code setup against an originally-proposed "build companion repo" approach. Concluded the companion-repo idea was wrong for this setup (everything's already declarative inline) and reframed as: cleanups + missing local content additions.
-- Found and documented the phantom `local--review-pr` skill (referenced by `3-rules.md` section 17, didn't exist).
+**Global permissions** (in `home/claude/default.nix`)
+- Added Terragrunt block (8 entries) — `init`, `plan`, `apply`, `taint`, `run`, `state`, `output`, `validate`. Comment flags the deliberate divergence from the existing terraform/tofu "no apply" policy.
+- Expanded "AWS SSO credential rotation" section with `aws sso list-account-roles:*` and `/Users/james.maes/bin/get-gg-prod-bg-creds.sh`.
+- New "AWS CLI" block (15 entries): `sts:*`, `ssm:*`, `eks:*`, scoped `kms`/`iam`/`backup`/`ec2`/`s3api`/`dynamodb` inspection verbs.
+- Commit: `bcef385 feat(claude): allow terragrunt and AWS read-only verbs in agent permissions`.
 
-**AI rules cleanup (`~/.ai/*`)**
-- Rewrote `1-profile.md` with multi-domain CTO at dmdbrands / Greater Goods + Kingsrook/QRun-IO maintainer + multi-org footprint table. Mobile/web/firmware/devops scope added.
-- Rewrote `3-rules.md`: extracted QQQ-specific architecture rules (sections 14-15) and Java specifics, generalized identity, decision-making policy, and tracker routing for multi-domain. Added compound-command decomposition note. Reinforced `local--review-pr` routing.
-- Restructured `2-coding-style.md` to lead with universal principles, then per-language sections expanded to cover TS, Swift, Kotlin, C/Zephyr, Terraform, YAML alongside existing Java/Rust/Python/Nix/Shell. QQQ-specific marked as project-scoped.
-- Cleaned up `4-preferences.yaml` for multi-domain. Added per-language tuning. Fixed paths. Moved GraphQL discussion-posting recipe to `5-learnings.md`.
-- Rewrote `0-init.md` to match the 6-file hierarchy.
-- Reconciled hierarchy across `~/.claude/CLAUDE.md` inline text (in `home/claude/default.nix`), `0-init.md`, and `3-rules.md` — all three now agree on the 6-file load order including `5-learnings.md`.
-- Added Healthcare Context, QRun-IO Discussions GraphQL recipe, and a "Nix + Claude Code Configuration" section to `5-learnings.md` (covering flake/git tracking, marketplace-vs-enabledPlugins, compound-command perms, defensive jq merge).
+**tmux-lock CPU leak fix** (`scripts/tmux-lock.sh`)
+- Root cause: foreground `eval` of screensaver with no `trap` → on tmux pane SIGHUP the bash parent died, screensaver child (`perl`/asciiquarium, bash/`pipes.sh`) orphaned to PID 1 and pinned a core forever. Found 7 such orphans burning ~460% CPU combined across 2–12 day lifetimes.
+- Added `cleanup() { pkill -P $$; tput cnorm; }` with trap on EXIT/INT/TERM/HUP. Reaps direct children on abnormal exit.
+- Hardcoded `SCREENSAVER="cmatrix -s"` — dropped random selection over asciiquarium/pipes.sh/cbonsai/lavat/tty-clock (the busy-loop ones pinned cores; cmatrix stays under 5%).
+- Commit: `0ddac79 fix(tmux): stop screensaver children from leaking as CPU-pinning orphans`.
 
-**New local Claude Code content** (under `home/claude/`)
-- 5 new skills: `review-pr`, `brownfield-onboarding`, `pre-merge-checklist`, `mqtt-topic-design`, `circleci-mac-runner-debug`.
-- 3 new agents: `firmware-build-doctor`, `hub-firmware-driver`, `migration-planner`.
-- 2 new commands: `standup`, `eod-handoff` (new `commands/` directory).
-- 5 workspace templates: `mobile/web/firmware/devops/qqq-CLAUDE.md` (new `workspace-templates/` directory).
-- 1 project-level MCP example: `templates/mcp.json.example`.
-- Wired into `home/claude/skills.nix` (new `localCommands`, `workspaceTemplates`, `localTemplates` attribute sets).
+**Process hygiene**
+- Killed 36 stale/orphaned processes total: 21 old `tmux-lock.sh` parents (running pre-rebuild code, cycling through random screensavers), 7 cmatrix instances (some 12 days old), 5 lavat instances, 3 stale `claude` sessions (14d, 6d, 2d uptime).
 
-**Permissions expansion** (in `home/claude/default.nix`)
-- Added `claude:*`, `cd:*`, full firmware tooling (`west`, `nrfutil`, `pyocd`, `JLinkExe`, `cmake`, `ninja`, `platformio`, `arm-none-eabi-*`, `openocd`).
-- Added IaC read-only ops (`terraform plan|validate|init|fmt|output|show|state|...` and equivalent `tofu`).
-- Added `WebSearch`, `WebFetch`. Total: 335 entries.
+**Praesidium K8s teardown**
+- 18 running containers stopped via `kubectl delete namespace praesidium praesidium2-local`.
+- 3 PVCs + 3 PVs (postgres, cos, minio) cascade-deleted (Delete reclaim policy).
+- 4 docker-compose-era named volumes removed: `praesidium_minio_data`, `praesidium_openclaw_state`, `praesidium_pgdata`, `praesidium_worker_agents`.
+- Other 8 projects' Docker volumes (command-center, kof22, me-health-portal, mes-assembly-server, multica, paperclip-loaded, voyage, wms-admin-agent) intentionally preserved.
+- VM CPU dropped from 130–143% → 34%. Kubernetes itself left enabled.
 
-**New Home Manager activation scripts** (in `home/claude/default.nix`)
-- `installClaudePluginMarketplaces` — auto-registers `claude-plugins-official` marketplace on every rebuild. Closes a fresh-machine bootstrap gap.
-- `bootstrapQqqClaudeMd` — drops `qqq-CLAUDE.md` into `~/Git.Local/QRun-IO/qqq/CLAUDE.md` if QQQ checkout exists and that file is missing. Copy-if-missing, never overwrites.
-
-**Homebrew**
-- Added `pnpm` to `modules/homebrew.nix`.
-
-**Verification (Dark-Horse)**
-- `nix flake check` green for all 4 darwinConfigurations.
-- `darwin-rebuild switch` succeeded after `git add -A` (flake-evaluator-only-sees-tracked-files gotcha).
-- 8 local skills, 4 local agents, 6 commands (4 cw + 2 new), 5 workspace templates, mcp.json.example all on disk.
-- All `~/.ai/*` symlinks updated to new store hash.
-- 24 plugins enabled (Superpowers, Atlassian, Figma, etc. now resolvable as skills).
-- pnpm 10.33.2 on PATH.
-- Marketplace registered.
-- QQQ CLAUDE.md bootstrapped at `~/Git.Local/QRun-IO/qqq/CLAUDE.md` (untracked from QQQ side).
+**Disk reclamation (+213 GiB available, 52 → 265 GiB)**
+- 8 safe Library caches deleted: Adobe Camera Raw 2 (7.9 GB), terragrunt (4.6 GB), JetBrains (4.5 GB), ms-playwright (2.1 GB), node-gyp (1 GB), 3× ShipIt update payloads (todesktop, antigravity, lens-desktop-updater) — 23.5 GB.
+- Docker build cache pruned: 6.5 GB (inside Docker.raw).
+- Kof22 Tier 1 build artifacts removed: `Website-Backend/target` (14 GB, untouched 7 weeks), Jarvis `build-devoverlay` + 5 dormant package `.build` dirs + 3 mcp-servers `.build` + jarvis-diag `.build` — 18.8 GB.
+- TM local snapshots purged (`tmutil deletelocalsnapshots`): unpinned everything we'd deleted; 19 → 0 snapshots.
 
 ## Active Branches
 | Branch | Status |
-|---|---|
-| `main` | 25 file changes staged + a few worktree edits (TODO.md and 5-learnings.md got further session-end touches). Needs commit + push. |
+|--------|--------|
+| `main` | Clean. Two session commits (`bcef385`, `0ddac79`) already pushed to `origin/main`. |
 
 ## Pending Work
-- [ ] Commit staged changes and push to origin
+Carryover from prior session:
 - [ ] Sync Grogu / Darth / Renova: `git pull && sudo darwin-rebuild switch --flake ~/.config/nix#$(hostname)`
 - [ ] From inside `~/Git.Local/QRun-IO/qqq/`: review the bootstrapped `CLAUDE.md` and commit to QQQ's main branch
 - [ ] (optional) Decide whether to put `claude-hud@claude-hud` and the `jarrodwatts/claude-hud` marketplace into Nix
 - [ ] (as projects rotate in) Add additional Greater Goods Jira projects to `home/ai/4-preferences.yaml`
 - [ ] (deferred) HIPAA / BAA / PHI policy layer
 
+Opt-in follow-ups from this session:
+- [ ] Investigate `~/Git.Local/Kof22/Website-Backend/src/test` (13 GB — anomalously large; possibly checked-in test fixtures candidate for git-lfs migration)
+- [ ] Optionally clean `~/Library/Application Support/Claude` (14 GB — old project sessions and MCP caches)
+- [ ] Disable Docker Desktop Kubernetes if not needed (would reclaim the remaining ~34% VM baseline CPU)
+
 ## Key Reference
-- AI rules priority hierarchy (binding for all sessions):
-  1. `~/.claude/CLAUDE.md` (Nix-managed inline text in `home/claude/default.nix`)
-  2-6. `~/.ai/3-rules.md`, `2-coding-style.md`, `1-profile.md`, `4-preferences.yaml`, `5-learnings.md`
-  7. Project `CLAUDE.md`
-- Local Claude content lives under `home/claude/{skills,agents,commands,workspace-templates,templates}/`, registered in `home/claude/skills.nix`.
-- Fresh-machine bootstrap is one command: `sudo darwin-rebuild switch --flake ~/.config/nix#$(hostname)`. Marketplace + QQQ CLAUDE.md are activation-driven; pnpm via `onActivation.upgrade=true`.
-- Nix flake gotcha: `git add` (no commit needed) before `darwin-rebuild switch` when adding new files referenced by `${./path}`.
+- 21 tmux panes were unlocked when we killed their old lock-script parents. They'll re-lock with the new (cmatrix-only + trap) script on next 30-min idle, via the updated `lock-after-time 1800` setting.
+- macOS daily APFS local snapshots will resume on the next TM backup cycle — that's normal; today's purge just surfaced freed space immediately.
+- Docker.raw apparent size (`ls -lh`) is sparse — real disk footprint is ~27 GB. Don't confuse the two.
