@@ -9,24 +9,26 @@ export PATH="/opt/homebrew/bin:$HOME/.nix-profile/bin:/run/current-system/sw/bin
 
 PIN_FILE="$HOME/.config/tmux-lock-pin"
 
-# Build screensaver list from what's actually installed
-SCREENSAVERS=()
-command -v cmatrix      >/dev/null && SCREENSAVERS+=("cmatrix -s")
-command -v asciiquarium >/dev/null && SCREENSAVERS+=("asciiquarium")
-command -v cbonsai      >/dev/null && SCREENSAVERS+=("cbonsai --live --infinite")
-command -v pipes.sh     >/dev/null && SCREENSAVERS+=("pipes.sh")
-command -v lavat        >/dev/null && SCREENSAVERS+=("lavat")
-command -v tty-clock    >/dev/null && SCREENSAVERS+=("tty-clock -s -c")
-# Fallback if nothing is installed
-(( ${#SCREENSAVERS[@]} == 0 )) && SCREENSAVERS=("cmatrix -s")
+# Screensaver: cmatrix only. Previous versions randomized over asciiquarium /
+# pipes.sh / cbonsai / lavat / tty-clock, but the busy-loop animations
+# (asciiquarium especially) pinned a full CPU core per pane. cmatrix uses sane
+# ncurses refresh rates and stays well under 5% CPU.
+SCREENSAVER="cmatrix -s"
+
+# Reap screensaver children if this script dies before its normal exit path
+# (e.g. tmux pane SIGHUP on disconnect). Without this, the foreground `eval`
+# child below outlives its parent and becomes a 100%-CPU orphan adopted by
+# PID 1. `pkill -P $$` kills only direct children of this script.
+cleanup() { pkill -P $$ 2>/dev/null; tput cnorm 2>/dev/null; }
+trap cleanup EXIT INT TERM HUP
 
 run_screensaver() {
-    eval "${SCREENSAVERS[RANDOM % ${#SCREENSAVERS[@]}]}" 2>/dev/null
+    eval "$SCREENSAVER" 2>/dev/null
 }
 
 # No PIN file = no lock, just screensaver
 if [[ ! -f "$PIN_FILE" ]]; then
-    eval "exec ${SCREENSAVERS[RANDOM % ${#SCREENSAVERS[@]}]}"
+    eval "exec $SCREENSAVER"
 fi
 
 # Read PIN file (format: line 1 = length, line 2 = hash)
