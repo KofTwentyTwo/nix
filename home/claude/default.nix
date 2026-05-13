@@ -354,6 +354,18 @@ let
       "Bash(ansible-playbook --check:*)"
       "Bash(ansible-playbook --syntax-check:*)"
 
+      # Terragrunt — diverges from the terraform/tofu "no apply" policy above.
+      # Daily DMD infra workflow runs terragrunt apply against vended workload
+      # accounts; gated upstream by SSO credential rotation, not by the harness.
+      "Bash(terragrunt init:*)"
+      "Bash(terragrunt plan:*)"
+      "Bash(terragrunt apply:*)"
+      "Bash(terragrunt taint:*)"
+      "Bash(terragrunt run:*)"
+      "Bash(terragrunt state:*)"
+      "Bash(terragrunt output:*)"
+      "Bash(terragrunt validate:*)"
+
       # AWS SSO credential rotation
       # Lets the agent rotate workload-account role credentials from a fresh
       # SSO bearer token without harness blocking. Used by the AWS infra
@@ -362,6 +374,26 @@ let
       # for short-lived role credentials.
       "Bash(jq -r .accessToken /Users/james.maes/.aws/sso/cache/*.json)"
       "Bash(aws sso get-role-credentials:*)"
+      "Bash(aws sso list-account-roles:*)"
+      "Bash(/Users/james.maes/bin/get-gg-prod-bg-creds.sh)"
+
+      # AWS CLI — read-only / inspection verbs across services used in DMD infra.
+      "Bash(aws sts:*)"
+      "Bash(aws ssm:*)"
+      "Bash(aws eks:*)"
+      "Bash(aws kms list-aliases:*)"
+      "Bash(aws kms describe-key:*)"
+      "Bash(aws iam get-role:*)"
+      "Bash(aws iam list-attached-role-policies:*)"
+      "Bash(aws iam list-role-policies:*)"
+      "Bash(aws backup describe-region-settings:*)"
+      "Bash(aws backup list-backup-plans:*)"
+      "Bash(aws backup list-backup-vaults:*)"
+      "Bash(aws ec2 describe-instances:*)"
+      "Bash(aws ec2 describe-client-vpn-endpoints:*)"
+      "Bash(aws s3api head-bucket:*)"
+      "Bash(aws s3api list-objects-v2:*)"
+      "Bash(aws dynamodb describe-table:*)"
 
       # Go (read-only)
       "Bash(go version:*)"
