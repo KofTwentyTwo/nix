@@ -10,8 +10,8 @@
     enable = true;
     onActivation.cleanup = "uninstall";
     # Auto-upgrade all brew formulae and casks on every `darwin-rebuild switch`.
-    # Keeps AI tools (claude, codex, gemini-cli, aicommits, ollama-app, openai-whisper)
-    # current; also upgrades all other brews as a side effect.
+    # Keeps AI tools (chatgpt, claude, codex, codex-app, gemini-cli, aicommits,
+    # ollama-app, openai-whisper) current; also upgrades all other brews as a side effect.
     onActivation.upgrade = true;
     # Refresh brew's package metadata before upgrading so we pull the latest versions.
     onActivation.autoUpdate = true;
@@ -213,11 +213,13 @@
       "balenaetcher"
       "bambu-studio"
       "bettertouchtool"
+      "chatgpt"
       "claude"
       # claude-code: installed via npm (-g @anthropic-ai/claude-code) instead of Homebrew
       # Reason: Homebrew cask lags Anthropic's release cadence. npm gives same-day releases.
       "cleanshot"
-      "codex"
+      "codex"      # Codex CLI (terminal coding agent)
+      "codex-app"  # Codex desktop GUI (manages coding agents)
       "connectmenow"
       "darktable"
       "dbeaver-community"
