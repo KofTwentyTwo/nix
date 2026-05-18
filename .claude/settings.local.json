@@ -84,7 +84,25 @@
       "Bash(brew config *)",
       "Read(//opt/homebrew/Library/Homebrew/api/cask/**)",
       "Bash(HOMEBREW_NO_INSTALL_FROM_API=1 brew info --cask alfred)",
-      "Bash(xargs -I{} sh -c 'echo \"=== {} ===\"; grep -E \"verbose title|error|verbose exit\" {} | head -10')"
+      "Bash(xargs -I{} sh -c 'echo \"=== {} ===\"; grep -E \"verbose title|error|verbose exit\" {} | head -10')",
+      "Bash(nix-instantiate --parse home/ssh/default.nix)",
+      "Bash(nix-instantiate --parse modules/homebrew.nix)",
+      "Bash(grep -E \"^\\(chatgpt|codex|codex-app\\)$\")",
+      "Bash(ssh -G grogu)",
+      "Bash(ssh -G grogu.tailcd15f.ts.net)",
+      "Bash(timeout 8 ssh -v -o BatchMode=yes -o ConnectTimeout=5 -o PreferredAuthentications=none -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null grogu true)",
+      "Bash(echo \"exit=$?\")",
+      "Bash(timeout 8 ssh -v -o BatchMode=yes -o ConnectTimeout=5 -o PreferredAuthentications=none -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null grogu.tailcd15f.ts.net true)",
+      "Bash(timeout 8 ssh -o BatchMode=yes -o ConnectTimeout=5 -o StrictHostKeyChecking=no grogu 'echo connected as $\\(whoami\\)@$\\(hostname\\); uname -s')",
+      "Bash(tailscale status *)",
+      "Bash(python3 -c \"import json,sys; data=json.load\\(sys.stdin\\); [print\\(f\\\\\"{p['HostName']}: advertised={p.get\\('PrimaryRoutes', []\\)} allowed={p.get\\('AllowedIPs', []\\)}\\\\\"\\) for p in [data['Self']]+list\\(data.get\\('Peer',{}\\).values\\(\\)\\) if p['HostName'] in \\('grogu','dark-horse'\\)]\")",
+      "Bash(timeout 5 dig @10.100.10.1 +timeout=3 +tries=1 +short www.youtube.com)",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\('Self.AdvertisedRoutes:', d['Self'].get\\('AdvertisedRoutes'\\)\\); [print\\(f\\\\\"  peer {p['HostName']}: AllowedIPs={p.get\\('AllowedIPs'\\)}\\\\\"\\) for p in d.get\\('Peer',{}\\).values\\(\\) if p['HostName']=='grogu']\")",
+      "Bash(grep -nB1 -A6 \"extraSpecialArgs\\\\|specialArgs\" /Users/james.maes/.config/nix/flake.nix)",
+      "Bash(nix-instantiate --parse /Users/james.maes/.config/nix/flake.nix)",
+      "Bash(nix-instantiate --parse /Users/james.maes/.config/nix/modules/tailscale.nix)",
+      "Bash(nix --extra-experimental-features 'nix-command flakes' eval --raw /Users/james.maes/.config/nix#darwinConfigurations.Dark-Horse.config.system.activationScripts.tailscalePrefs.text)",
+      "Bash(nix --extra-experimental-features 'nix-command flakes' eval --raw /Users/james.maes/.config/nix#darwinConfigurations.Grogu.config.system.activationScripts.tailscalePrefs.text)"
     ]
   }
 }
