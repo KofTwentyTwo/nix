@@ -422,7 +422,7 @@
       };
 
       darwinConfigurations."Darth" = nix-darwin.lib.darwinSystem {
-         specialArgs = { machineConfig = machineConfigs."Darth"; };
+         specialArgs = { machineConfig = machineConfigs."Darth"; inherit userConfig; };
          modules = [
             configuration
             # Darth uses Determinate Nix — disable nix-darwin's daemon management
@@ -440,7 +440,7 @@
          ];
       };
       darwinConfigurations."Grogu" = nix-darwin.lib.darwinSystem {
-         specialArgs = { machineConfig = machineConfigs."Grogu"; };
+         specialArgs = { machineConfig = machineConfigs."Grogu"; inherit userConfig; };
          modules = [
             configuration
             { networking.hostName = "Grogu"; }
@@ -457,7 +457,7 @@
          ];
       };
       darwinConfigurations."Renova" = nix-darwin.lib.darwinSystem {
-         specialArgs = { machineConfig = machineConfigs."Renova"; };
+         specialArgs = { machineConfig = machineConfigs."Renova"; inherit userConfig; };
          modules = [
             configuration
             # Renova uses Determinate Nix — disable nix-darwin's daemon management
@@ -475,7 +475,7 @@
          ];
       };
       darwinConfigurations."Dark-Horse" = nix-darwin.lib.darwinSystem {
-         specialArgs = { machineConfig = machineConfigs."Dark-Horse"; };
+         specialArgs = { machineConfig = machineConfigs."Dark-Horse"; inherit userConfig; };
          modules = [
             configuration
             # Dark-Horse uses Determinate Nix - disable nix-darwin daemon management

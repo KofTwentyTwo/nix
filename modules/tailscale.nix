@@ -10,6 +10,14 @@
 # flake.nix's `machineConfigs`. `tailscale set` is a no-op when the desired
 # state already matches, so it's safe to run on every `darwin-rebuild switch`.
 #
+# IMPORTANT — macOS user-context detail:
+#   nix-darwin activation scripts run as root, but on macOS the Tailscale
+#   daemon's authoritative pref store is bound to the user's launchd session.
+#   `tailscale set` invoked directly from root activation silently no-ops
+#   (the call is accepted but never persists to ipn-state). We work around
+#   this by invoking the command via `launchctl asuser <uid>`, which bridges
+#   from root into the user's launchd session where prefs actually live.
+#
 # Caveat: if you toggle a Tailscale pref via the macOS menu-bar app (e.g.
 # turn off "Use Tailscale DNS"), the next `darwin-rebuild switch` will revert
 # it to whatever this module declares. That's the trade-off of declarative
@@ -19,9 +27,10 @@
 # https://login.tailscale.com/admin/machines — Tailscale exposes no CLI for
 # admin-side approval, so that step remains manual per host.
 
-{ pkgs, lib, machineConfig ? {}, ... }:
+{ pkgs, lib, machineConfig ? {}, userConfig, ... }:
 
 let
+  username = userConfig.username;
   ts = machineConfig.tailscale or {};
 
   advertiseRoutes   = ts.advertiseRoutes or [];
@@ -51,13 +60,20 @@ in
       elif ! /usr/bin/pgrep -qif "Tailscale|tailscaled"; then
          echo "[tailscale] daemon not running — skipping prefs sync (will sync on next rebuild)"
       else
-         echo "[tailscale] syncing prefs (routes=${toString advertiseRoutes} exitNode=${lib.boolToString advertiseExitNode} acceptDns=${lib.boolToString acceptDns} acceptRoutes=${lib.boolToString acceptRoutes})"
-         ${tailscaleBin} set \
-            ${routesArg} \
-            --accept-dns=${lib.boolToString acceptDns} \
-            --accept-routes=${lib.boolToString acceptRoutes} \
-            --advertise-exit-node=${lib.boolToString advertiseExitNode} \
-            || echo "[tailscale] warning: 'tailscale set' failed; check 'tailscale status'"
+         USER_UID=$(/usr/bin/id -u "${username}" 2>/dev/null)
+         if [ -z "$USER_UID" ]; then
+            echo "[tailscale] could not resolve uid for user '${username}' — skipping prefs sync"
+         else
+            echo "[tailscale] syncing prefs as uid=$USER_UID (routes=${toString advertiseRoutes} exitNode=${lib.boolToString advertiseExitNode} acceptDns=${lib.boolToString acceptDns} acceptRoutes=${lib.boolToString acceptRoutes})"
+            # Bridge from root activation into the user's launchd session —
+            # see the module header comment for why this is required.
+            /bin/launchctl asuser "$USER_UID" ${tailscaleBin} set \
+               ${routesArg} \
+               --accept-dns=${lib.boolToString acceptDns} \
+               --accept-routes=${lib.boolToString acceptRoutes} \
+               --advertise-exit-node=${lib.boolToString advertiseExitNode} \
+               || echo "[tailscale] warning: 'tailscale set' failed; check 'tailscale status' on $(/bin/hostname)"
+         fi
       fi
    '';
 }
