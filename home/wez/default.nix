@@ -26,6 +26,14 @@
          source = ./config;
          recursive = true;
       };
+
+      # Background status-bar data collector.
+      # Decouples gathering from rendering so the GUI main thread never
+      # blocks on subprocess output. See status-updater.sh header for why.
+      home.file.".local/bin/wezterm-status-updater" = {
+         source = ./status-updater.sh;
+         executable = true;
+      };
    };
 }
 

@@ -84,16 +84,25 @@ local k8s_cache = {
 	last_update = 0,
 }
 
--- Helper to run shell command and get output
-local function shell_cmd(cmd)
-	local handle = io.popen(cmd)
-	if handle then
-		local result = handle:read("*a")
-		handle:close()
-		return result:gsub("^%s+", ""):gsub("%s+$", "") -- trim
-	end
-	return ""
-end
+-- Resolve local hostname once at config load.
+-- wezterm.hostname() can stall on macOS when Tailscale MagicDNS is reconverging,
+-- because it walks getaddrinfo -> mDNSResponder -> 100.100.100.100. Calling it
+-- per-tick from update-status amplifies that into visible status-bar lag.
+local LOCAL_HOST = (function()
+	local ok, h = pcall(wezterm.hostname)
+	if not ok or not h or h == "" then return "localhost" end
+	return h:match("^([^.]+)") or h
+end)()
+
+-- Status bar data plane.
+-- A background daemon (~/.local/bin/wezterm-status-updater, installed by the
+-- wez nix module) gathers git/k8s/sysctl/netstat output every second and
+-- writes ~/.cache/wezterm/status.kv. update-status reads that file instead
+-- of spawning subprocesses on the GUI thread.
+local HOME = os.getenv("HOME") or ""
+local STATUS_FILE = HOME .. "/.cache/wezterm/status.kv"
+local CWD_REQ_FILE = HOME .. "/.cache/wezterm/cwd"
+local UPDATER_PATH = HOME .. "/.local/bin/wezterm-status-updater"
 
 -- Format bytes to human readable
 local function format_rate(bytes_per_sec)
@@ -106,262 +115,116 @@ local function format_rate(bytes_per_sec)
 	end
 end
 
--- Update git info for a directory (starship-style icons)
-local function update_git_info(cwd)
-	local now = os.time()
-	-- Update every 2 seconds or when directory changes
-	if git_cache.cwd == cwd and now - git_cache.last_update < 2 then
-		return
+-- Build the starship-style status icon string from raw counts.
+local function format_git_status(counts)
+	local parts = {}
+	if counts.conf > 0 then table.insert(parts, "=" .. counts.conf) end
+	if counts.ahead > 0 and counts.behind > 0 then
+		table.insert(parts, "⇕⇡" .. counts.ahead .. "⇣" .. counts.behind)
+	elseif counts.ahead > 0 then
+		table.insert(parts, "⇡" .. counts.ahead)
+	elseif counts.behind > 0 then
+		table.insert(parts, "⇣" .. counts.behind)
 	end
-	git_cache.cwd = cwd
-	git_cache.last_update = now
-
-	-- Check if in a git repo and get branch
-	local branch = shell_cmd("cd " .. wezterm.shell_quote_arg(cwd) .. " && git rev-parse --abbrev-ref HEAD 2>/dev/null")
-	if branch == "" then
-		git_cache.branch = ""
-		git_cache.status = ""
-		return
-	end
-	git_cache.branch = branch
-
-	-- Get git status (starship-style)
-	local status_parts = {}
-
-	-- Check for various states
-	local status_output = shell_cmd("cd " .. wezterm.shell_quote_arg(cwd) .. " && git status --porcelain 2>/dev/null")
-
-	local modified = 0
-	local staged = 0
-	local untracked = 0
-	local deleted = 0
-	local renamed = 0
-	local conflicted = 0
-
-	for line in status_output:gmatch("[^\n]+") do
-		local index = line:sub(1, 1)
-		local worktree = line:sub(2, 2)
-
-		if index == "U" or worktree == "U" or (index == "A" and worktree == "A") or (index == "D" and worktree == "D") then
-			conflicted = conflicted + 1
-		elseif index == "?" then
-			untracked = untracked + 1
-		elseif index == "R" then
-			renamed = renamed + 1
-		else
-			if index ~= " " and index ~= "?" then
-				staged = staged + 1
-			end
-			if worktree == "M" then
-				modified = modified + 1
-			elseif worktree == "D" then
-				deleted = deleted + 1
-			end
-		end
-	end
-
-	-- Starship-style icons
-	if conflicted > 0 then
-		table.insert(status_parts, "=" .. conflicted)  -- conflicted
-	end
-
-	-- Check ahead/behind first (like starship)
-	local ahead_behind = shell_cmd("cd " .. wezterm.shell_quote_arg(cwd) .. " && git rev-list --left-right --count HEAD...@{upstream} 2>/dev/null")
-	local ahead, behind = ahead_behind:match("(%d+)%s+(%d+)")
-	ahead = tonumber(ahead) or 0
-	behind = tonumber(behind) or 0
-
-	if ahead > 0 and behind > 0 then
-		table.insert(status_parts, "⇕⇡" .. ahead .. "⇣" .. behind)  -- diverged
-	elseif ahead > 0 then
-		table.insert(status_parts, "⇡" .. ahead)  -- ahead
-	elseif behind > 0 then
-		table.insert(status_parts, "⇣" .. behind)  -- behind
-	end
-
-	-- Check stash
-	local stash_count = shell_cmd("cd " .. wezterm.shell_quote_arg(cwd) .. " && git stash list 2>/dev/null | wc -l")
-	stash_count = tonumber(stash_count) or 0
-	if stash_count > 0 then
-		table.insert(status_parts, " " .. stash_count)  -- stashed
-	end
-
-	if staged > 0 then
-		table.insert(status_parts, "++" .. staged)  -- staged
-	end
-	if modified > 0 then
-		table.insert(status_parts, " " .. modified)  -- modified
-	end
-	if renamed > 0 then
-		table.insert(status_parts, "󰑕 " .. renamed)  -- renamed
-	end
-	if deleted > 0 then
-		table.insert(status_parts, " " .. deleted)  -- deleted
-	end
-	if untracked > 0 then
-		table.insert(status_parts, " " .. untracked)  -- untracked
-	end
-
-	git_cache.status = table.concat(status_parts, " ")
+	if counts.stash > 0 then table.insert(parts, " " .. counts.stash) end
+	if counts.staged > 0 then table.insert(parts, "++" .. counts.staged) end
+	if counts.mod > 0 then table.insert(parts, " " .. counts.mod) end
+	if counts.ren > 0 then table.insert(parts, "󰑕 " .. counts.ren) end
+	if counts.del > 0 then table.insert(parts, " " .. counts.del) end
+	if counts.untrack > 0 then table.insert(parts, " " .. counts.untrack) end
+	return table.concat(parts, " ")
 end
 
--- Cache for SSH host detection
-local ssh_cache = {
-	pane_id = nil,
-	host = nil,
-	last_check = 0,
-}
+-- Read the daemon's status file into the cache structs. Fast local-FS read,
+-- ~10µs on APFS. Silently no-ops if the file isn't there yet (daemon hasn't
+-- written its first tick).
+local function read_status_file()
+	local f = io.open(STATUS_FILE, "r")
+	if not f then return end
+	local content = f:read("*a")
+	f:close()
+	if not content then return end
 
--- Detect SSH host from process
+	local kv = {}
+	for line in content:gmatch("[^\n]+") do
+		local k, v = line:match("^([^=]+)=(.*)$")
+		if k then kv[k] = v end
+	end
+
+	if kv.load then stats_cache.load = kv.load end
+	if kv.net_rx then stats_cache.net_rx_rate = format_rate(tonumber(kv.net_rx) or 0) end
+	if kv.net_tx then stats_cache.net_tx_rate = format_rate(tonumber(kv.net_tx) or 0) end
+
+	k8s_cache.context = kv.k8s_ctx or ""
+	k8s_cache.namespace = (kv.k8s_ns ~= "" and kv.k8s_ns) or "default"
+
+	git_cache.cwd = kv.git_cwd or ""
+	git_cache.branch = kv.git_branch or ""
+	if git_cache.branch ~= "" then
+		git_cache.status = format_git_status({
+			conf    = tonumber(kv.git_conf) or 0,
+			untrack = tonumber(kv.git_untrack) or 0,
+			ren     = tonumber(kv.git_ren) or 0,
+			staged  = tonumber(kv.git_staged) or 0,
+			mod     = tonumber(kv.git_mod) or 0,
+			del     = tonumber(kv.git_del) or 0,
+			ahead   = tonumber(kv.git_ahead) or 0,
+			behind  = tonumber(kv.git_behind) or 0,
+			stash   = tonumber(kv.git_stash) or 0,
+		})
+	else
+		git_cache.status = ""
+	end
+end
+
+-- Tell the daemon which directory to scope git queries to.
+-- Only writes when the cwd changes — avoids 1 disk write/sec for nothing.
+local last_written_cwd = nil
+local function write_cwd_request(cwd)
+	cwd = cwd or ""
+	if cwd == last_written_cwd then return end
+	local f = io.open(CWD_REQ_FILE, "w")
+	if f then
+		f:write(cwd)
+		f:close()
+		last_written_cwd = cwd
+	end
+end
+
+-- Best-effort SSH host detection using only wezterm's built-in proc info.
+-- No subprocess spawn — earlier `ps` fallback was the main culprit blocking
+-- the GUI thread under DNS reconfig.
 local function get_ssh_host(pane)
-	local pane_id = pane:pane_id()
-	local now = os.time()
-
-	-- Cache for 1 second per pane
-	if ssh_cache.pane_id == pane_id and now - ssh_cache.last_check < 1 then
-		return ssh_cache.host
-	end
-
-	ssh_cache.pane_id = pane_id
-	ssh_cache.last_check = now
-	ssh_cache.host = nil
-
-	-- Get foreground process name
-	local proc_name = pane:get_foreground_process_name() or ""
-	proc_name = proc_name:match("([^/]+)$") or proc_name
-
-	wezterm.log_info("Foreground process: " .. proc_name)
-
-	if proc_name ~= "ssh" then
-		return nil
-	end
-
-	-- Try multiple methods to get PID
-	local pid = nil
-
-	-- Method 1: get_foreground_process_info()
 	local proc_info = pane:get_foreground_process_info()
-	if proc_info then
-		pid = proc_info.pid or proc_info.process_id
-		wezterm.log_info("proc_info: " .. wezterm.json_encode(proc_info))
-	end
+	if not proc_info then return nil end
+	local name = (proc_info.name or ""):match("([^/]+)$") or proc_info.name or ""
+	if name ~= "ssh" then return nil end
 
-	-- Method 2: If no PID, try to find ssh process for this tty
-	if not pid then
-		-- Get the tty for this pane and find ssh process
-		local tty = pane:get_tty_name()
-		if tty then
-			local tty_short = tty:match("/dev/(.+)") or tty
-			local pid_output = shell_cmd("ps -t " .. tty_short .. " -o pid,comm 2>/dev/null | grep ssh | awk '{print $1}' | head -1")
-			pid = tonumber(pid_output)
-			wezterm.log_info("Found SSH PID via tty " .. tty_short .. ": " .. tostring(pid))
-		end
-	end
+	local argv = proc_info.argv
+	if not argv or #argv < 2 then return nil end
 
-	if not pid then
-		wezterm.log_info("Could not get SSH PID")
-		return nil
-	end
-
-	-- Use ps to get the full command line on macOS
-	local cmd_output = shell_cmd("ps -p " .. pid .. " -o args= 2>/dev/null")
-	wezterm.log_info("SSH PID: " .. pid .. " CMD: " .. cmd_output)
-	if cmd_output == "" then
-		return nil
-	end
-
-	-- Parse SSH command line to find the host
-	-- Pattern: ssh [options] [user@]hostname [command]
-	local ssh_host = nil
-
-	-- Remove leading "ssh" and split into args
-	local args_str = cmd_output:gsub("^%s*ssh%s+", "")
-
-	-- Skip options and find the host
+	-- argv = {"ssh", [options...], [user@]host, [command...]}
 	local skip_next = false
-	for arg in args_str:gmatch("%S+") do
+	for i = 2, #argv do
+		local arg = argv[i]
 		if skip_next then
 			skip_next = false
 		elseif arg:match("^%-[46AaCfGgKkMNnqsTtVvXxYy]+$") then
-			-- Options without arguments, continue
+			-- option(s) without arguments
 		elseif arg:match("^%-[bcDEeFIiJLlmOopQRSWw]$") then
-			-- Options that take an argument
 			skip_next = true
 		elseif arg:match("^%-[bcDEeFIiJLlmOopQRSWw].") then
-			-- Option with argument attached (e.g., -p22)
-			-- continue
+			-- option with attached arg (-p22)
 		elseif not arg:match("^%-") then
-			-- First non-option is [user@]hostname
-			ssh_host = arg:match("@(.+)") or arg
-			break
+			return arg:match("@(.+)") or arg
 		end
 	end
-
-	wezterm.log_info("Extracted SSH host: " .. tostring(ssh_host))
-	ssh_cache.host = ssh_host
-	return ssh_host
-end
-
--- Update kubernetes context
-local function update_k8s_info()
-	local now = os.time()
-	if now - k8s_cache.last_update < 5 then -- Update every 5 seconds
-		return
-	end
-	k8s_cache.last_update = now
-
-	local context = shell_cmd("kubectl config current-context 2>/dev/null")
-	local namespace = shell_cmd("kubectl config view --minify --output 'jsonpath={..namespace}' 2>/dev/null")
-
-	k8s_cache.context = context
-	k8s_cache.namespace = namespace ~= "" and namespace or "default"
-end
-
--- Update system stats (load, network)
-local function update_stats()
-	local now = os.time()
-	-- Update every 2 seconds to reduce overhead
-	if now - stats_cache.last_update < 2 then
-		return
-	end
-	stats_cache.last_update = now
-
-	-- Get load average (1 min)
-	local load_output = shell_cmd("sysctl -n vm.loadavg 2>/dev/null")
-	local load1 = load_output:match("{%s*([%d.]+)")
-	if load1 then
-		stats_cache.load = load1
-	end
-
-	-- Get network bytes (macOS - primary interface)
-	local net_output = shell_cmd("netstat -ib 2>/dev/null | grep -E '^en0' | head -1")
-	if net_output and net_output ~= "" then
-		local fields = {}
-		for field in net_output:gmatch("%S+") do
-			table.insert(fields, field)
-		end
-		-- netstat -ib columns: Name, Mtu, Network, Address, Ipkts, Ierrs, Ibytes, Opkts, Oerrs, Obytes, Coll
-		local rx_bytes = tonumber(fields[7]) or 0
-		local tx_bytes = tonumber(fields[10]) or 0
-
-		if stats_cache.last_rx_bytes > 0 then
-			local rx_delta = rx_bytes - stats_cache.last_rx_bytes
-			local tx_delta = tx_bytes - stats_cache.last_tx_bytes
-			local interval = 2 -- seconds
-			if rx_delta >= 0 and tx_delta >= 0 then
-				stats_cache.net_rx_rate = format_rate(rx_delta / interval)
-				stats_cache.net_tx_rate = format_rate(tx_delta / interval)
-			end
-		end
-		stats_cache.last_rx_bytes = rx_bytes
-		stats_cache.last_tx_bytes = tx_bytes
-	end
+	return nil
 end
 
 wezterm.on("update-status", function(window, pane)
-	-- Update cached system stats
-	update_stats()
-	update_k8s_info()
+	-- Pull the latest daemon-gathered data. No subprocess spawns here.
+	read_status_file()
 
 	-- Get current working directory and host
 	local cwd_url = pane:get_current_working_dir()
@@ -382,15 +245,16 @@ wezterm.on("update-status", function(window, pane)
 	end
 
 	-- Shorten home directory
-	local home = os.getenv("HOME") or ""
-	if home ~= "" and cwd_str:sub(1, #home) == home then
-		cwd_str = "~" .. cwd_str:sub(#home + 1)
+	if HOME ~= "" and cwd_str:sub(1, #HOME) == HOME then
+		cwd_str = "~" .. cwd_str:sub(#HOME + 1)
 	end
 
-	-- Update git info for current directory (only if local)
+	-- Tell the daemon which directory to gather git for next tick.
+	-- Only if local — no point asking it to git over an SSH'd cwd.
 	if cwd_url and cwd_url.file_path and not remote_host then
-		update_git_info(cwd_url.file_path)
+		write_cwd_request(cwd_url.file_path)
 	else
+		write_cwd_request("")
 		git_cache.branch = ""
 		git_cache.status = ""
 	end
@@ -399,9 +263,8 @@ wezterm.on("update-status", function(window, pane)
 	local proc = pane:get_foreground_process_name() or ""
 	proc = proc:match("([^/]+)$") or proc -- basename only
 
-	-- Hostname - use remote host if SSH'd, otherwise local
-	local local_host = wezterm.hostname():match("^([^.]+)") or wezterm.hostname()
-	local host = remote_host or local_host
+	-- Hostname - use remote host if SSH'd, otherwise the cached local hostname
+	local host = remote_host or LOCAL_HOST
 	local host_color = remote_host and C.orange or C.green -- Orange if remote
 	local is_remote = remote_host ~= nil
 
@@ -596,8 +459,16 @@ local function move_to_screen(window, screen)
 	end
 end
 
+-- Spawn the background status-bar updater. Fire-and-forget via shell &;
+-- the daemon owns a pidfile so duplicate spawns are no-ops. The one /bin/sh
+-- invocation here happens once per gui-startup, not per status tick.
+local function ensure_status_updater()
+	os.execute("nohup " .. UPDATER_PATH .. " > /dev/null 2>&1 &")
+end
+
 -- Startup: spawn on largest screen
 wezterm.on("gui-startup", function(cmd)
+	ensure_status_updater()
 	local tab, pane, window = wezterm.mux.spawn_window(cmd or {})
 	-- Defer the move until GUI is ready
 	wezterm.time.call_after(0.3, function()
@@ -617,8 +488,12 @@ end)
 -- Split pane, starting tmux in the current working directory
 local function tmux_split(vertical)
 	return wezterm.action_callback(function(window, pane)
-		-- Query tmux directly for the active pane's cwd (most reliable)
-		local cwd_path = shell_cmd("/opt/homebrew/bin/tmux display-message -p '#{pane_current_path}'")
+		-- Query tmux directly for the active pane's cwd (most reliable).
+		-- run_child_process skips the /bin/sh wrapper that io.popen would use.
+		local ok, stdout = wezterm.run_child_process({
+			"/opt/homebrew/bin/tmux", "display-message", "-p", "#{pane_current_path}"
+		})
+		local cwd_path = (ok and stdout) and (stdout:gsub("^%s+", ""):gsub("%s+$", "")) or ""
 		if cwd_path == "" then
 			-- Fallback to WezTerm's OSC 7 tracking, then $HOME
 			local cwd = pane:get_current_working_dir()
