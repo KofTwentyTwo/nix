@@ -109,7 +109,17 @@
       };
       username = userConfig.username;
       userHome = "/Users/${username}";
-      
+
+      # Per-machine Tailscale preferences, applied by ./modules/tailscale.nix
+      # via an activation script. See that module for behavior and caveats.
+      # Admin-console approvals (subnet routes, exit node) remain manual.
+      machineConfigs = {
+        "Darth"      = { tailscale = { advertiseRoutes = [];                  advertiseExitNode = false; acceptDns = true; acceptRoutes = true; }; };
+        "Grogu"      = { tailscale = { advertiseRoutes = [ "10.100.0.0/16" ]; advertiseExitNode = true;  acceptDns = true; acceptRoutes = true; }; };
+        "Renova"     = { tailscale = { advertiseRoutes = [];                  advertiseExitNode = false; acceptDns = true; acceptRoutes = true; }; };
+        "Dark-Horse" = { tailscale = { advertiseRoutes = [];                  advertiseExitNode = false; acceptDns = true; acceptRoutes = true; }; };
+      };
+
    configuration = {pkgs, config, lib, ... }: {
       #######################################################################
       ## Nix Configuration & System Settings                              ##
@@ -261,9 +271,11 @@
 
       # Homebrew packages managed in modules/homebrew.nix
       # Rectangle window-manager preferences managed in modules/rectangle.nix
+      # Tailscale per-machine prefs managed in modules/tailscale.nix
       imports = [
         ./modules/homebrew.nix
         ./modules/rectangle.nix
+        ./modules/tailscale.nix
       ];
 
       #############################################################
@@ -410,6 +422,7 @@
       };
 
       darwinConfigurations."Darth" = nix-darwin.lib.darwinSystem {
+         specialArgs = { machineConfig = machineConfigs."Darth"; };
          modules = [
             configuration
             # Darth uses Determinate Nix — disable nix-darwin's daemon management
@@ -427,6 +440,7 @@
          ];
       };
       darwinConfigurations."Grogu" = nix-darwin.lib.darwinSystem {
+         specialArgs = { machineConfig = machineConfigs."Grogu"; };
          modules = [
             configuration
             { networking.hostName = "Grogu"; }
@@ -443,6 +457,7 @@
          ];
       };
       darwinConfigurations."Renova" = nix-darwin.lib.darwinSystem {
+         specialArgs = { machineConfig = machineConfigs."Renova"; };
          modules = [
             configuration
             # Renova uses Determinate Nix — disable nix-darwin's daemon management
@@ -460,6 +475,7 @@
          ];
       };
       darwinConfigurations."Dark-Horse" = nix-darwin.lib.darwinSystem {
+         specialArgs = { machineConfig = machineConfigs."Dark-Horse"; };
          modules = [
             configuration
             # Dark-Horse uses Determinate Nix - disable nix-darwin daemon management
