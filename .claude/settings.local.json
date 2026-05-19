@@ -122,7 +122,9 @@
       "Bash(sudo grep -l \"sops\" /var/log/system.log*)",
       "Bash(darwin-rebuild build *)",
       "Bash(shasum -a 256 ~/.github-security-pat /tmp/token)",
-      "Bash(shasum -a 256 '/Users/james.maes/Documents/Claude/Projects/Security Alerts/.github-pat' /tmp/token)"
+      "Bash(shasum -a 256 '/Users/james.maes/Documents/Claude/Projects/Security Alerts/.github-pat' /tmp/token)",
+      "Bash(shasum -a 256 ~/.ai/5-learnings.md home/ai/5-learnings.md)",
+      "Bash(awk '{print $1}')"
     ]
   }
 }
