@@ -390,3 +390,17 @@ NOT the older `validate` / `security-scan` / `secrets-scan` names some legacy DM
 
 ### Audit findings on disk can contradict live AWS state
 A prior session's audit report claimed an SCP denied `kms:CreateKey` and `s3:Put*`; the live policy chain to the target accounts had nothing of the sort. When an audit verdict feels surprising, query AWS directly (`aws organizations describe-policy`, `aws organizations list-policies-for-target`) before acting on it. Treat on-disk audit artifacts as point-in-time, not authoritative.
+
+## sops-nix and Secret Deployment (verified 2026-05-19)
+
+### sops-nix home-manager on darwin is fail-fast across declared secrets
+The sops-nix launchd user agent (`org.nix-community.home.sops-nix`) runs `sops-install-secrets` which iterates declared `sops.secrets.*` and aborts the whole batch on the first decryption failure. If one `.enc` is encrypted only to a key you don't have locally, every subsequent secret silently fails to deploy too. `darwin-rebuild switch` succeeds regardless (agent failure is async), so the breakage is invisible until a downstream consumer fails. Diagnose via `~/Library/Logs/SopsNix/stderr`. Fix is either to re-encrypt the broken `.enc` to include the local recipient (`sops updatekeys` from a host that can already decrypt) or to comment out the secret declaration until the file is rekeyed.
+
+### Claude Cowork sandboxed tasks only see explicitly mounted paths
+Scheduled tasks running inside a Claude Cowork project only mount the project folder (e.g., `~/Documents/Claude/Projects/<name>`) plus a project-specific extra (e.g., `~/Git.Local/dmd`). Anything else in `$HOME` is invisible. Practical consequence for sops-nix: its default deployment creates a symlink at the declared `path` pointing into `~/.config/sops-nix/secrets/...` which dangles from inside the sandbox. For sandboxed consumers, bypass sops-nix's `secrets.*` block and use a `home.activation` script that `sops --decrypt`s directly to a regular file inside the mounted path. See `home/sops/default.nix` `deployGithubSecurityPat` for the canonical pattern.
+
+### `sops --encrypt` with shell redirection needs `--filename-override`
+`creation_rules.path_regex` in `.sops.yaml` matches against the **source filename sops sees**, not the shell redirect target. `sops -e --age <pubkey> /tmp/token > secrets/foo.enc` returns "no matching creation rules found" because sops is matching `/tmp/token` against rules expecting `secrets/foo.enc`. Use `sops -e --filename-override secrets/foo.enc /tmp/token > secrets/foo.enc` so sops matches the logical destination path.
+
+### GitHub fine-grained PATs are limited to one resource owner per token
+A single fine-grained PAT cannot span multiple GitHub organizations. For org-wide reads across N orgs you need N tokens (each requiring org-admin approval if "Require admin approval" is enabled), or a single classic PAT with the relevant scopes. For security alerts (Dependabot + code scanning + secret scanning), a classic PAT with `security_events` + `read:org` covers all three alert types on private repos across any number of orgs. Note that classic PAT scope is broader than per-org fine-grained equivalents.
