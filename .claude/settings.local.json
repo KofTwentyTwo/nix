@@ -102,7 +102,27 @@
       "Bash(nix-instantiate --parse /Users/james.maes/.config/nix/flake.nix)",
       "Bash(nix-instantiate --parse /Users/james.maes/.config/nix/modules/tailscale.nix)",
       "Bash(nix --extra-experimental-features 'nix-command flakes' eval --raw /Users/james.maes/.config/nix#darwinConfigurations.Dark-Horse.config.system.activationScripts.tailscalePrefs.text)",
-      "Bash(nix --extra-experimental-features 'nix-command flakes' eval --raw /Users/james.maes/.config/nix#darwinConfigurations.Grogu.config.system.activationScripts.tailscalePrefs.text)"
+      "Bash(nix --extra-experimental-features 'nix-command flakes' eval --raw /Users/james.maes/.config/nix#darwinConfigurations.Grogu.config.system.activationScripts.tailscalePrefs.text)",
+      "Bash(timeout 6 dig @10.100.10.1 +timeout=4 +tries=1 +short www.youtube.com)",
+      "Bash(timeout 6 ssh -o BatchMode=yes -o ConnectTimeout=4 grogu 'tailscale status --self --json | python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(\\\\\"Self.AdvertisedRoutes:\\\\\", d.get\\(\\\\\"Self\\\\\",{}\\).get\\(\\\\\"AdvertisedRoutes\\\\\"\\)\\); print\\(\\\\\"Self.ExitNodeOption:\\\\\", d.get\\(\\\\\"Self\\\\\",{}\\).get\\(\\\\\"ExitNodeOption\\\\\"\\)\\)\"')",
+      "Bash(ssh grogu *)",
+      "Bash(timeout 3 ping -c 2 -W 1000 10.100.10.1)",
+      "Bash(timeout 6 ssh -o BatchMode=yes -o ConnectTimeout=4 grogu 'echo \"[on $\\(hostname\\)] internal DNS reachable test: $\\(dig +short +timeout=2 +tries=1 www.youtube.com @10.100.10.1 | head -1\\)\"')",
+      "WebFetch(domain:pi.dev)",
+      "WebFetch(domain:patloeber.com)",
+      "WebFetch(domain:docs.github.com)",
+      "Read(//private/tmp/**)",
+      "Bash(sops --version)",
+      "Bash(sops --encrypt --input-type binary --output-type binary /tmp/token)",
+      "Bash(sops --encrypt --filename-override secrets/github-security-pat.enc --input-type binary --output-type binary /tmp/token)",
+      "Bash(sops --decrypt --input-type binary --output-type binary secrets/github-security-pat.enc)",
+      "Bash(shasum -a 256 /tmp/token /tmp/token.roundtrip)",
+      "Bash(rm /tmp/token.roundtrip)",
+      "Bash(darwin-rebuild --list-generations)",
+      "Bash(sudo grep -l \"sops\" /var/log/system.log*)",
+      "Bash(darwin-rebuild build *)",
+      "Bash(shasum -a 256 ~/.github-security-pat /tmp/token)",
+      "Bash(shasum -a 256 '/Users/james.maes/Documents/Claude/Projects/Security Alerts/.github-pat' /tmp/token)"
     ]
   }
 }
