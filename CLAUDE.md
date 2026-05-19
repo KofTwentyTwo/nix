@@ -97,7 +97,9 @@ The `ls()` wrapper function in zsh initContent translates standard ls flags to e
 - **New modules**: Create `home/foo/default.nix`, import in `home/default.nix`
 - **Env vars**: Add to `home.sessionVariables` in `home/default.nix`
 - **Aliases**: Add to `shellAliases` in `home/zsh/default.nix`
-- **Secrets**: git-crypt encrypted
+- **Secrets**:
+  - Sensitive config (SSH topology, AI prefs, etc.) → git-crypt (see `.gitattributes`)
+  - Credentials / tokens (e.g. `~/.aws/credentials`, `~/.github-security-pat`) → sops-nix (`secrets/*.enc` decrypted at activation to runtime paths, mode 0600). Age key at `~/.config/sops/age/keys.txt`; per-machine pubkeys + creation rules in `.sops.yaml`. Declarations live in `home/sops/default.nix`. Add a new secret: encrypt with `sops -e --filename-override secrets/foo.enc --input-type binary --output-type binary <plaintext> > secrets/foo.enc`, declare it in `home/sops/default.nix`, `git add` (flakes only see tracked files), rebuild. Add a new machine: `age-keygen -y` its pubkey, append to `.sops.yaml`, `sops updatekeys secrets/*.enc` on any host that can already decrypt.
 
 ## AI Rules (`home/ai/3-rules.md`)
 
@@ -124,6 +126,10 @@ The `ls()` wrapper function in zsh initContent translates standard ls flags to e
 **Tmux**: Auto-start disabled due to flickering/lag. See `./docs/TMUX-ISSUES.md`.
 
 **Neovim**: `lazy-lock.json` is NOT version controlled. After updates, may need: `rm -rf ~/.local/share/nvim/lazy ~/.cache/nvim`
+
+**sops `aws-credentials`**: `secrets/aws-credentials.enc` is encrypted only to the `&darth` age key. The declaration in `home/sops/default.nix` is commented out because `sops-install-secrets` is fail-fast — leaving it active would block every other secret (including `~/.github-security-pat`) on non-Darth hosts. To restore: on Darth, after the other machines' pubkeys are in `.sops.yaml`, run `sops updatekeys secrets/aws-credentials.enc`, commit, then uncomment the block. Until then, AWS credentials need to come from elsewhere (1Password, aws-vault, etc.) on non-Darth hosts.
+
+**sops deferred machines**: `.sops.yaml` lists Darth + Dark-Horse + Grogu age recipients. Renova is not yet added (no key collected); the `&darth` pubkey is also unconfirmed against the actual Darth host. Add them by collecting `age-keygen -y ~/.config/sops/age/keys.txt` output on each, appending to `.sops.yaml`, and running `sops updatekeys` on each `secrets/*.enc` from a host that can already decrypt.
 
 ## Docs Directory
 
