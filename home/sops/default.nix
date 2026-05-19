@@ -36,16 +36,66 @@ in
       #   mode = "0600";
       # };
 
-      # GitHub fine-grained PAT for org-wide security alert reads
-      # (Dependabot, code scanning, secret scanning) across greater-goods,
-      # gg-engineering, gg-devops, gg-sandboxes. Consumed by the morning
-      # security digest. Rotate when the GitHub token expires.
-      secrets."github-security-pat" = {
-        sopsFile = ../../secrets/github-security-pat.enc;
-        format = "binary";
-        path = "${homeDir}/.github-security-pat";
-        mode = "0600";
-      };
+      # GitHub fine-grained PAT for org-wide security alert reads:
+      # see home.activation.deployGithubSecurityPat below. We bypass
+      # sops-nix's symlink-based deployment because the consumer is a
+      # Claude Cowork sandboxed scheduled task that only mounts the
+      # project folder and ~/Git.Local/dmd — a symlink pointing into
+      # ~/.config/sops-nix/ dangles from inside the sandbox.
     };
+
+    # Deploy the GitHub security PAT as a REGULAR FILE (not a sops-nix
+    # symlink) directly inside the Claude Cowork project folder so the
+    # sandboxed morning digest can read it. Runs after writeBoundary so
+    # home.file deployments have settled. Decryption uses the same
+    # secrets/github-security-pat.enc + ~/.config/sops/age/keys.txt the
+    # sops-nix agent would use, so the encryption story, recipient list,
+    # and `sops updatekeys` workflow are unchanged.
+    #
+    # Gracefully skips on hosts without an age key or without the Cowork
+    # project folder — Grogu / Renova / Darth get a no-op.
+    home.activation.deployGithubSecurityPat = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+      PROJECT_DIR="${homeDir}/Documents/Claude/Projects/Security Alerts"
+      DST="$PROJECT_DIR/.github-pat"
+      ENC="${../../secrets/github-security-pat.enc}"
+      AGE_KEY="${homeDir}/.config/sops/age/keys.txt"
+
+      # Transitional cleanup: remove orphaned plaintext from the previous
+      # sops-nix-managed deployment pattern. Guarded by -L / -f so we only
+      # touch files that match the legacy layout exactly. Safe to keep
+      # permanently — idempotent and no-op once cleaned.
+      if [ -L "${homeDir}/.github-security-pat" ]; then
+        rm "${homeDir}/.github-security-pat"
+        echo "[github-pat] removed legacy symlink at ~/.github-security-pat"
+      fi
+      if [ -f "${homeDir}/.config/sops-nix/secrets/github-security-pat" ]; then
+        rm "${homeDir}/.config/sops-nix/secrets/github-security-pat"
+        echo "[github-pat] removed orphan plaintext at ~/.config/sops-nix/secrets/github-security-pat"
+      fi
+
+      if [ ! -f "$AGE_KEY" ]; then
+        echo "[github-pat] no age key at $AGE_KEY; skipping deployment"
+        exit 0
+      fi
+
+      if [ ! -d "$PROJECT_DIR" ]; then
+        echo "[github-pat] no project dir at $PROJECT_DIR; skipping deployment"
+        exit 0
+      fi
+
+      # mktemp in the destination directory so the final mv is an atomic
+      # rename on the same filesystem (mktemp's default 0600 perms are
+      # preserved through the redirect because > truncates without
+      # touching mode bits).
+      TMP="$(mktemp "$PROJECT_DIR/.github-pat.XXXXXX")"
+      if SOPS_AGE_KEY_FILE="$AGE_KEY" ${pkgs.sops}/bin/sops --decrypt \
+           --input-type binary --output-type binary "$ENC" > "$TMP"; then
+        mv "$TMP" "$DST"
+        echo "[github-pat] deployed to $DST (mode 0600)"
+      else
+        rm -f "$TMP"
+        echo "[github-pat] sops decryption failed; $DST not updated" >&2
+      fi
+    '';
   };
 }
