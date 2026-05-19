@@ -10,13 +10,25 @@
 
 keys:
   - &darth age17x3xfs46rcxvlu0a6pv3kjnhx8qsakl5w92s6x3kt9s5kpa9cpls37lxs8
+  - &dark_horse age1txsv7msn8ydlwr5nwhn3vw6cqjf6kezwjxtrjphzmfmn9pdgly5qsf0m5u
+  - &grogu age1vt8rn4ndve3qhjejv8zqadv9q5lt0hur0ql50xpeguggau4vr37srmluug
 
 creation_rules:
   - path_regex: secrets/aws-credentials\.enc$
     key_groups:
       - age:
           - *darth
+          - *dark_horse
+          - *grogu
+  - path_regex: secrets/github-security-pat\.enc$
+    key_groups:
+      - age:
+          - *darth
+          - *dark_horse
+          - *grogu
   - path_regex: secrets/.*\.yaml$
     key_groups:
       - age:
           - *darth
+          - *dark_horse
+          - *grogu
