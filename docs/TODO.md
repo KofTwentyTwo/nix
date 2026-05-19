@@ -4,8 +4,11 @@ Active tasks and future improvements for the Nix configuration.
 
 ## Active Tasks
 
+- [ ] On Darth: verify `age-keygen -y ~/.config/sops/age/keys.txt` matches the `&darth` pubkey in `.sops.yaml`; pull + rebuild
+- [ ] On Renova: generate age key, share pubkey, add `&renova` to `.sops.yaml`, `sops updatekeys secrets/github-security-pat.enc`, pull + rebuild
+- [ ] On Darth (after Renova pubkey added): `sops updatekeys secrets/aws-credentials.enc` and uncomment the `secrets."aws-credentials"` block in `home/sops/default.nix`
 - [ ] Commit the 25 staged changes from 2026-04-27 Claude Code cleanup session and push to origin
-- [ ] After push, sync Grogu / Darth / Renova: `git pull && sudo darwin-rebuild switch --flake ~/.config/nix#$(hostname)`
+- [ ] After push, sync Darth / Renova: `git pull && sudo darwin-rebuild switch --flake ~/.config/nix#$(hostname)`
 - [ ] From inside `~/Git.Local/QRun-IO/qqq/`: review the bootstrapped `CLAUDE.md` and commit it to QQQ's main branch so it travels with the codebase
 - [ ] (optional) Decide whether to put `claude-hud@claude-hud` and the `jarrodwatts/claude-hud` marketplace into Nix so claude-hud activates on every machine
 - [ ] (as projects come into rotation) Add additional Greater Goods Jira projects beyond `MH` to `home/ai/4-preferences.yaml`
@@ -19,6 +22,7 @@ Active tasks and future improvements for the Nix configuration.
 
 ## Recently Completed
 
+- [x] sops-managed GitHub security PAT; pivoted from sops-nix symlink to `home.activation` script for Cowork-sandbox compatibility; registered Dark-Horse + Grogu age recipients (2026-05-19)
 - [x] System maintenance pass: terragrunt+AWS perms, tmux-lock orphan fix, K8s teardown, +213 GiB disk reclaim (2026-05-13)
 - [x] Audit #23 disk cleanup — caches + Kof22 build artifacts + TM snapshots; disk 95% → 71% full (2026-05-13)
 - [x] Claude Code multi-domain rules cleanup + new local skills/agents/commands/templates + marketplace auto-register + pnpm + firmware/IaC perms (2026-04-27)
