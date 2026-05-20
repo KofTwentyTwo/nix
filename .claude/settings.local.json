@@ -149,7 +149,26 @@
       "Bash(curl -sSL https://improved-adventure-l4pmw97.pages.github.io/)",
       "Bash(curl -sSLI -o /dev/null -w \"%{url_effective}\\\\n\" https://improved-adventure-l4pmw97.pages.github.io/)",
       "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); [print\\(b['status'], '-', b['commit'][:7], '-', b.get\\('duration'\\), 'ms'\\) for b in d[:3]]\")",
-      "Bash(pi *)"
+      "Bash(pi *)",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); [print\\(f\\\\\"{e['type']:8} {e['size']:>8}  {e['name']}\\\\\"\\) for e in d]\")",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); [print\\(c['sha'][:8], '-', c['commit']['author']['date'], '-', c['commit']['message'].split\\(chr\\(10\\)\\)[0]\\) for c in d[:8]]\")",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); [print\\(f\\\\\"{e['type']:8} {e['size']:>8}  {e['path']}\\\\\"\\) for e in d]\")",
+      "Bash(op --version)",
+      "Bash(op whoami *)",
+      "Bash(op item *)",
+      "Bash(sysctl hw.memsize)",
+      "Bash(awk '{print $2/1024/1024/1024 \" GB\"}')",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\('files:'\\); [print\\(' ', f['status'], f['filename']\\) for f in d['files']]\")",
+      "Bash(python3 -c \"import json,sys,base64; d=json.load\\(sys.stdin\\); content=base64.b64decode\\(d['content']\\); print\\('size:', len\\(content\\), 'bytes'\\); print\\('---'\\); print\\(content.decode\\(\\)[:400]\\)\")",
+      "Bash(grep -v \"^commit\\\\|^Author\\\\|^Date\\\\|^    \\\\|^$\")",
+      "Bash(python3 -c \"import json,sys,base64; d=json.load\\(sys.stdin\\); open\\('/tmp/landing-index.html','wb'\\).write\\(base64.b64decode\\(d['content']\\)\\); print\\('sha:', d['sha']\\)\")",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\('pages build:', d.get\\('status'\\), '-', d.get\\('commit',''\\)[:8], '-', d.get\\('duration'\\),'ms'\\)\")",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); [print\\(c['sha'][:8], '-', c['commit']['author']['date'][11:19], '-', c['commit']['message'].split\\(chr\\(10\\)\\)[0]\\) for c in d[:6]]\")",
+      "WebFetch(domain:ollama.com)",
+      "Bash(ollama pull *)",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); [print\\(f\\\\\"{e['type']:8} {e['size']:>8} {e['path']}\\\\\"\\) for e in d]\")",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); [print\\(t['path']\\) for t in d['tree'] if t['type']=='blob']\")",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); [print\\(t['type'][:4], t.get\\('size','-'\\), t['path']\\) for t in d['tree']]\")"
     ]
   }
 }
