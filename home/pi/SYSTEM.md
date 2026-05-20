@@ -1,18 +1,17 @@
 # Pi-specific behaviors
 
-Recommended session model: `claude-sonnet-4-6` (Anthropic subscription auth).
+Default model: `gemini-3.5-flash` (Google provider — nix-enforced in `~/.pi/agent/settings.json` via `home/pi/default.nix`).
 
-Pi's CLI default is `--provider google`. Use `/model` interactively to switch to the recommended Sonnet, or pin via `--provider anthropic --model claude-sonnet-4-6`.
+Switch via `/model` when:
+- Gemini plateaus on a hard problem → `claude-sonnet-4-6` (Anthropic subscription).
+- Genuinely difficult reasoning → `claude-opus-4-7`.
+- Sensitive code → `qwen3-coder:30b` (local Ollama, zero marginal cost).
 
-Cost note: Anthropic subscription auth via pi bills against Claude **Extra Usage** (per-token), NOT against Pro/Max plan quota. Sonnet 4.6 is ~5× cheaper per token than Opus 4.7 for similar agentic-tool-use quality; reach for Opus only on genuinely hard problems via `/model`.
+Cost gotcha: Anthropic subscription auth via pi bills against Claude **Extra Usage** (per-token), NOT Pro/Max plan quota. Sonnet 4.6 is ~5× cheaper per token than Opus 4.7 at similar agentic quality — reach for Opus only on truly hard problems.
 
 ## Per-project overrides
 
-Place a `.pi/SYSTEM.md` in any repo to override the recommended default for that project — useful when:
-- Working on sensitive code → switch default to `qwen3-coder:30b` (local-only, zero marginal cost)
-- Project involves big-context reads → switch default to `gemini-2.5-pro`
-
-Place a `.pi/models.json` in a sensitive repo to strip cloud providers entirely.
+Place a `.pi/SYSTEM.md` in any repo to override the default for that project. Place a `.pi/models.json` in a sensitive repo to strip cloud providers entirely.
 
 ## Tree-session convention
 
@@ -20,7 +19,9 @@ Use `/fork` when exploring a hypothesis or side-quest; preserve the main session
 
 ## Prompt templates
 
-Reusable markdown templates live in `~/.pi/agent/templates/`. Invoke with `/<template-name>` (e.g., `/triage`, `/mac-runner-fail`).
+Reusable markdown templates live in `~/.pi/agent/templates/` (nix-managed via `home/pi/templates/`). Invoke with `/<template-name>`. Current set:
+- `/triage` — incident / unexpected-failure diagnosis
+- `/mac-runner-fail` — CircleCI Mac runner debugging
 
 ## Binding rules
 

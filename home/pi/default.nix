@@ -28,6 +28,13 @@ in
     # across the fleet via git pull + darwin-rebuild switch. Add new files
     # to ./extensions/ and a matching entry here.
     ".pi/agent/extensions/safe-bash.ts".source = ./extensions/safe-bash.ts;
+
+    # Prompt templates: invoked in pi as /<template-name>. Same pattern as
+    # extensions — sourced from this flake so they propagate across the fleet
+    # via git pull + darwin-rebuild switch. Add new files to ./templates/ and
+    # a matching entry here.
+    ".pi/agent/templates/triage.md".source = ./templates/triage.md;
+    ".pi/agent/templates/mac-runner-fail.md".source = ./templates/mac-runner-fail.md;
   };
 
   # Pull Ollama models idempotently. First switch may take ~10 minutes for the
@@ -60,19 +67,30 @@ in
   # the file with empty output if jq fails. Same idiom as home/claude's
   # syncClaudeSettings activation.
   #
-  # Managed keys:
-  #   warnings.anthropicExtraUsage = false  (suppress the Extra Usage
-  #     reminder shown every time Anthropic subscription auth is used —
-  #     informational, not a billing change. See pi docs/settings.md.)
+  # Managed keys (nix-enforced on every switch; other keys preserved verbatim):
+  #   warnings.anthropicExtraUsage = false      (suppress per-turn Extra Usage
+  #                                              reminder for Anthropic subscription auth)
+  #   defaultProvider              = "google"
+  #   defaultModel                 = "gemini-3.5-flash"
+  # Unmanaged keys preserved: lastChangelogVersion, defaultThinkingLevel,
+  # anything else pi writes during normal use.
   home.activation.syncPiSettings = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     settings_json="${homeDir}/.pi/agent/settings.json"
     mkdir -p "${homeDir}/.pi/agent"
 
     if [ ! -f "$settings_json" ] || [ ! -s "$settings_json" ]; then
-      ${pkgs.jq}/bin/jq -n '{ warnings: { anthropicExtraUsage: false } }' > "$settings_json"
+      ${pkgs.jq}/bin/jq -n '{
+        warnings: { anthropicExtraUsage: false },
+        defaultProvider: "google",
+        defaultModel: "gemini-3.5-flash"
+      }' > "$settings_json"
       chmod 600 "$settings_json"
     else
-      if ${pkgs.jq}/bin/jq '.warnings.anthropicExtraUsage = false' "$settings_json" > "$settings_json.tmp" \
+      if ${pkgs.jq}/bin/jq '
+          .warnings.anthropicExtraUsage = false
+        | .defaultProvider = "google"
+        | .defaultModel = "gemini-3.5-flash"
+      ' "$settings_json" > "$settings_json.tmp" \
         && [ -s "$settings_json.tmp" ]; then
         mv "$settings_json.tmp" "$settings_json"
         chmod 600 "$settings_json"
