@@ -8,7 +8,7 @@
 
 Install pi (Mario Zechner's minimal terminal coding harness, `@earendil-works/pi-coding-agent`) as the daily-driver coding agent, with intelligent model switching across local Ollama (MLX backend) and cloud providers via subscription/1Password auth. Pi coexists with Claude Code (specialized for its skills ecosystem) and Codex (specialized for OpenAI's harness); pi takes the primary slot.
 
-Setup is fully nix-managed. Extensions are NOT pre-installed — they grow organically as actual workflow pain surfaces, written by pi itself in the "first-hour ritual" and captured back into the flake.
+Setup is fully nix-managed end-to-end. Extensions live in `home/pi/extensions/` in the flake from day one — written directly there, never as runtime artifacts that need capture-back. New extensions grow as workflow pain surfaces, but the destination is always the flake so the fleet syncs via `git pull && darwin-rebuild switch`.
 
 ## Approach Rationale
 
@@ -187,24 +187,38 @@ Pi walks parent directories from cwd up to `$HOME` looking for `AGENTS.md` and `
 3. `pi` (interactive) → `/login` → select Claude Pro/Max → complete browser OAuth. Token stored in `~/.pi/agent/auth.json`, auto-refreshes thereafter. After this, `claude-sonnet-4-6` and `claude-opus-4-7` are both selectable via `/model`.
 4. Repeat for openai/google subscription rows (less critical — these are on-demand fallbacks)
 5. `pi -p "list the files in this dir"` — print-mode smoke test
-6. **First-hour ritual:** open pi interactively and prompt:
+6. Verify the bundled `safe-bash.ts` extension is active. Run pi in print mode against a local model and ask it to run a dangerous command:
 
-   > Write me a TypeScript extension at `~/.pi/agent/extensions/safe-bash.ts` that hooks `tool_call` and pauses for confirmation before executing: `terraform apply`, `kubectl delete`, `aws … rm`, `helm uninstall`, `git push --force`. After implementing, hot-reload and test against a dry-run command.
+   ```bash
+   pi --provider ollama --model qwen3-coder:30b \
+       -p "Use the bash tool to run: rm -rf /tmp/nonexistent-test-target-12345"
+   ```
 
-   Let pi build, reload, test. Once it works, capture the resulting `.ts` file back into the flake (see Capture-Back Discipline below).
+   Expected: the model reports the command was blocked (non-interactive defaults to block). In TUI mode you'd get a "No, cancel / Yes, proceed" prompt instead.
 
-## Capture-Back Discipline
+## Extensions Live in the Flake
 
-Extensions and skills created at runtime in `~/.pi/agent/extensions/` and `~/.pi/agent/skills/` are unmanaged user state. To preserve them across machines and rebuilds:
+Extensions are written **directly** to `home/pi/extensions/<name>.ts` in this flake — not to the runtime `~/.pi/agent/extensions/` dir. The runtime dir is a nix-managed symlink target; sources live in the flake and propagate across the fleet via `git push` + `git pull` + `darwin-rebuild switch`. No manual copy/paste between machines.
 
-1. Move the file from `~/.pi/agent/extensions/foo.ts` to `home/pi/extensions/foo.ts`
+To add a new extension:
+
+1. Write the file at `home/pi/extensions/foo.ts`
 2. Add to `home/pi/default.nix`:
    ```nix
    home.file.".pi/agent/extensions/foo.ts".source = ./extensions/foo.ts;
    ```
-3. `git add` and commit. Subsequent rebuilds replicate the extension.
+3. `git add home/pi/extensions/foo.ts` (nix flakes only see git-tracked files — `darwin-rebuild` fails with "not tracked by Git" otherwise)
+4. `nix flake check && sudo darwin-rebuild switch --flake .`
+5. Test in pi (the symlink will be live)
+6. Commit + push — fleet picks it up via `git pull && darwin-rebuild switch`
 
-The runtime → flake transition is deliberate: keep the experimentation surface fast (mutate `~/.pi/agent/extensions/` directly during iteration), commit only when an extension proves itself.
+**Authoring help, not capture-back.** You can ask pi to draft an extension just like any TypeScript code; the destination is still the flake. Pi's bundled examples at `/Users/james.maes/.npm-global/lib/node_modules/@earendil-works/pi-coding-agent/examples/extensions/` are the best reference (especially `permission-gate.ts` for tool_call hooks).
+
+### Currently shipped extensions
+
+| Extension | Source | Purpose |
+|-----------|--------|---------|
+| `safe-bash.ts` | `home/pi/extensions/safe-bash.ts` | Intercepts destructive shell commands (rm -rf, sudo, terraform apply/destroy, kubectl delete, aws s3 rm, helm uninstall, git push --force, chmod 777). Prompts in TUI; blocks by default in non-interactive mode. |
 
 ## Phase 2 Backlog
 
@@ -212,7 +226,7 @@ Extensions to hand-craft (with pi's help) when actual pain surfaces. Not in Phas
 
 | Extension | Trigger to build |
 |-----------|------------------|
-| `safe-bash.ts` | First time pi proposes a destructive command (likely day 1 — the ritual) |
+| `safe-bash.ts` | ✅ **Already shipped** — covers rm/sudo/terraform/kubectl/aws/helm/git --force |
 | `kctx.ts` (kubeconfig scoping via `createBashTool` factory) | First wrong-cluster scare or `kubectl` context confusion |
 | `incident.ts` (tree-based investigation mode) | Next on-call shift |
 | `tf-plan.ts` (structured terraform plan JSON as a tool) | Next non-trivial terraform review |

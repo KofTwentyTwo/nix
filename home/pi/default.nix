@@ -21,6 +21,12 @@ in
     ".pi/agent/SYSTEM.md".source = ./SYSTEM.md;
     ".pi/agent/AGENTS.md".source = ./AGENTS.md;
     ".pi/agent/models.json".text = builtins.toJSON modelsData;
+
+    # Extensions: TypeScript modules pi loads at startup. Sourced from this
+    # flake (not the runtime ~/.pi/agent/extensions/ dir) so they propagate
+    # across the fleet via git pull + darwin-rebuild switch. Add new files
+    # to ./extensions/ and a matching entry here.
+    ".pi/agent/extensions/safe-bash.ts".source = ./extensions/safe-bash.ts;
   };
 
   # Pull Ollama models idempotently. First switch may take ~10 minutes for the
