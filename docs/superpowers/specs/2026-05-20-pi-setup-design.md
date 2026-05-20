@@ -152,7 +152,7 @@ in
 
 Short, pi-specific. Does NOT duplicate `~/.ai/3-rules.md`. Topics:
 
-- **Default model: `claude-opus-4-7`** (subscription auth — your existing Claude Pro/Max). Strongest available agentic model; local models are on-demand via `/model` or per-project overlays.
+- **Recommended default: `claude-sonnet-4-6`** (Anthropic subscription auth). Note that pi's Anthropic auth bills against **Extra Usage** per token, NOT plan quota — Sonnet is ~5× cheaper than Opus for similar agentic-tool-use quality. Reach for Opus via `/model` on genuinely hard problems. Local models are zero-marginal-cost via `/model` or per-project overlays.
 - Per-project override: place `.pi/SYSTEM.md` in any repo to switch the default (e.g., to a local model for sensitive code), or `.pi/models.json` to strip cloud providers entirely.
 - Tree-session convention: "use `/fork` when exploring a hypothesis or side-quest; preserve the main session for the through-line"
 - Prompt templates location: `~/.pi/agent/templates/` (for `/name` expansion)
@@ -184,7 +184,7 @@ Pi walks parent directories from cwd up to `$HOME` looking for `AGENTS.md` and `
 
 1. `sudo darwin-rebuild switch --flake ~/.config/nix`
 2. Activation pulls Ollama models (~70 GB one-time; skips existing)
-3. `pi /model` → select **`claude-opus-4-7`** first. This triggers browser OAuth against your existing Claude Pro/Max session. **Critical**: if this fails, the default model is unreachable — adjust `models.nix` per the schema caveat above before continuing.
+3. `pi` (interactive) → `/login` → select Claude Pro/Max → complete browser OAuth. Token stored in `~/.pi/agent/auth.json`, auto-refreshes thereafter. After this, `claude-sonnet-4-6` and `claude-opus-4-7` are both selectable via `/model`.
 4. Repeat for openai/google subscription rows (less critical — these are on-demand fallbacks)
 5. `pi -p "list the files in this dir"` — print-mode smoke test
 6. **First-hour ritual:** open pi interactively and prompt:
@@ -229,7 +229,7 @@ After `darwin-rebuild switch`:
 - [ ] `ollama list` shows the three pulled models
 - [ ] `pi -p "list the files in this dir"` returns a sensible response (print mode works)
 - [ ] `pi /model` shows four providers (ollama, anthropic, openai, google)
-- [ ] **`claude-opus-4-7` (the default) authenticates via OAuth on first selection** — if not, fix before proceeding (default is unreachable otherwise)
+- [ ] `pi` interactive → `/login` → Claude Pro/Max → browser OAuth completes → `auth.json` gains an anthropic entry — confirms cloud path works
 - [ ] `pi /session` after a few turns shows tree-shaped JSONL in `~/.pi/agent/sessions/`
 - [ ] `pi -p "what rules am I operating under?"` cites `~/.ai/3-rules.md` content
 - [ ] `pi --mode rpc` accepts a JSONL request and responds (proves the headless automation path for Phase 2)
