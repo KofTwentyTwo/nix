@@ -880,6 +880,16 @@ in
     # for gsd-sdk on PATH) passes. The interactive shell already gets this via
     # home.sessionPath, but activation runs with a minimal environment.
     export PATH="${homeDir}/.npm-global/bin:/opt/homebrew/opt/node@22/bin:$PATH"
+    # GSD's installer migrates leftover artifacts on every update. Some
+    # categories the classifier can't auto-resolve (e.g. user-owned skill
+    # files whose hash diverged from the bundled version) and need a
+    # keep/remove decision. Activation has no TTY, so without this the
+    # installer hard-aborts with the "non-interactive runs … no stdin TTY"
+    # path and we lose the update silently. `keep` preserves anything the
+    # classifier flags as user-owned; the bundled GSD-managed hooks get
+    # auto-removed regardless via classifyPromptUserAction. Override to
+    # `remove` only if a stale artifact is actively breaking something.
+    export GSD_INSTALLER_MIGRATION_RESOLVE=keep
     mkdir -p "$NPM_CONFIG_PREFIX"
 
     if [ ! -x "/opt/homebrew/opt/node@22/bin/npx" ]; then

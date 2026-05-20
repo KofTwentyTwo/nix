@@ -430,7 +430,12 @@
                home-manager.darwinModules.home-manager  {
                   home-manager.useGlobalPkgs = true;
                   home-manager.useUserPackages = true;
-                  home-manager.verbose = true;
+                  # verbose=true exports VERBOSE_ARG=--verbose, which BSD coreutils
+                  # (rm, mkdir, etc.) reject with "illegal option -- -". HM's EXIT
+                  # trap then returns non-zero and the switch silently fails to
+                  # update /run/current-system. Keep this off until upstream HM
+                  # uses BSD-compatible flags.
+                  home-manager.verbose = false;
                   # Backup existing files when Home Manager would overwrite them
                   # This prevents errors when migrating to Home Manager
                   home-manager.backupFileExtension = "backup";
@@ -447,7 +452,8 @@
                home-manager.darwinModules.home-manager  {
                   home-manager.useGlobalPkgs = true;
                   home-manager.useUserPackages = true;
-                  home-manager.verbose = true;
+                  # See Darth note above on verbose=false (BSD coreutils flag).
+                  home-manager.verbose = false;
                   # Backup existing files when Home Manager would overwrite them
                   # This prevents errors when migrating to Home Manager
                   home-manager.backupFileExtension = "backup";
@@ -465,7 +471,8 @@
                home-manager.darwinModules.home-manager  {
                   home-manager.useGlobalPkgs = true;
                   home-manager.useUserPackages = true;
-                  home-manager.verbose = true;
+                  # See Darth note above on verbose=false (BSD coreutils flag).
+                  home-manager.verbose = false;
                   # Backup existing files when Home Manager would overwrite them
                   # This prevents errors when migrating to Home Manager
                   home-manager.backupFileExtension = "backup";
@@ -483,7 +490,8 @@
                home-manager.darwinModules.home-manager  {
                   home-manager.useGlobalPkgs = true;
                   home-manager.useUserPackages = true;
-                  home-manager.verbose = true;
+                  # See Darth note above on verbose=false (BSD coreutils flag).
+                  home-manager.verbose = false;
                   home-manager.backupFileExtension = "backup";
                   home-manager.extraSpecialArgs = { inherit inputs userConfig; };
                   home-manager.users."${username}" = homeconfig;
