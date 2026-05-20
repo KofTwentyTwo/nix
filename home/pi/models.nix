@@ -11,7 +11,6 @@
 # Deferred: Groq provider — add when op://Personal/groq-api-key/credential
 # exists in 1Password. Uses !op read shell-command auth pattern.
 
-{ config, lib }:
 {
   providers = {
     ollama = {

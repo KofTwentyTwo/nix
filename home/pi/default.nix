@@ -14,7 +14,7 @@
 { config, pkgs, lib, ... }:
 
 let
-  modelsData = import ./models.nix { inherit config lib; };
+  modelsData = import ./models.nix;
 in
 {
   home.file = {
@@ -26,10 +26,15 @@ in
   # Pull Ollama models idempotently. First switch may take ~10 minutes for the
   # full ~70 GB download; subsequent switches skip existing models in seconds.
   # Non-fatal: continues activation even if a pull fails (offline, etc).
+  #
+  # Note: qwen3-coder:30b-a3b-q8_0 is offered in models.json but NOT
+  # auto-pulled. Q6 is the daily-driver; Q8 is opt-in via `ollama pull`.
   home.activation.pullPiModels = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     if command -v ollama >/dev/null 2>&1; then
       for m in qwen3-coder:30b-a3b-q6_k qwen2.5-coder:7b llama3.3:70b-instruct-q4_K_M; do
-        if ! ollama list 2>/dev/null | grep -q "''${m}"; then
+        # Exact-name match on the NAME column to avoid prefix false-positives
+        # between similar tags (e.g. q6_k vs q8_0).
+        if ! ollama list 2>/dev/null | awk '{print $1}' | grep -Fxq "''${m}"; then
           echo "pi: pulling Ollama model ''${m} (may take several minutes)"
           $DRY_RUN_CMD ollama pull "''${m}" || \
             echo "pi: WARN pull of ''${m} failed; continuing" >&2
