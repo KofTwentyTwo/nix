@@ -168,7 +168,20 @@
       "Bash(ollama pull *)",
       "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); [print\\(f\\\\\"{e['type']:8} {e['size']:>8} {e['path']}\\\\\"\\) for e in d]\")",
       "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); [print\\(t['path']\\) for t in d['tree'] if t['type']=='blob']\")",
-      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); [print\\(t['type'][:4], t.get\\('size','-'\\), t['path']\\) for t in d['tree']]\")"
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); [print\\(t['type'][:4], t.get\\('size','-'\\), t['path']\\) for t in d['tree']]\")",
+      "Bash(op read *)",
+      "Bash(op account *)",
+      "Bash(OP_ACCOUNT=my.1password.com op read op://Personal/gemini-api-key/credential)",
+      "Bash(OP_ACCOUNT=my.1password.com op vault *)",
+      "Bash(OP_ACCOUNT=my.1password.com op item list --categories \"API Credential\")",
+      "Bash(OP_ACCOUNT=my.1password.com op item list)",
+      "Bash(OP_ACCOUNT=my.1password.com op whoami)",
+      "Bash(OP_ACCOUNT=my.1password.com op item list --vault Private)",
+      "Bash(OP_ACCOUNT=my.1password.com op item list --vault NixEnvironmentVariables)",
+      "Bash(OP_ACCOUNT=my.1password.com op item get GEMINI_API_KEY --vault NixEnvironmentVariables --fields label,type)",
+      "Bash(OP_ACCOUNT=my.1password.com op item get GEMINI_API_KEY --vault NixEnvironmentVariables --format json)",
+      "Bash(OP_ACCOUNT=my.1password.com op read op://NixEnvironmentVariables/GEMINI_API_KEY/credential)",
+      "Bash(export OP_ACCOUNT=my.1password.com)"
     ]
   }
 }
