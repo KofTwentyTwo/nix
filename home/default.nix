@@ -39,6 +39,7 @@ in
     ./nvim
     ./ohmyzsh
     ./opencode
+    ./pi
     ./procs
     ./python
     ./scripts
