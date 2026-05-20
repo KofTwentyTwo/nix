@@ -77,7 +77,11 @@
       # like pi and Claude Code can't tell "send" from "newline in input box".
       # The terminal-features line below tells tmux that WezTerm supports the
       # extended-keys encoding (CSI u), so it knows when to emit it.
+      #
+      # Format: csi-u (universal CSI u encoding) over the default xterm-style
+      # modifyOtherKeys — pi requires csi-u; WezTerm supports both.
       set -g extended-keys on
+      set -g extended-keys-format csi-u
 
       # Terminal capabilities - true color (24-bit) support
       set -g default-terminal "tmux-256color"
