@@ -38,12 +38,14 @@
       api = "google-generative-ai";
       apiKey = "!op read op://NixEnvironmentVariables/GEMINI_API_KEY/credential";
       models = [
-        # Flash: free-tier friendly (15 RPM, 1500 RPD, 1M tokens/day), 1M context.
-        # Daily-driver Gemini for big-context reads and most agentic tool-use.
-        { id = "gemini-2.5-flash"; name = "Gemini 2.5 Flash"; }
-        # Pro: better reasoning, but free-tier quota is 0 RPD; requires billing
-        # enabled on the Google AI Studio project to use.
-        { id = "gemini-2.5-pro";   name = "Gemini 2.5 Pro (requires billing)"; }
+        # 3.5 Flash (released 2026-05-19 at I/O): Google's current agentic-coding
+        # leader. Beats 3.1 Pro on Terminal-Bench / MCP Atlas / GDPval-AA at ~4x
+        # the speed. Free-tier friendly. Daily-driver Google model.
+        { id = "gemini-3.5-flash";        name = "Gemini 3.5 Flash"; }
+        # 3.1 Pro (preview): Pro-tier reasoning. Requires Gemini API billing
+        # enabled on the AI Studio project (free-tier quota is 0 RPD on Pro
+        # models as of 2026). No 3.5 Pro exists yet — 3.5 is Flash-only.
+        { id = "gemini-3.1-pro-preview";  name = "Gemini 3.1 Pro (requires billing)"; }
       ];
     };
     # groq: deferred — add when op://Personal/groq-api-key/credential exists in 1Password
