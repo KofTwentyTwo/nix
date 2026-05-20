@@ -18,10 +18,9 @@
       api = "openai-completions";
       apiKey = "ollama";
       models = [
-        { id = "qwen3-coder:30b-a3b-q6_k";       name = "Qwen3 Coder 30B Q6 (local)"; contextWindow = 256000; }
-        { id = "qwen3-coder:30b-a3b-q8_0";       name = "Qwen3 Coder 30B Q8 (local)"; contextWindow = 256000; }
-        { id = "qwen2.5-coder:7b";               name = "Qwen2.5 Coder 7B (fast)";    contextWindow = 128000; }
-        { id = "llama3.3:70b-instruct-q4_K_M";   name = "Llama 3.3 70B (reasoning)";  }
+        { id = "qwen3-coder:30b";                name = "Qwen3 Coder 30B (local)";   contextWindow = 256000; }
+        { id = "qwen2.5-coder:7b";               name = "Qwen2.5 Coder 7B (fast)";   contextWindow = 128000; }
+        { id = "llama3.3:70b-instruct-q4_K_M";   name = "Llama 3.3 70B (reasoning)"; }
       ];
     };
     anthropic = {

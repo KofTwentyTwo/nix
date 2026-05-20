@@ -5,7 +5,7 @@ Default model: `claude-opus-4-7` (subscription auth via Claude Pro/Max).
 ## Per-project overrides
 
 Place a `.pi/SYSTEM.md` in any repo to override the default model for that project — useful when:
-- Working on sensitive code → switch default to `qwen3-coder:30b-a3b-q6_k` (local-only)
+- Working on sensitive code → switch default to `qwen3-coder:30b` (local-only)
 - Project involves big-context reads → switch default to `gemini-2.5-pro`
 
 Place a `.pi/models.json` in a sensitive repo to strip cloud providers entirely.

@@ -49,11 +49,13 @@ Local models pulled idempotently:
 
 | Model | Slot | Approx size |
 |-------|------|-------------|
-| `qwen3-coder:30b-a3b-q6_k` | Default daily driver | ~25 GB |
+| `qwen3-coder:30b` | Local 30B-class | ~17 GB (Ollama-default Q4_K_M) |
 | `qwen2.5-coder:7b` | Fast lane | ~5 GB |
 | `llama3.3:70b-instruct-q4_K_M` | Heavy local reasoning | ~42 GB |
 
-Total local download: ~70 GB one-time.
+Total local download: ~64 GB one-time.
+
+**Tag note:** Ollama uses Modelfile-based tags, not raw GGUF filenames. The default `:30b` tag resolves to a sensible quant chosen by the publisher (currently Q4_K_M). If you want a specific quant later, look up actual published tags via `ollama show qwen3-coder` rather than guessing from HF-style names.
 
 ## Module Structure
 
@@ -97,7 +99,7 @@ in
   # but `ollama list | grep` short-circuits if model already present.
   home.activation.pullPiModels = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     if command -v ollama >/dev/null 2>&1; then
-      for m in qwen3-coder:30b-a3b-q6_k qwen2.5-coder:7b llama3.3:70b-instruct-q4_K_M; do
+      for m in qwen3-coder:30b qwen2.5-coder:7b llama3.3:70b-instruct-q4_K_M; do
         if ! ollama list 2>/dev/null | grep -q "''${m}"; then
           $DRY_RUN_CMD ollama pull "''${m}" || true
         fi
@@ -118,10 +120,9 @@ in
       api = "openai-completions";
       apiKey = "ollama";
       models = [
-        { id = "qwen3-coder:30b-a3b-q6_k";     name = "Qwen3 Coder 30B Q6 (local)"; contextWindow = 256000; }
-        { id = "qwen3-coder:30b-a3b-q8_0";     name = "Qwen3 Coder 30B Q8 (local)"; contextWindow = 256000; }
-        { id = "qwen2.5-coder:7b";             name = "Qwen2.5 Coder 7B (fast)";    contextWindow = 128000; }
-        { id = "llama3.3:70b-instruct-q4_K_M"; name = "Llama 3.3 70B (reasoning)";  }
+        { id = "qwen3-coder:30b";              name = "Qwen3 Coder 30B (local)";   contextWindow = 256000; }
+        { id = "qwen2.5-coder:7b";             name = "Qwen2.5 Coder 7B (fast)";   contextWindow = 128000; }
+        { id = "llama3.3:70b-instruct-q4_K_M"; name = "Llama 3.3 70B (reasoning)"; }
       ];
     };
     anthropic = {
