@@ -75,6 +75,14 @@ in
         # Default AWS profile for `aws` CLI commands
         # Override per-shell with: AWS_PROFILE=other-profile aws ...
         AWS_PROFILE = "greater_goods_control_tower";
+
+        # Default 1Password account for `op` CLI. Required because the CLI is
+        # configured with multiple accounts (personal + greatergoods work) and
+        # any `op` invocation without an account hint errors with "multiple
+        # accounts". Personal account holds the NixEnvironmentVariables vault
+        # which pi and other tools read API keys from via `!op read`.
+        # Override per-shell with: OP_ACCOUNT=greatergoods.1password.com op ...
+        OP_ACCOUNT = "my.1password.com";
       };
 
       # PATH configuration - paths are added to $PATH

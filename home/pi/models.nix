@@ -36,8 +36,15 @@
     };
     google = {
       api = "google-generative-ai";
-      apiKey = "!op read op://Personal/gemini-api-key/credential";
-      models = [ { id = "gemini-2.5-pro"; name = "Gemini 2.5 Pro"; } ];
+      apiKey = "!op read op://NixEnvironmentVariables/GEMINI_API_KEY/credential";
+      models = [
+        # Flash: free-tier friendly (15 RPM, 1500 RPD, 1M tokens/day), 1M context.
+        # Daily-driver Gemini for big-context reads and most agentic tool-use.
+        { id = "gemini-2.5-flash"; name = "Gemini 2.5 Flash"; }
+        # Pro: better reasoning, but free-tier quota is 0 RPD; requires billing
+        # enabled on the Google AI Studio project to use.
+        { id = "gemini-2.5-pro";   name = "Gemini 2.5 Pro (requires billing)"; }
+      ];
     };
     # groq: deferred — add when op://Personal/groq-api-key/credential exists in 1Password
   };
