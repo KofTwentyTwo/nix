@@ -26,6 +26,12 @@ creation_rules:
           - *darth
           - *dark_horse
           - *grogu
+  - path_regex: secrets/github-sandbox-pat\.enc$
+    key_groups:
+      - age:
+          - *darth
+          - *dark_horse
+          - *grogu
   - path_regex: secrets/.*\.yaml$
     key_groups:
       - age:

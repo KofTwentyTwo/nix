@@ -5,8 +5,11 @@
 # Encrypted files live in secrets/ (safe to commit).
 #
 # To add a secret:
-#   1. Encrypt: sops -e --age <pubkey> --input-type binary --output-type binary <file> > secrets/<name>.enc
-#   2. Declare in sops.secrets below
+#   1. Encrypt: sops -e --filename-override secrets/<name>.enc \
+#        --input-type binary --output-type binary <file> > secrets/<name>.enc
+#      (relies on .sops.yaml creation_rules to pick recipients by filename)
+#   2. Either declare in sops.secrets (default sops-nix symlink layout), or
+#      pass to mkPatDeployer (regular-file layout for sandboxed consumers).
 #   3. Rebuild: darwin-rebuild switch --flake ~/.config/nix
 #
 # To edit a secret:
@@ -16,11 +19,60 @@
 
 let
   homeDir = config.home.homeDirectory;
+  ageKey = "${homeDir}/.config/sops/age/keys.txt";
+
+  # Decrypt a sops-encrypted secret directly to one or more regular files,
+  # bypassing sops-nix's default symlink-into-~/.config/sops-nix/ layout.
+  # Use when the consumer is sandboxed (e.g. a Claude Cowork scheduled task)
+  # and only mounts specific paths — symlinks pointing outside those mounts
+  # dangle from inside the sandbox.
+  #
+  # Per-destination behavior:
+  #   - skips if the parent dir doesn't exist (project not yet set up)
+  #   - mktemp in the destination dir so the final mv is atomic on the same
+  #     filesystem (mktemp's 0600 default mode is preserved through `>`)
+  #
+  # Whole-deployer behavior: no-op if the age key is missing (host without
+  # sops set up yet).
+  mkPatDeployer = { name, encFile, destinations }:
+    lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+      ENC="${encFile}"
+      AGE_KEY="${ageKey}"
+
+      if [ ! -f "$AGE_KEY" ]; then
+        echo "[${name}] no age key at $AGE_KEY; skipping deployment"
+        exit 0
+      fi
+
+      deploy_one() {
+        dst="$1"
+        dst_dir="$(dirname "$dst")"
+
+        if [ ! -d "$dst_dir" ]; then
+          echo "[${name}] $dst_dir missing; skipping $dst"
+          return 0
+        fi
+
+        tmp="$(mktemp "$dst_dir/.pat.XXXXXX")"
+        if SOPS_AGE_KEY_FILE="$AGE_KEY" ${pkgs.sops}/bin/sops --decrypt \
+             --input-type binary --output-type binary "$ENC" > "$tmp"; then
+          mv "$tmp" "$dst"
+          echo "[${name}] deployed to $dst (mode 0600)"
+        else
+          rm -f "$tmp"
+          echo "[${name}] sops decryption failed; $dst not updated" >&2
+        fi
+      }
+
+      ${lib.concatMapStringsSep "\n      "
+          (d: "deploy_one ${lib.escapeShellArg d}")
+          destinations}
+    '';
 in
 {
   config = {
     sops = {
-      age.keyFile = "${homeDir}/.config/sops/age/keys.txt";
+      age.keyFile = ageKey;
 
       # DISABLED 2026-05-19: aws-credentials.enc is encrypted only to the
       # "darth" age key; this machine (Dark-Horse) cannot decrypt it, so
@@ -36,66 +88,52 @@ in
       #   mode = "0600";
       # };
 
-      # GitHub fine-grained PAT for org-wide security alert reads:
-      # see home.activation.deployGithubSecurityPat below. We bypass
-      # sops-nix's symlink-based deployment because the consumer is a
-      # Claude Cowork sandboxed scheduled task that only mounts the
-      # project folder and ~/Git.Local/dmd — a symlink pointing into
-      # ~/.config/sops-nix/ dangles from inside the sandbox.
+      # GitHub fine-grained PATs are deployed via the home.activation entries
+      # below (see mkPatDeployer in `let`). We bypass sops-nix's symlink
+      # layout because the consumers are Claude Cowork sandboxed scheduled
+      # tasks that only mount their project folders.
     };
 
-    # Deploy the GitHub security PAT as a REGULAR FILE (not a sops-nix
-    # symlink) directly inside the Claude Cowork project folder so the
-    # sandboxed morning digest can read it. Runs after writeBoundary so
-    # home.file deployments have settled. Decryption uses the same
-    # secrets/github-security-pat.enc + ~/.config/sops/age/keys.txt the
-    # sops-nix agent would use, so the encryption story, recipient list,
-    # and `sops updatekeys` workflow are unchanged.
-    #
-    # Gracefully skips on hosts without an age key or without the Cowork
-    # project folder — Grogu / Renova / Darth get a no-op.
-    home.activation.deployGithubSecurityPat = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-      PROJECT_DIR="${homeDir}/Documents/Claude/Projects/Security Alerts"
-      DST="$PROJECT_DIR/.github-pat"
-      ENC="${../../secrets/github-security-pat.enc}"
-      AGE_KEY="${homeDir}/.config/sops/age/keys.txt"
+    # Transitional cleanup: remove orphaned artifacts from the previous
+    # sops-nix-managed deployment of github-security-pat. Idempotent —
+    # the -L / -f guards make it a no-op on hosts where the legacy layout
+    # never existed (Grogu, Renova, future hosts). Safe to keep permanently.
+    home.activation.cleanupLegacyGithubSecurityPat =
+      lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+        if [ -L "${homeDir}/.github-security-pat" ]; then
+          rm "${homeDir}/.github-security-pat"
+          echo "[github-security-pat-cleanup] removed legacy symlink at ~/.github-security-pat"
+        fi
+        if [ -f "${homeDir}/.config/sops-nix/secrets/github-security-pat" ]; then
+          rm "${homeDir}/.config/sops-nix/secrets/github-security-pat"
+          echo "[github-security-pat-cleanup] removed orphan plaintext at ~/.config/sops-nix/secrets/github-security-pat"
+        fi
+      '';
 
-      # Transitional cleanup: remove orphaned plaintext from the previous
-      # sops-nix-managed deployment pattern. Guarded by -L / -f so we only
-      # touch files that match the legacy layout exactly. Safe to keep
-      # permanently — idempotent and no-op once cleaned.
-      if [ -L "${homeDir}/.github-security-pat" ]; then
-        rm "${homeDir}/.github-security-pat"
-        echo "[github-pat] removed legacy symlink at ~/.github-security-pat"
-      fi
-      if [ -f "${homeDir}/.config/sops-nix/secrets/github-security-pat" ]; then
-        rm "${homeDir}/.config/sops-nix/secrets/github-security-pat"
-        echo "[github-pat] removed orphan plaintext at ~/.config/sops-nix/secrets/github-security-pat"
-      fi
+    # Org-wide GitHub security alert reads (greater-goods + gg-engineering
+    # + gg-devops + gg-sandboxes). Consumed by the Cowork morning-digest
+    # dashboard at ~/Documents/Claude/Projects/Security Alerts/.
+    home.activation.deployGithubSecurityPat = mkPatDeployer {
+      name = "github-security-pat";
+      encFile = ../../secrets/github-security-pat.enc;
+      destinations = [
+        "${homeDir}/Documents/Claude/Projects/Security Alerts/.github-pat"
+      ];
+    };
 
-      if [ ! -f "$AGE_KEY" ]; then
-        echo "[github-pat] no age key at $AGE_KEY; skipping deployment"
-        exit 0
-      fi
-
-      if [ ! -d "$PROJECT_DIR" ]; then
-        echo "[github-pat] no project dir at $PROJECT_DIR; skipping deployment"
-        exit 0
-      fi
-
-      # mktemp in the destination directory so the final mv is an atomic
-      # rename on the same filesystem (mktemp's default 0600 perms are
-      # preserved through the redirect because > truncates without
-      # touching mode bits).
-      TMP="$(mktemp "$PROJECT_DIR/.github-pat.XXXXXX")"
-      if SOPS_AGE_KEY_FILE="$AGE_KEY" ${pkgs.sops}/bin/sops --decrypt \
-           --input-type binary --output-type binary "$ENC" > "$TMP"; then
-        mv "$TMP" "$DST"
-        echo "[github-pat] deployed to $DST (mode 0600)"
-      else
-        rm -f "$TMP"
-        echo "[github-pat] sops decryption failed; $DST not updated" >&2
-      fi
-    '';
+    # Repo-scoped PAT for GG-Sandboxes/james.maes — lets Cowork dashboards
+    # push code, configure Pages, etc. in that sandbox repo. Lands at
+    # `.github-deploy-pat` (the filename the morning-digest dashboard's
+    # refresh.sh / snapshot.sh expect). Add a destination to the list
+    # whenever a new Cowork project needs write access; the deployer
+    # skips folders that don't exist yet.
+    home.activation.deployGithubSandboxPat = mkPatDeployer {
+      name = "github-sandbox-pat";
+      encFile = ../../secrets/github-sandbox-pat.enc;
+      destinations = [
+        "${homeDir}/Documents/Claude/Projects/Security Alerts/.github-deploy-pat"
+        "${homeDir}/Documents/Claude/Projects/ClaudeCode Setup/.github-deploy-pat"
+      ];
+    };
   };
 }

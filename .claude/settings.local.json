@@ -124,7 +124,24 @@
       "Bash(shasum -a 256 ~/.github-security-pat /tmp/token)",
       "Bash(shasum -a 256 '/Users/james.maes/Documents/Claude/Projects/Security Alerts/.github-pat' /tmp/token)",
       "Bash(shasum -a 256 ~/.ai/5-learnings.md home/ai/5-learnings.md)",
-      "Bash(awk '{print $1}')"
+      "Bash(awk '{print $1}')",
+      "Bash(sops -e --filename-override secrets/github-sandbox-pat.enc --input-type binary --output-type binary /tmp/token)",
+      "Bash(sops --decrypt --input-type binary --output-type binary secrets/github-sandbox-pat.enc)",
+      "Bash(SOPS_AGE_KEY_FILE=__TRACKED_VAR__/.config/sops/age/keys.txt sops --decrypt --input-type binary --output-type binary secrets/github-sandbox-pat.enc)",
+      "Bash(command -v shred)",
+      "Bash(shred -u /tmp/token)",
+      "Bash(dd if=/dev/urandom of=/tmp/token bs=94 count=1 conv=notrunc)",
+      "Bash(rm /tmp/token)",
+      "Bash(tee /tmp/rebuild.log)",
+      "Bash(nix-store --query --references /nix/store/r57rna72d7wl41xz5xzr52zf9hk7pm5p-darwin-system-26.05.06648f4.drv)",
+      "Read(//run/current-system/sw/share/**)",
+      "Bash(sudo darwin-rebuild --list-generations)",
+      "WebFetch(domain:lucumr.pocoo.org)",
+      "WebFetch(domain:blog.scottlogic.com)",
+      "WebFetch(domain:medium.com)",
+      "WebFetch(domain:gist.github.com)",
+      "Bash(echo \"---exit $?\")",
+      "Bash(shasum -a 256 \"/Users/james.maes/Documents/Claude/Projects/Security Alerts/.github-deploy-pat\" \"/Users/james.maes/Documents/Claude/Projects/ClaudeCode Setup/.github-deploy-pat\")"
     ]
   }
 }

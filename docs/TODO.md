@@ -4,8 +4,10 @@ Active tasks and future improvements for the Nix configuration.
 
 ## Active Tasks
 
-- [ ] On Darth: verify `age-keygen -y ~/.config/sops/age/keys.txt` matches the `&darth` pubkey in `.sops.yaml`; pull + rebuild
-- [ ] On Renova: generate age key, share pubkey, add `&renova` to `.sops.yaml`, `sops updatekeys secrets/github-security-pat.enc`, pull + rebuild
+- [ ] User: enable Pages on `GG-Sandboxes/james.maes` (default branch is `develop`, not `main`); confirm with Cowork dashboard agent that one-shot deploy now works
+- [ ] (optional) Narrow `github-sandbox-pat` scope from "RW everything" to `Contents:RW + Metadata:R` and re-encrypt
+- [ ] On Darth: verify `age-keygen -y ~/.config/sops/age/keys.txt` matches the `&darth` pubkey in `.sops.yaml`; pull + rebuild; `sops updatekeys secrets/github-sandbox-pat.enc` for both PATs if recipient set changes
+- [ ] On Renova: generate age key, share pubkey, add `&renova` to `.sops.yaml`, `sops updatekeys secrets/github-security-pat.enc secrets/github-sandbox-pat.enc`, pull + rebuild
 - [ ] On Darth (after Renova pubkey added): `sops updatekeys secrets/aws-credentials.enc` and uncomment the `secrets."aws-credentials"` block in `home/sops/default.nix`
 - [ ] Commit the 25 staged changes from 2026-04-27 Claude Code cleanup session and push to origin
 - [ ] After push, sync Darth / Renova: `git pull && sudo darwin-rebuild switch --flake ~/.config/nix#$(hostname)`
@@ -22,6 +24,7 @@ Active tasks and future improvements for the Nix configuration.
 
 ## Recently Completed
 
+- [x] Second sops-managed PAT (`github-sandbox-pat`, fine-grained RW on `GG-Sandboxes/james.maes`) deployed to two Cowork project folders at `.github-deploy-pat`; refactored `home/sops/default.nix` to introduce a `mkPatDeployer` helper and migrated the existing security PAT onto it (2026-05-20)
 - [x] sops-managed GitHub security PAT; pivoted from sops-nix symlink to `home.activation` script for Cowork-sandbox compatibility; registered Dark-Horse + Grogu age recipients (2026-05-19)
 - [x] System maintenance pass: terragrunt+AWS perms, tmux-lock orphan fix, K8s teardown, +213 GiB disk reclaim (2026-05-13)
 - [x] Audit #23 disk cleanup — caches + Kof22 build artifacts + TM snapshots; disk 95% → 71% full (2026-05-13)
