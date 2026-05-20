@@ -36,6 +36,7 @@
     };
     google = {
       api = "google-generative-ai";
+      apiKey = "!op read op://Personal/gemini-api-key/credential";
       models = [ { id = "gemini-2.5-pro"; name = "Gemini 2.5 Pro"; } ];
     };
     # groq: deferred — add when op://Personal/groq-api-key/credential exists in 1Password
