@@ -141,7 +141,15 @@
       "WebFetch(domain:medium.com)",
       "WebFetch(domain:gist.github.com)",
       "Bash(echo \"---exit $?\")",
-      "Bash(shasum -a 256 \"/Users/james.maes/Documents/Claude/Projects/Security Alerts/.github-deploy-pat\" \"/Users/james.maes/Documents/Claude/Projects/ClaudeCode Setup/.github-deploy-pat\")"
+      "Bash(shasum -a 256 \"/Users/james.maes/Documents/Claude/Projects/Security Alerts/.github-deploy-pat\" \"/Users/james.maes/Documents/Claude/Projects/ClaudeCode Setup/.github-deploy-pat\")",
+      "Bash(gh auth *)",
+      "WebFetch(domain:akitaonrails.com)",
+      "WebFetch(domain:www.atlascloud.ai)",
+      "Bash(curl -sSL -o /dev/null -w \"HTTP %{http_code}  size %{size_download}  type %{content_type}  redirects %{num_redirects}\\\\n\" https://improved-adventure-l4pmw97.pages.github.io/)",
+      "Bash(curl -sSL https://improved-adventure-l4pmw97.pages.github.io/)",
+      "Bash(curl -sSLI -o /dev/null -w \"%{url_effective}\\\\n\" https://improved-adventure-l4pmw97.pages.github.io/)",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); [print\\(b['status'], '-', b['commit'][:7], '-', b.get\\('duration'\\), 'ms'\\) for b in d[:3]]\")",
+      "Bash(pi *)"
     ]
   }
 }
