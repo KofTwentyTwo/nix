@@ -72,6 +72,13 @@
       set -sg escape-time 0
       set -g history-limit 50000
 
+      # Extended keys: pass Shift+Enter / Ctrl+Enter / Alt+Enter through to TUI
+      # apps. Without this, modified Enter collapses to plain Enter and apps
+      # like pi and Claude Code can't tell "send" from "newline in input box".
+      # The terminal-features line below tells tmux that WezTerm supports the
+      # extended-keys encoding (CSI u), so it knows when to emit it.
+      set -g extended-keys on
+
       # Terminal capabilities - true color (24-bit) support
       set -g default-terminal "tmux-256color"
       set -g terminal-overrides "xterm-256color:Tc:RGB,wezterm:Tc:RGB"
@@ -83,7 +90,9 @@
       set -g set-titles-string "#{session_name}"
 
       # Clipboard: enable OSC 52 for WezTerm + pbcopy fallback
-      set -ga terminal-features 'wezterm:clipboard'
+      # Extkeys: declare that WezTerm supports the extended-keys CSI u encoding
+      # (consumed by `set -g extended-keys on` above).
+      set -ga terminal-features 'wezterm:clipboard:extkeys'
       set -g copy-command 'pbcopy'
 
       # Mouse ON for scroll-wheel scrollback, but drag bindings are unbound so
