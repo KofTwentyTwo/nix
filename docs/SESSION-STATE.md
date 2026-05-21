@@ -1,14 +1,31 @@
 # Session State
 
-**Last Updated:** 2026-05-20
+**Last Updated:** 2026-05-21
 
 ## Current Status
-`GG-Sandboxes/james.maes` is end-to-end live as a personal Pages sandbox. Second sops-managed PAT (`github-sandbox-pat`, fine-grained RW) is deployed to two Cowork project folders as `.github-deploy-pat`. The repo was bootstrapped, Pages enabled from `main /`, and the landing page links to two now-Live dashboards (Security Alerts, AI Updates) — both refreshing on their morning schedule. Working tree clean; pushed through `e4e324d` on `origin/main`.
+All outstanding architectural issues in the Nix-Darwin and Home Manager configuration have been resolved, verified, and documented. The configuration now builds and activates successfully. The active changes are staged and ready to commit.
 
-## Prior Session (2026-05-19)
-First GitHub PAT (`github-security-pat`, org-wide security alert reads) deployed via sops + a `home.activation` script writing to a regular file inside the Cowork project (sandbox-compatible — symlinks pointing into `~/.config/sops-nix/` dangle from inside).
+## What Was Done This Session (2026-05-21)
 
-## What Was Done This Session (2026-05-20)
+**Tmux Pane Redraw Latency**
+- Created `scripts/git-pane-info.sh` to fetch Git repository status asynchronously. Uses directory-based locking (`/tmp/git-cache-$(id -u)/<hash>.lock`) to prevent concurrent query stampedes and caches results.
+- Integrated the async script into the `pane-border-format` inside `home/tmux/default.nix`, replacing the previous slow synchronous inline Git calls.
+- Registered the script in `home/scripts/default.nix`.
+
+**LaunchAgent Race Condition**
+- Removed the manual `system.activationScripts.setupUpdateChecker` from `flake.nix`.
+- Defined a native Home Manager launchd agent `launchd.agents.check-updates` inside `home/updates/default.nix`. This resolves the activation race condition and registers the agent cleanly in user space.
+
+**Neovim Plugin Config & Script Hardening**
+- Fixed a typo in `home/nvim/config/lua/plugins/lsp.lua` changing `"mason-org/mason.nvim"` to `"williamboman/mason.nvim"`.
+- Hardened `scripts/check-updates.sh` by dynamically resolving the tracking remote and branch via `git rev-parse --abbrev-ref @{u}` instead of using a hardcoded `origin/main` branch.
+
+**Documentation & Code Comments Improvements**
+- Added explanatory code comments to `home/tmux/default.nix` clarifying the async nature of `git-pane-info.sh` and how it prevents pane border lag.
+- Populated the `## Current Scripts` section of `scripts/README.md` with complete, detailed descriptions of all 24 custom scripts.
+- Updated `README.md` script count and lists, adding `git-pane-info.sh` to the Tmux Utilities section.
+- Updated `docs/TODO.md` to reflect completed tasks under "Recently Completed".
+
 
 **`github-sandbox-pat` (fine-grained, RW everything on `GG-Sandboxes/james.maes`)**
 - Encrypted to `secrets/github-sandbox-pat.enc` via sops with the three current age recipients (darth + dark_horse + grogu). `.sops.yaml` got a matching `creation_rules` entry. Plaintext shredded after encryption.

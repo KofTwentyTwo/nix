@@ -65,7 +65,7 @@ home/
   wez/                       WezTerm: GPU terminal with rich status bar
   zsh/                       Zsh: aliases, wrappers, oh-my-zsh, 100+ tips
   starship/                  Multi-line prompt with git/k8s/host awareness
-  scripts/                   23 custom scripts installed to ~/.local/bin/
+  scripts/                   24 custom scripts installed to ~/.local/bin/
   ssh/                       SSH hosts + 1Password agent
   aws/                       AWS profiles (credentials encrypted via sops)
   gpg/                       GPG signing + pinentry-mac
@@ -262,7 +262,7 @@ Fonts (all Nerd Fonts, cozette, scientifica, monocraft) and utilities like `comm
 
 ## Custom Scripts
 
-23 scripts installed to `~/.local/bin/` via Home Manager:
+24 scripts installed to `~/.local/bin/` via Home Manager:
 
 **Git Orchestration (multi-repo):**
 | Script | Alias | Purpose |
@@ -287,6 +287,7 @@ Fonts (all Nerd Fonts, cozette, scientifica, monocraft) and utilities like `comm
 | `tmux-pin-check.sh` | Prompt for PIN on first session |
 | `tmux-session-name.sh` | Interactive session naming on create |
 | `tmux-help.sh` | Searchable command palette (fzf) |
+| `git-pane-info.sh` | Async git branch/repo query for pane border (reduces lag) |
 
 **Other:** `check-updates.sh` (daily brew/nix check), `claude-resume.sh` (resume Claude session), `confluence-blog.sh` / `confluence.sh` (wiki integration).
 

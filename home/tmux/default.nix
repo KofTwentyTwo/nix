@@ -165,9 +165,10 @@
       set -g status-style "bg=black,fg=green"
       set -g message-style "bg=black,fg=green,bold"
 
-      # Top bar (per-pane): repo/branch left, path right
+      # Top bar (per-pane): repo/branch left, path right.
+      # Solves pane redraw latency by querying git status asynchronously via git-pane-info.sh.
       set -g pane-border-status top
-      set -g pane-border-format "#[fg=#444444][#[fg=#888888]#(cd #{pane_current_path} && basename $(git rev-parse --show-toplevel) 2>/dev/null || echo n/a)#[fg=#444444]] [#[fg=#888888]#(cd #{pane_current_path} && git rev-parse --abbrev-ref HEAD 2>/dev/null || echo n/a)#[fg=#444444]]#[align=right][#[fg=#888888]#{pane_current_path}#[fg=#444444]]────"
+      set -g pane-border-format "#(git-pane-info.sh #{pane_current_path})#[align=right]#[fg=#444444][#[fg=#888888]#{pane_current_path}#[fg=#444444]]────"
       set -g pane-border-style "fg=#444444"
       set -g pane-active-border-style "fg=green"
     '';

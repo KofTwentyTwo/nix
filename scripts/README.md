@@ -81,5 +81,36 @@ Here are some ideas for useful scripts:
 
 ## Current Scripts
 
-(Add your scripts here as you create them)
+The following custom scripts are installed to `~/.local/bin/` by this Nix configuration:
+
+### System & Update Management
+* **`check-updates.sh`**: Checks Homebrew and Nix flake inputs for available updates. Runs daily at 9:00 AM via launchd or can be run manually.
+* **`update-nix.sh`**: Updates all Nix flake inputs and rebuilds/switches the system configuration.
+
+### Git & Workspace Orchestration
+* **`git-pane-info.sh`**: Asynchronously queries and outputs Git repository name and branch for the tmux border status. Prevents input lag on large or slow repositories by caching status and running background updates.
+* **`git-info.sh`**: Displays comprehensive status, branch, and remote configuration for a repository, including clickable URLs.
+* **`git-sync-all.sh`**: Morning synchronization script. Fetches, switches to the default branch, and pulls updates across all repositories in the active directory.
+* **`git-status-all.sh`**: Displays a clean status summary for all Git repositories in the current directory.
+* **`git-fetch-all.sh`**: Fetches updates from remotes for all repositories in the current directory.
+* **`git-pull-all.sh`**: Pulls updates for all clean repositories in the current directory (skips repositories with uncommitted changes).
+* **`git-branch-all.sh`**: Shows current branch and status for all repositories in the current directory with a summary count.
+* **`git-checkout-all.sh`**: Checks out a specified branch in all repositories in the current directory.
+* **`git-log-all.sh`**: Displays recent commits across all repositories in the current directory.
+* **`git-clone-all.sh`**: Clones all repositories from a specified GitHub organization.
+* **`git-help.sh`**: Displays reference guide of all custom Git scripts and Oh-My-Zsh Git aliases.
+* **`fix-git-remote.sh`**: Resolves common Git remote URL mismatches and protocol switches.
+* **`gitops-publish.sh`**: Publishes a feature branch tag for GitOps deployment pipelines.
+
+### Tmux & Utilities
+* **`tmux-help.sh`**: Displays a searchable list of tmux keybindings and commands.
+* **`tmux-lock.sh`**: Displays screensavers and locks the active tmux session.
+* **`tmux-lock-set-pin.sh`**: Configures the tmux lock screen PIN.
+* **`tmux-pin-check.sh`**: Helper script to validate the entered PIN against the hash.
+* **`tmux-session-name.sh`**: Prompts the user to name a new tmux session on creation.
+* **`tmux-session-rename.sh`**: Helper to rename a tmux session and update the client state.
+* **`claude-resume.sh`**: Resumes a Claude Code session for the current directory.
+* **`confluence.sh`**: Full-featured Confluence integration tool for reading, updating, and formatting Confluence pages and blog posts.
+* **`confluence-blog.sh`**: Formats and publishes a blog post to Confluence.
+
 

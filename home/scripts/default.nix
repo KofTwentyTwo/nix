@@ -51,6 +51,7 @@ in
         "git-checkout-all.sh"
         "git-log-all.sh"
         "git-info.sh"
+        "git-pane-info.sh"
         "git-help.sh"
         "claude-resume.sh"
         "confluence-blog.sh"

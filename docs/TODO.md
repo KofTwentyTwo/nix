@@ -23,6 +23,9 @@ Active tasks and future improvements for the Nix configuration.
 
 ## Recently Completed
 
+- [x] Resolved tmux pane border redraw latency by querying Git repo and branch asynchronously via `git-pane-info.sh` (2026-05-21)
+- [x] Resolved Nix-Darwin vs Home Manager LaunchAgent activation race condition by defining native Home Manager `launchd.agents.check-updates` (2026-05-21)
+- [x] Fixed Neovim `mason.nvim` plug-in repository typo and hardened `check-updates.sh` branch tracking using dynamic upstream resolution (2026-05-21)
 - [x] Bootstrapped `GG-Sandboxes/james.maes` (created `main`, flipped default branch from `develop`, enabled Pages from `main /`, wrote a personal sandbox landing page with two clickable dashboard cards); both Security Alerts and AI Updates dashboards now refreshing on schedule (2026-05-20)
 - [x] Second sops-managed PAT (`github-sandbox-pat`, fine-grained RW on `GG-Sandboxes/james.maes`) deployed to two Cowork project folders at `.github-deploy-pat`; refactored `home/sops/default.nix` to introduce a `mkPatDeployer` helper and migrated the existing security PAT onto it (2026-05-20)
 - [x] sops-managed GitHub security PAT; pivoted from sops-nix symlink to `home.activation` script for Cowork-sandbox compatibility; registered Dark-Horse + Grogu age recipients (2026-05-19)

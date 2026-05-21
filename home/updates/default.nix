@@ -33,42 +33,24 @@ in
       text = "";
     };
 
-    # Launchd plist for the scheduled update checker
-    home.file."./Library/LaunchAgents/com.jamesmaes.check-updates.plist" = {
-      text = ''
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-    <key>Label</key>
-    <string>com.jamesmaes.check-updates</string>
-    <key>ProgramArguments</key>
-    <array>
-        <string>${homeDir}/.local/bin/check-updates.sh</string>
-    </array>
-    <key>StartCalendarInterval</key>
-    <dict>
-        <key>Hour</key>
-        <integer>9</integer>
-        <key>Minute</key>
-        <integer>0</integer>
-    </dict>
-    <key>StandardOutPath</key>
-    <string>${homeDir}/.local/log/check-updates.log</string>
-    <key>StandardErrorPath</key>
-    <string>${homeDir}/.local/log/check-updates.error.log</string>
-    <key>RunAtLoad</key>
-    <false/>
-    <key>EnvironmentVariables</key>
-    <dict>
-        <key>PATH</key>
-        <string>/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/homebrew/bin:/opt/homebrew/sbin</string>
-    </dict>
-</dict>
-</plist>
-      '';
-      executable = false;
-      force = true;
+    # Launchd agent for the scheduled update checker
+    launchd.agents.check-updates = {
+      enable = true;
+      config = {
+        ProgramArguments = [ "${homeDir}/.local/bin/check-updates.sh" ];
+        StartCalendarInterval = [
+          {
+            Hour = 9;
+            Minute = 0;
+          }
+        ];
+        StandardOutPath = "${homeDir}/.local/log/check-updates.log";
+        StandardErrorPath = "${homeDir}/.local/log/check-updates.error.log";
+        RunAtLoad = false;
+        EnvironmentVariables = {
+          PATH = "/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/homebrew/bin:/opt/homebrew/sbin";
+        };
+      };
     };
   };
 }

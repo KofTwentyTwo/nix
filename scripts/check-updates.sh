@@ -83,11 +83,17 @@ check_nix_updates() {
         return 0  # No lock file
     fi
     
+    # Resolve the tracking remote and branch dynamically
+    local upstream
+    upstream=$(git rev-parse --abbrev-ref @{u} 2>/dev/null || echo "origin/main")
+    local remote="${upstream%%/*}"
+    local branch="${upstream#*/}"
+    
     # Fetch latest from remote (quietly)
-    git fetch origin main >/dev/null 2>&1 || true
+    git fetch "$remote" "$branch" >/dev/null 2>&1 || true
     
     # Check if remote has changes to flake.lock (indicates upstream updates)
-    if ! git diff --quiet HEAD origin/main -- flake.lock 2>/dev/null; then
+    if ! git diff --quiet HEAD "$upstream" -- flake.lock 2>/dev/null; then
         UPDATES_FOUND=true
         UPDATE_MESSAGES+=("nix: flake inputs have updates available")
     else
