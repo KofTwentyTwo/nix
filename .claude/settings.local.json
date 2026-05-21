@@ -181,7 +181,20 @@
       "Bash(OP_ACCOUNT=my.1password.com op item get GEMINI_API_KEY --vault NixEnvironmentVariables --fields label,type)",
       "Bash(OP_ACCOUNT=my.1password.com op item get GEMINI_API_KEY --vault NixEnvironmentVariables --format json)",
       "Bash(OP_ACCOUNT=my.1password.com op read op://NixEnvironmentVariables/GEMINI_API_KEY/credential)",
-      "Bash(export OP_ACCOUNT=my.1password.com)"
+      "Bash(export OP_ACCOUNT=my.1password.com)",
+      "Bash(/bin/ls *)",
+      "Bash(/usr/bin/grep -lE 'pullPiModels' /nix/store/45j9rc4kwpq02diwhxwd06037bycns8v-darwin-system-26.05.06648f4/activate-user)",
+      "Bash(nix-store --query --requisites /nix/store/45j9rc4kwpq02diwhxwd06037bycns8v-darwin-system-26.05.06648f4)",
+      "WebFetch(domain:developers.googleblog.com)",
+      "WebFetch(domain:antigravity.google)",
+      "WebFetch(domain:deepwiki.com)",
+      "WebFetch(domain:agentpedia.codes)",
+      "WebFetch(domain:docs.claude.com)",
+      "Bash(nix-store --query --requisites /nix/store/p4qi4p8pvgs6hivgys8xk5krv8w51igf-darwin-system-26.05.06648f4)",
+      "Bash(command -v agy)",
+      "Bash(curl -fsSL https://antigravity.google/cli/install.sh)",
+      "Bash(bash)",
+      "Bash(~/.local/bin/agy --version)"
     ]
   }
 }

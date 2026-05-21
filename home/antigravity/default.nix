@@ -32,6 +32,42 @@ let
   brewBin = "/opt/homebrew/bin";
   agyBin = "${homeDir}/.local/bin/agy";
   installerUrl = "https://antigravity.google/cli/install.sh";
+
+  # Declarative configuration for the Antigravity CLI
+  antigravitySettings = {
+    allowNonWorkspaceAccess = true;
+    colorScheme = "colorblind-friendly dark";
+    enableTelemetry = false;
+    permissions = {
+      allow = [
+        "command(agy)"
+        "command(cat)"
+        "command(darwin-rebuild)"
+        "command(env)"
+        "command(git add)"
+        "command(git commit)"
+        "command(git diff)"
+        "command(git status)"
+        "command(head)"
+        "command(id)"
+        "command(jq)"
+        "command(launchctl print)"
+        "command(ls)"
+        "command(mv)"
+        "command(open)"
+        "command(pwd)"
+        "command(~/.local/bin/check-updates.sh)"
+        "command(~/.local/bin/git-pane-info.sh)"
+        "read_file(${homeDir}/.ai)"
+        "read_file(${homeDir}/.gemini/GEMINI.md)"
+      ];
+    };
+    trustedWorkspaces = [
+      "${homeDir}/.config/nix"
+    ];
+  };
+
+  antigravitySettingsJson = pkgs.writeText "antigravity-settings.json" (builtins.toJSON antigravitySettings);
 in
 {
   # Manual updater. Forces a clean reinstall of the latest published binary.
@@ -95,5 +131,30 @@ in
           || echo "antigravity: WARN install failed (offline?); rerun darwin-rebuild switch when network is available" >&2
       fi
     )
+  '';
+
+  # ~/.gemini/antigravity-cli/settings.json - merge settings, preserve other allowed commands
+  home.activation.syncAntigravitySettings = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    agy_json="${homeDir}/.gemini/antigravity-cli/settings.json"
+    mkdir -p "${homeDir}/.gemini/antigravity-cli"
+
+    if [ ! -f "$agy_json" ] || [ ! -s "$agy_json" ]; then
+      ${pkgs.jq}/bin/jq -n --slurpfile settings "${antigravitySettingsJson}" '$settings[0]' > "$agy_json"
+      chmod 600 "$agy_json"
+    else
+      if ${pkgs.jq}/bin/jq --slurpfile settings "${antigravitySettingsJson}" '
+        .allowNonWorkspaceAccess = $settings[0].allowNonWorkspaceAccess
+        | .colorScheme = $settings[0].colorScheme
+        | .enableTelemetry = $settings[0].enableTelemetry
+        | .permissions.allow = ((.permissions.allow // []) + $settings[0].permissions.allow | unique)
+        | .trustedWorkspaces = ((.trustedWorkspaces // []) + $settings[0].trustedWorkspaces | unique)
+      ' "$agy_json" > "$agy_json.tmp" \
+        && [ -s "$agy_json.tmp" ]; then
+        mv "$agy_json.tmp" "$agy_json"
+        chmod 600 "$agy_json"
+      else
+        rm -f "$agy_json.tmp"
+      fi
+    fi
   '';
 }
