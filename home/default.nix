@@ -27,6 +27,7 @@ in
   imports = [
     ./1password
     ./ai
+    ./antigravity
     ./aws
     ./ca-certs
     ./claude

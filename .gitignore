@@ -4,6 +4,9 @@
 # Claude Code (keep settings.local.json out -- machine-specific permissions)
 .claude/settings.local.json
 
+# Antigravity CLI -- agy drops per-workspace project config wherever it's run
+.antigravitycli/
+
 # Cross-session learnings inbox -- raw queue files are local-only;
 # durable content lands in home/ai/* via the ingestion rule
 learnings_to_process/*.md
