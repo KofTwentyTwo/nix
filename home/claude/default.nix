@@ -561,9 +561,14 @@ let
       "Bash(touch:*)"
       "Bash(rm:*)"
 
-      # Web access (read-only)
+      # Web access (read-only) — universal allow, no prompts for any site.
+      # Per docs (code.claude.com/docs/en/settings), the bare tool name matches
+      # all invocations; the domain-wildcard form is added explicitly as a
+      # belt-and-suspenders in case a future Claude Code version evaluates
+      # rules more strictly.
       "WebSearch"
       "WebFetch"
+      "WebFetch(domain:*)"
     ];
   };
 
