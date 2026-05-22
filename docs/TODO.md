@@ -4,12 +4,10 @@ Active tasks and future improvements for the Nix configuration.
 
 ## Active Tasks
 
-- [ ] (optional) Narrow `github-sandbox-pat` scope from "RW everything" to `Contents:RW + Metadata:R` and re-encrypt
 - [ ] On Darth: verify `age-keygen -y ~/.config/sops/age/keys.txt` matches the `&darth` pubkey in `.sops.yaml`; pull + rebuild; `sops updatekeys secrets/github-sandbox-pat.enc` for both PATs if recipient set changes
 - [ ] On Renova: generate age key, share pubkey, add `&renova` to `.sops.yaml`, `sops updatekeys secrets/github-security-pat.enc secrets/github-sandbox-pat.enc`, pull + rebuild
 - [ ] On Darth (after Renova pubkey added): `sops updatekeys secrets/aws-credentials.enc` and uncomment the `secrets."aws-credentials"` block in `home/sops/default.nix`
-- [ ] Commit the 25 staged changes from 2026-04-27 Claude Code cleanup session and push to origin
-- [ ] After push, sync Darth / Renova: `git pull && sudo darwin-rebuild switch --flake ~/.config/nix#$(hostname)`
+- [ ] Commit the staged bugs/drifts and HTML Summary patches to origin (2026-05-20)
 - [ ] From inside `~/Git.Local/QRun-IO/qqq/`: review the bootstrapped `CLAUDE.md` and commit it to QQQ's main branch so it travels with the codebase
 - [ ] (optional) Decide whether to put `claude-hud@claude-hud` and the `jarrodwatts/claude-hud` marketplace into Nix so claude-hud activates on every machine
 - [ ] (as projects come into rotation) Add additional Greater Goods Jira projects beyond `MH` to `home/ai/4-preferences.yaml`
@@ -20,12 +18,15 @@ Active tasks and future improvements for the Nix configuration.
 - [ ] (opt) Investigate `~/Git.Local/Kof22/Website-Backend/src/test` — 13 GB of "test source"; likely candidate for git-lfs or .gitignore
 - [ ] (opt) Clean `~/Library/Application Support/Claude` (14 GB of old project sessions + MCP caches)
 - [ ] (opt) Disable Docker Desktop Kubernetes to reclaim ~34% baseline VM CPU (control-plane idle cost)
+- [ ] (Linux Portability) Add stand-alone `homeConfigurations` target inside `flake.nix` to support Linux builds alongside macOS Darwin.
 
 ## Recently Completed
 
 - [x] Resolved tmux pane border redraw latency by querying Git repo and branch asynchronously via `git-pane-info.sh` (2026-05-21)
 - [x] Resolved Nix-Darwin vs Home Manager LaunchAgent activation race condition by defining native Home Manager `launchd.agents.check-updates` (2026-05-21)
 - [x] Fixed Neovim `mason.nvim` plug-in repository typo and hardened `check-updates.sh` branch tracking using dynamic upstream resolution (2026-05-21)
+- [x] Executed Deep QA Search and patched active defects: resolved Grogu configuration drift, robustified devShell git-crypt auto-unlock hooks, standardized session paths, and generalized hardcoded user directories in Claude's permissions (2026-05-20)
+- [x] Authored comprehensive dark-mode Executive Assessment HTML summary (`nix_assessment_summary.html`) showcasing platform metrics, security postures, and Linux portability guides (2026-05-20)
 - [x] Bootstrapped `GG-Sandboxes/james.maes` (created `main`, flipped default branch from `develop`, enabled Pages from `main /`, wrote a personal sandbox landing page with two clickable dashboard cards); both Security Alerts and AI Updates dashboards now refreshing on schedule (2026-05-20)
 - [x] Second sops-managed PAT (`github-sandbox-pat`, fine-grained RW on `GG-Sandboxes/james.maes`) deployed to two Cowork project folders at `.github-deploy-pat`; refactored `home/sops/default.nix` to introduce a `mkPatDeployer` helper and migrated the existing security PAT onto it (2026-05-20)
 - [x] sops-managed GitHub security PAT; pivoted from sops-nix symlink to `home.activation` script for Cowork-sandbox compatibility; registered Dark-Horse + Grogu age recipients (2026-05-19)

@@ -48,33 +48,10 @@ All outstanding architectural issues in the Nix-Darwin and Home Manager configur
 ## Active Branches
 | Branch | Status |
 |--------|--------|
-| `main` | Clean. Pushed through `e4e324d`. Session commits: `956ae38` (sops + mkPatDeployer), `669db69` (settings), `e4e324d` (settings). Parallel Pi-setup commits also landed: `c99622c`, `44708c8`, `81f9bfb`, `956f423`, `e1752b1`, `19d4824`. |
+| `main` | Staged with active patches (Grogu config, git-crypt dev shell hook, path cleanups, generalized Claude permissions, and tmux server fixes). |
 
 ## Pending Work
-- [ ] (optional) Narrow `github-sandbox-pat` scope from "RW everything" → `Contents:RW + Metadata:R`, re-encrypt, push, rebuild.
-- [ ] On Darth: verify `age-keygen -y ~/.config/sops/age/keys.txt` matches the `&darth` pubkey; `git pull && sudo darwin-rebuild switch`. Will pick up both PATs automatically.
-- [ ] On Renova: generate age key, add `&renova` to `.sops.yaml`, `sops updatekeys secrets/github-security-pat.enc secrets/github-sandbox-pat.enc`, push, rebuild.
-- [ ] On Darth (after Renova): `sops updatekeys secrets/aws-credentials.enc` and uncomment the `secrets."aws-credentials"` block.
-- [ ] Carryover: review bootstrapped `CLAUDE.md` inside `~/Git.Local/QRun-IO/qqq/` and commit it to QQQ's main.
-- [ ] Carryover: (as projects rotate in) add additional Greater Goods Jira projects to `home/ai/4-preferences.yaml`.
-- [ ] Carryover: (deferred) HIPAA / BAA / PHI policy layer.
-- [ ] Carryover: optional disk follow-ups from 2026-05-13 (Website-Backend/src/test 13 GB, `~/Library/Application Support/Claude` 14 GB, Docker K8s ~34% baseline CPU).
-
-## Key Reference
-
-**`github-security-pat`** (classic PAT, org-wide security reads)
-- Enc: `secrets/github-security-pat.enc` · Deploy: `~/Documents/Claude/Projects/Security Alerts/.github-pat` (mode 0600)
-- Deployer: `home.activation.deployGithubSecurityPat` (via `mkPatDeployer`)
-
-**`github-sandbox-pat`** (fine-grained PAT, RW everything on `GG-Sandboxes/james.maes`)
-- Enc: `secrets/github-sandbox-pat.enc` · Deploy: `Security Alerts/.github-deploy-pat`, `ClaudeCode Setup/.github-deploy-pat` (both mode 0600)
-- Deployer: `home.activation.deployGithubSandboxPat` (via `mkPatDeployer`)
-
-**Pages site**
-- URL: `https://improved-adventure-l4pmw97.pages.github.io/` (org-internal, auth-gated)
-- Source: `main /`; landing page at repo root; dashboards under `dashboards/<name>/`. Dashboard agent commits only under `dashboards/*/` — root `index.html` and `README.md` are safe.
-
-**Common**
-- Age recipients (`.sops.yaml`): Dark-Horse + Grogu + Darth (Darth pubkey unconfirmed).
-- Rotation: `sops -e --filename-override secrets/<name>.enc --input-type binary --output-type binary <plaintext> > secrets/<name>.enc`, commit, push, rebuild each host.
-- Add a destination to an existing PAT: append to the `destinations = [ ... ]` list in `home/sops/default.nix`; missing folders are silently skipped.
+- [ ] On Darth: verify `age-keygen -y ~/.config/sops/age/keys.txt` matches the `&darth` pubkey; pull + rebuild to pick up new generalized variables.
+- [ ] On Renova: generate age key, add `&renova` to `.sops.yaml`, run `sops updatekeys` across secrets, and rebuild.
+- [ ] Review and commit current staged changes into a feature branch (or push to main if permitted by local override).
+- [ ] (Long-term) Migrate shared CLI tools from `modules/homebrew.nix` into standalone Home Manager package sets to enable 1-click Linux bootstrap.

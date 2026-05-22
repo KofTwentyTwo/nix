@@ -372,10 +372,10 @@ let
       # workflow (terragrunt apply against vended workload accounts).
       # The first rule reads the cached SSO bearer; the second exchanges it
       # for short-lived role credentials.
-      "Bash(jq -r .accessToken /Users/james.maes/.aws/sso/cache/*.json)"
+      "Bash(jq -r .accessToken ${homeDir}/.aws/sso/cache/*.json)"
       "Bash(aws sso get-role-credentials:*)"
       "Bash(aws sso list-account-roles:*)"
-      "Bash(/Users/james.maes/bin/get-gg-prod-bg-creds.sh)"
+      "Bash(${homeDir}/bin/get-gg-prod-bg-creds.sh)"
 
       # AWS CLI — read-only / inspection verbs across services used in DMD infra.
       "Bash(aws sts:*)"

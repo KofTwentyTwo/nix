@@ -80,8 +80,11 @@
       #
       # Format: csi-u (universal CSI u encoding) over the default xterm-style
       # modifyOtherKeys — pi requires csi-u; WezTerm supports both.
-      set -g extended-keys on
-      set -g extended-keys-format csi-u
+      #
+      # NOTE: scope is `-s` (server), not `-g`. In tmux 3.6 these live in the
+      # server-options namespace; `set -g` silently no-ops and the warning stays.
+      set -s extended-keys on
+      set -s extended-keys-format csi-u
 
       # Terminal capabilities - true color (24-bit) support
       set -g default-terminal "tmux-256color"

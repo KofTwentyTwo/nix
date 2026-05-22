@@ -92,11 +92,11 @@ in
          "/opt/homebrew/opt/postgresql@17/bin"        # PostgreSQL 17 tools (keg-only)
          "/opt/homebrew/opt/node@22/bin"             # Node.js 22 as default
          "/opt/homebrew/sbin"                         # Homebrew sbin (mtr, etc.)
-         "/opt/homebrew/bin/"                        # Homebrew (Apple Silicon)
+         "/opt/homebrew/bin"                         # Homebrew (Apple Silicon)
          "${homeDir}/.local/bin"                     # User local binaries
          "/opt/homebrew/opt/llvm/bin"                # LLVM from Homebrew
          "$JAVA_HOME/bin"                            # Java (if JAVA_HOME is set)
-         "${qqqDevTools}/bin/"                       # QQQ dev tools (from userConfig in flake.nix)
+         "${qqqDevTools}/bin"                        # QQQ dev tools (from userConfig in flake.nix)
       ];
 
 

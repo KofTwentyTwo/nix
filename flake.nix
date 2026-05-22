@@ -388,9 +388,12 @@
       in pkgs.mkShell {
         buildInputs = [ pkgs.git-crypt pkgs.gnupg ];
         shellHook = ''
-          if [ -d .git ] && [ ! -d .git/git-crypt ]; then
-            echo "git-crypt not unlocked. Unlocking..."
-            git-crypt unlock && echo "git-crypt unlocked successfully."
+          if [ -d .git ] && command -v git-crypt >/dev/null 2>&1; then
+            # If git-crypt is initialized but files are still encrypted (locked)
+            if git-crypt status -e 2>/dev/null | grep -q "encrypted"; then
+              echo "git-crypt detected locked encrypted files. Unlocking..."
+              git-crypt unlock && echo "git-crypt unlocked successfully."
+            fi
           fi
         '';
       };
@@ -422,7 +425,8 @@
          specialArgs = { machineConfig = machineConfigs."Grogu"; inherit userConfig; };
          modules = [
             configuration
-            { networking.hostName = "Grogu"; }
+            # Grogu uses Determinate Nix — disable nix-darwin's daemon management
+            { nix.enable = false; networking.hostName = "Grogu"; }
                home-manager.darwinModules.home-manager  {
                   home-manager.useGlobalPkgs = true;
                   home-manager.useUserPackages = true;
