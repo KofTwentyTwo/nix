@@ -135,5 +135,23 @@ in
         "${homeDir}/Documents/Claude/Projects/ClaudeCode Setup/.github-deploy-pat"
       ];
     };
+
+    # CircleCI personal API token. Decrypted to ~/.config/secrets/circleci-token
+    # (mode 0600) at activation; sourced by zsh initContent into the
+    # CIRCLECI_TOKEN env var for every interactive shell. Rotate at:
+    # https://app.circleci.com/settings/user/tokens, then re-encrypt with
+    # `sops secrets/circleci-token.enc` and rebuild.
+    home.activation.ensureCircleciSecretsDir =
+      lib.hm.dag.entryBefore [ "deployCircleciToken" ] ''
+        mkdir -p "${homeDir}/.config/secrets"
+        chmod 0700 "${homeDir}/.config/secrets"
+      '';
+    home.activation.deployCircleciToken = mkPatDeployer {
+      name = "circleci-token";
+      encFile = ../../secrets/circleci-token.enc;
+      destinations = [
+        "${homeDir}/.config/secrets/circleci-token"
+      ];
+    };
   };
 }

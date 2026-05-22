@@ -122,6 +122,15 @@ in
 
            # Secrets are loaded via op-load-secrets function (see 1password module)
 
+           # Auto-load sops-deployed tokens into env. Files in
+           # ~/.config/secrets/ are decrypted to mode-0600 at activation by
+           # home/sops/default.nix and read here on every interactive shell.
+           # Outside the nix store, so safe for secrets. Missing files are
+           # silent no-ops (hosts without the age key skip deployment).
+           if [[ -r "$HOME/.config/secrets/circleci-token" ]]; then
+             export CIRCLECI_TOKEN="$(< "$HOME/.config/secrets/circleci-token")"
+           fi
+
            # ls wrapper - translates standard ls flags to eza equivalents
            # Handles: -t (sort by time), -S (sort by size), -s (show size), -h (skip, eza default)
            # All other flags pass through directly to eza
