@@ -55,10 +55,17 @@
       "''${TMPDIR:-}/tmux-$uid/default"
     )
 
+    echo "tmux: probing for live server (bin=$tmux_bin uid=$uid TMPDIR=''${TMPDIR:-unset})"
     reloaded=0
     for sock in "''${candidates[@]}"; do
-      [ -S "$sock" ] || continue
-      if "$tmux_bin" -S "$sock" list-sessions >/dev/null 2>&1; then
+      if [ ! -S "$sock" ]; then
+        echo "tmux:   $sock: not a socket"
+        continue
+      fi
+      ls_out=$("$tmux_bin" -S "$sock" list-sessions 2>&1)
+      ls_rc=$?
+      if [ $ls_rc -eq 0 ]; then
+        echo "tmux:   $sock: live (sessions found)"
         if out=$("$tmux_bin" -S "$sock" source-file "$HOME/.config/tmux/tmux.conf" 2>&1); then
           echo "tmux: reloaded config in running server ($sock)"
           reloaded=1
@@ -66,6 +73,8 @@
         else
           echo "tmux: source-file failed against $sock: $out" >&2
         fi
+      else
+        echo "tmux:   $sock: list-sessions failed (rc=$ls_rc): $ls_out"
       fi
     done
 
