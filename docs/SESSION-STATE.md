@@ -4,11 +4,12 @@
 
 ## Current Status
 
-Repo hardening pass is complete and verified. The repo now has a local quality
-gate at `scripts/check-repo.sh`; the full gate passed on 2026-05-26 with repo
-policy checks, ShellCheck, markdownlint, `nix flake check --no-build
---print-build-logs`, and `darwin-rebuild build --flake .
---no-write-lock-file --print-build-logs`.
+Repo hardening pass is complete, verified, committed, and pushed to
+`origin/main` as `5ad1b96 chore(nix): harden repo checks and permissions`. The
+repo now has a local quality gate at `scripts/check-repo.sh`; the full gate
+passed on 2026-05-26 with repo policy checks, ShellCheck, markdownlint,
+`nix flake check --no-build --print-build-logs`, and `darwin-rebuild build
+--flake . --no-write-lock-file --print-build-logs`.
 
 ## What Was Done This Session (2026-05-26)
 
@@ -70,7 +71,7 @@ policy checks, ShellCheck, markdownlint, `nix flake check --no-build
 
 | Branch | Status |
 |--------|--------|
-| `main` | Dirty with the repo hardening patch set; no commit or push performed. |
+| `main` | Clean after pushing `5ad1b96` to `origin/main`. |
 
 ## Pending Work
 
