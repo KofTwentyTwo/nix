@@ -25,24 +25,47 @@
   # to sessions created after the server restarts, which is confusing.
   #
   # We prefer the brew-installed tmux binary (/opt/homebrew/bin/tmux) because
-  # that's what actually runs the user's server. Using pkgs.tmux here fails
-  # silently on macOS: nix tmux resolves TMPDIR differently than brew tmux, so
-  # list-sessions looks at the wrong socket path and returns no sessions even
-  # when one is running. Stderr is captured so failures surface in rebuild
-  # output instead of being swallowed.
+  # that's what actually runs the user's server.
+  #
+  # Socket discovery: tmux derives its server socket as $TMPDIR/tmux-$UID/default
+  # (TMUX_TMPDIR > TMPDIR > /tmp). On macOS, an interactive shell gets a
+  # per-user TMPDIR from launchd (/var/folders/<hash>/T/), but the running
+  # tmux server's socket actually lives under /tmp because of how it was
+  # launched. Worse, nix-darwin invokes this activation through
+  # `launchctl asuser ... sudo -u ... --set-home ...`, and sudo strips TMPDIR
+  # from the env. So a plain `tmux list-sessions` inside this script
+  # resolves to a socket path that doesn't match the live server — the
+  # rebuild then mis-reports "no running server" every time.
+  #
+  # Fix: probe candidate sockets explicitly via `tmux -S <path>` so
+  # discovery doesn't depend on the activation's env.
   home.activation.reloadTmux = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     tmux_bin="/opt/homebrew/bin/tmux"
     if [ ! -x "$tmux_bin" ]; then
       tmux_bin="${pkgs.tmux}/bin/tmux"
     fi
 
-    if "$tmux_bin" list-sessions >/dev/null 2>&1; then
-      if out=$("$tmux_bin" source-file "$HOME/.config/tmux/tmux.conf" 2>&1); then
-        echo "tmux: reloaded config in running server ($tmux_bin)"
-      else
-        echo "tmux: source-file failed: $out" >&2
+    uid="$(/usr/bin/id -u)"
+    candidates=(
+      "/tmp/tmux-$uid/default"
+      "''${TMPDIR%/}/tmux-$uid/default"
+    )
+
+    reloaded=0
+    for sock in "''${candidates[@]}"; do
+      [ -S "$sock" ] || continue
+      if "$tmux_bin" -S "$sock" list-sessions >/dev/null 2>&1; then
+        if out=$("$tmux_bin" -S "$sock" source-file "$HOME/.config/tmux/tmux.conf" 2>&1); then
+          echo "tmux: reloaded config in running server ($sock)"
+          reloaded=1
+          break
+        else
+          echo "tmux: source-file failed against $sock: $out" >&2
+        fi
       fi
-    else
+    done
+
+    if [ $reloaded -eq 0 ]; then
       echo "tmux: no running server, skipping reload"
     fi
   '';
