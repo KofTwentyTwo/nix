@@ -4,6 +4,7 @@ Active tasks and future improvements for the Nix configuration.
 
 ## Active Tasks
 
+- [ ] Verify post-claude-install-drift recovery: open a fresh terminal, run `claude`, re-login (OAuth wiped 2026-05-26), confirm plugins/MCP/permissions load. If `/opt/homebrew/bin/claude` reappears, use `docs/PLAN-claude-install-drift.md` (fs_usage recipe) to ID the migrator's parent process and decide whether to extend `a93b80f`'s eviction.
 - [ ] On Darth: verify `age-keygen -y ~/.config/sops/age/keys.txt` matches the `&darth` pubkey in `.sops.yaml`; pull + rebuild; `sops updatekeys secrets/github-sandbox-pat.enc` for both PATs if recipient set changes
 - [ ] On Renova: generate age key, share pubkey, add `&renova` to `.sops.yaml`, `sops updatekeys secrets/github-security-pat.enc secrets/github-sandbox-pat.enc`, pull + rebuild
 - [ ] On Darth (after Renova pubkey added): `sops updatekeys secrets/aws-credentials.enc` and uncomment the `secrets."aws-credentials"` block in `home/sops/default.nix`
@@ -22,6 +23,7 @@ Active tasks and future improvements for the Nix configuration.
 
 ## Recently Completed
 
+- [x] Claude install-channel drift triaged: restored `a93b80f` eviction (had been removed mid-session under wrong interpretation), reinstalled native `~/.local/bin/claude`, applied via `darwin-rebuild switch`, captured diagnosis + recovery in `docs/PLAN-claude-install-drift.md`, committed both as `1016007` (2026-05-26)
 - [x] Repo hardening pass: fixed review findings, added `scripts/check-repo.sh`, promoted pending learnings, removed tracked `result`, and verified with the full repo gate (2026-05-26)
 - [x] Resolved tmux pane border redraw latency by querying Git repo and branch asynchronously via `git-pane-info.sh` (2026-05-21)
 - [x] Resolved Nix-Darwin vs Home Manager LaunchAgent activation race condition by defining native Home Manager `launchd.agents.check-updates` (2026-05-21)

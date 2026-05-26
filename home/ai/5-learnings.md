@@ -425,6 +425,12 @@ Claude Code may auto-add narrow-looking interpreter patterns that are effectivel
 ### Serena dashboard auto-open is runtime config
 Serena's dashboard auto-open knob is `web_dashboard_open_on_launch` in `~/.serena/serena_config.yml`. Setting it to `false` suppresses browser spam while leaving the dashboard server and MCP tools available. Serena creates runtime config outside Nix, so use an idempotent activation patch rather than a read-only symlink.
 
+### `claude.ai/install.sh` works interactively but can fail silently in activation (verified 2026-05-26)
+`curl -fsSL https://claude.ai/install.sh | bash` succeeds cleanly in a normal user shell, but the same invocation from inside a home-manager activation script can exit non-zero with no useful stderr — `bootstrapClaude` logs "[claude] WARN install failed (offline?); continuing" even when fully online. The activation eviction then leaves the system with no claude binary at all. Workaround: run the installer manually as the user *before* `darwin-rebuild switch`, so `bootstrapClaude` sees `~/.local/bin/claude` already exists and skips the install step. Root cause of the activation-context failure not yet identified.
+
+### Claude self-heals into the npm channel when `~/.claude.json` is unreadable
+If `~/.claude.json` ends up mode-600 root-owned (any sudo-side write into `$HOME` can do this), claude's auto-updater treats the file as missing, falls back to `installMethod: "global"`, and silently runs `npm install @anthropic-ai/claude-code` to "restore" itself. With cached sudo credentials on the box, that install can land root-owned in `/opt/homebrew/lib/node_modules/@anthropic-ai/` and create a root-owned `/opt/homebrew/bin/claude` symlink — perpetuating the loop. Commit `a93b80f` evicts the `~/.npm-global/bin/claude` reincarnation but does not currently target `/opt/homebrew`; manual cleanup + reinstall is required to break out, then native install ownership keeps the loop closed.
+
 ## GitHub Automation (verified 2026-05-20)
 
 ### Internal GitHub Pages sites use obscured hostnames

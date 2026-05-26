@@ -1,17 +1,21 @@
 # Session State
 
-**Last Updated:** 2026-05-26
+**Last Updated:** 2026-05-26 (evening)
 
 ## Current Status
 
-Repo hardening pass is complete, verified, committed, and pushed to
-`origin/main` as `5ad1b96 chore(nix): harden repo checks and permissions`. The
-repo now has a local quality gate at `scripts/check-repo.sh`; the full gate
-passed on 2026-05-26 with repo policy checks, ShellCheck, markdownlint,
-`nix flake check --no-build --print-build-logs`, and `darwin-rebuild build
---flake . --no-write-lock-file --print-build-logs`.
+`main` clean at `1016007 docs(claude): capture install-drift diagnosis + session permissions`, pushed to `origin/main`. Claude install-channel drift triaged: native install restored at `~/.local/bin/claude`, `/opt/homebrew/bin/claude` migrator path evicted, `~/.claude.json` user-owned with `mcpServers` populated. Open: re-login required on next claude launch (OAuth wiped during the loop). See `docs/PLAN-claude-install-drift.md` for the full diagnosis + post-reboot recovery steps if the migrator returns.
 
-## What Was Done This Session (2026-05-26)
+## What Was Done This Session (2026-05-26 evening — claude install drift)
+
+- Diagnosed why `claude` kept hitting the first-launch setup wizard on every start: Claude's own auto-updater, finding `installMethod: "global"` in a clobbered `~/.claude.json`, kept reinstalling itself via npm into `/opt/homebrew/lib/node_modules/@anthropic-ai/` (root-owned because sudo credentials were cached during the session). Same loop documented in commit `a93b80f`.
+- Restored the committed `a93b80f` `bootstrapClaude` eviction (had been removed earlier in the session under a wrong interpretation of "no cleanup in script"). The eviction's npm-channel target is correct policy; `/opt/homebrew` cleanup stays manual.
+- Manually ran `bash claude.ai/install.sh` outside the activation context (where it actually succeeds — the activation-wrapped install fails silently in some cases), then `sudo darwin-rebuild switch` to apply `a93b80f`. After: `which claude` → `~/.local/bin/claude`, user-owned, `mcpServers` populated.
+- Wrote `docs/PLAN-claude-install-drift.md` with diagnosis, manual recovery sequence, and an `fs_usage` recipe to catch the migrator's parent process if it returns.
+- Recorded the incident as project memory (`project_claude_install_drift_2026_05_26`).
+- Committed accumulated debug permissions in `.claude/settings.local.json` (sudo chown patterns, `rm -f` of stray claude paths, `fs_usage` invocations, etc.) — useful for future sessions debugging the same pattern.
+
+## What Was Done This Session (2026-05-26 — earlier work)
 
 - Fixed `mkPatDeployer` so a missing age key skips only PAT deployment instead
   of aborting later Home Manager activations.
@@ -71,11 +75,12 @@ passed on 2026-05-26 with repo policy checks, ShellCheck, markdownlint,
 
 | Branch | Status |
 |--------|--------|
-| `main` | Clean after pushing `5ad1b96` to `origin/main`. |
+| `main` | Clean after pushing `1016007` to `origin/main`. |
 
 ## Pending Work
 
+- [ ] **Open a fresh terminal, run `claude`** — expect the OAuth login flow (tokens were wiped during the install-drift loop). Verify plugins/MCP/permissions load from `~/.claude/settings.json` (untouched).
+- [ ] If `/opt/homebrew/bin/claude` reappears: use the `fs_usage` instrumentation in `docs/PLAN-claude-install-drift.md` to ID the migrator's parent process. Consider extending `a93b80f`'s eviction to cover `/opt/homebrew/bin/claude` + `/opt/homebrew/lib/node_modules/@anthropic-ai` if it recurs.
 - [ ] On Darth: verify `age-keygen -y ~/.config/sops/age/keys.txt` matches the `&darth` pubkey; pull + rebuild to pick up new generalized variables.
 - [ ] On Renova: generate age key, add `&renova` to `.sops.yaml`, run `sops updatekeys` across secrets, and rebuild.
-- [ ] Review and commit current staged changes into a feature branch (or push to main if permitted by local override).
 - [ ] (Long-term) Migrate shared CLI tools from `modules/homebrew.nix` into standalone Home Manager package sets to enable 1-click Linux bootstrap.
