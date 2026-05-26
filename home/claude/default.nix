@@ -841,17 +841,43 @@ in
   # back on the deprecated npm channel, which is exactly the situation the
   # header note warns about. If we find one, evict it and force a native
   # reinstall so the install channel stays consistent across machines.
+  #
+  # Brew-prefix npm fallback: if ~/.claude.json ever ends up root-owned
+  # (sudo-side write into $HOME), claude's auto-updater reads stale
+  # installMethod, falls back to npm, and `npm install -g` lands in brew's
+  # node prefix (/opt/homebrew/lib/node_modules/@anthropic-ai/claude-code)
+  # with a /opt/homebrew/bin/claude symlink that wins on PATH because
+  # /opt/homebrew/bin sits before ~/.local/bin. We evict that too. The brew
+  # `claude` cask at /opt/homebrew/Caskroom/claude/ (the desktop app) is
+  # deliberately left alone — different artifact, different path.
   # NB: never use bare `exit 0` to skip — see bootstrapQqqClaudeMd note above.
   home.activation.bootstrapClaude = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     hm_user="$(/usr/bin/stat -f %Su "${homeDir}")"
     native_claude="${homeDir}/.local/bin/claude"
     npm_claude="${homeDir}/.npm-global/bin/claude"
     npm_pkg_dir="${homeDir}/.npm-global/lib/node_modules/@anthropic-ai"
+    brew_claude_bin="/opt/homebrew/bin/claude"
+    brew_claude_pkg="/opt/homebrew/lib/node_modules/@anthropic-ai"
 
     if [ -e "$npm_claude" ] || [ -d "$npm_pkg_dir" ]; then
       echo "[claude] npm-channel claude detected at $npm_claude; evicting (we use the native installer)" >&2
       /bin/rm -f "$npm_claude" 2>/dev/null || true
       /bin/rm -rf "$npm_pkg_dir" 2>/dev/null || true
+    fi
+
+    # Only evict /opt/homebrew/bin/claude when it's the npm-self-heal
+    # symlink (→ @anthropic-ai/claude-code). The brew `claude` cask
+    # installs Claude.app under /opt/homebrew/Caskroom/, not under
+    # /opt/homebrew/bin — so a real path through ../lib/node_modules
+    # uniquely identifies the npm reincarnation we want gone.
+    if [ -L "$brew_claude_bin" ] && \
+       /usr/bin/readlink "$brew_claude_bin" 2>/dev/null | /usr/bin/grep -q '@anthropic-ai/claude-code'; then
+      echo "[claude] brew-prefix npm claude-code detected at $brew_claude_bin; evicting" >&2
+      # /opt/homebrew is user-owned but the npm-installed @anthropic-ai/
+      # tree can be root-owned when claude's self-update fired with cached
+      # sudo. Try unprivileged first; fall back to sudo if root-owned.
+      /bin/rm -f "$brew_claude_bin" 2>/dev/null || /usr/bin/sudo -n /bin/rm -f "$brew_claude_bin" 2>/dev/null || true
+      /bin/rm -rf "$brew_claude_pkg" 2>/dev/null || /usr/bin/sudo -n /bin/rm -rf "$brew_claude_pkg" 2>/dev/null || true
     fi
 
     if [ -x "$native_claude" ]; then
