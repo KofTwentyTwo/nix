@@ -687,8 +687,13 @@ in
 
   # ~/.claude.json - merge mcpServers, preserve user data
   # IMPORTANT: This script is defensive - it won't overwrite if jq fails
-  home.activation.syncClaudeJson = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+  # Runs AFTER installClaudePluginMarketplaces so any ~/.claude.json the
+  # `claude plugin marketplace add` invocation lazily created gets our managed
+  # mcpServers re-merged in. Otherwise the marketplace call would either
+  # create the file root-owned with no mcpServers, or wipe an existing one.
+  home.activation.syncClaudeJson = lib.hm.dag.entryAfter [ "writeBoundary" "installClaudePluginMarketplaces" ] ''
     claude_json="${homeDir}/.claude.json"
+    hm_user="$(/usr/bin/stat -f %Su "${homeDir}")"
 
     if [ ! -f "$claude_json" ]; then
       ${pkgs.jq}/bin/jq -n --slurpfile mcp "${mcpServersJson}" \
@@ -705,11 +710,16 @@ in
         rm -f "$claude_json.tmp"
       fi
     fi
+    # Activation runs as root under `sudo darwin-rebuild switch`; any file we
+    # mv/create here lands root-owned and breaks Claude's own writes. Restore
+    # user ownership unconditionally.
+    /usr/sbin/chown "$hm_user" "$claude_json" 2>/dev/null || true
   '';
 
   # ~/.claude/settings.local.json - merge permissions, preserve user data
   home.activation.syncClaudeSettings = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     settings_json="${homeDir}/.claude/settings.local.json"
+    hm_user="$(/usr/bin/stat -f %Su "${homeDir}")"
     mkdir -p "${homeDir}/.claude"
 
     if [ ! -f "$settings_json" ] || [ ! -s "$settings_json" ]; then
@@ -724,11 +734,17 @@ in
         rm -f "$settings_json.tmp"
       fi
     fi
+    # See syncClaudeJson for the ownership-restoration rationale.
+    /usr/sbin/chown "$hm_user" "$settings_json" 2>/dev/null || true
   '';
 
   # ~/.claude/settings.json - user preferences (theme, etc.)
-  home.activation.syncClaudeUserSettings = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+  # Same ordering rationale as syncClaudeJson: must run after the marketplace
+  # registration so we re-merge our managed prefs on top of anything Claude's
+  # CLI wrote during the marketplace add.
+  home.activation.syncClaudeUserSettings = lib.hm.dag.entryAfter [ "writeBoundary" "installClaudePluginMarketplaces" ] ''
     user_settings="${homeDir}/.claude/settings.json"
+    hm_user="$(/usr/bin/stat -f %Su "${homeDir}")"
     mkdir -p "${homeDir}/.claude"
 
     if [ ! -f "$user_settings" ] || [ ! -s "$user_settings" ]; then
@@ -747,6 +763,8 @@ in
         rm -f "$user_settings.tmp"
       fi
     fi
+    # See syncClaudeJson for the ownership-restoration rationale.
+    /usr/sbin/chown "$hm_user" "$user_settings" 2>/dev/null || true
   '';
 
   # QQQ project-level CLAUDE.md bootstrap — drop the extracted QQQ rules
@@ -817,15 +835,41 @@ in
   #
   # Idempotent on existence: if ~/.local/bin/claude is already executable,
   # we skip and let claude self-update.
+  #
+  # NPM-channel detection: Claude's auto-migrator (or a user reset) can
+  # leave an npm-installed claude at ~/.npm-global/bin/claude. That puts us
+  # back on the deprecated npm channel, which is exactly the situation the
+  # header note warns about. If we find one, evict it and force a native
+  # reinstall so the install channel stays consistent across machines.
   # NB: never use bare `exit 0` to skip — see bootstrapQqqClaudeMd note above.
   home.activation.bootstrapClaude = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    if [ -x "${homeDir}/.local/bin/claude" ]; then
-      echo "[claude] already installed at ${homeDir}/.local/bin/claude (self-updates)"
+    hm_user="$(/usr/bin/stat -f %Su "${homeDir}")"
+    native_claude="${homeDir}/.local/bin/claude"
+    npm_claude="${homeDir}/.npm-global/bin/claude"
+    npm_pkg_dir="${homeDir}/.npm-global/lib/node_modules/@anthropic-ai"
+
+    if [ -e "$npm_claude" ] || [ -d "$npm_pkg_dir" ]; then
+      echo "[claude] npm-channel claude detected at $npm_claude; evicting (we use the native installer)" >&2
+      /bin/rm -f "$npm_claude" 2>/dev/null || true
+      /bin/rm -rf "$npm_pkg_dir" 2>/dev/null || true
+    fi
+
+    if [ -x "$native_claude" ]; then
+      echo "[claude] already installed at $native_claude (self-updates)"
     else
       echo "[claude] not installed; running native installer (curl claude.ai/install.sh)"
       if [ -x /usr/bin/curl ]; then
-        /usr/bin/curl -fsSL https://claude.ai/install.sh | /bin/bash \
-          || echo "[claude] WARN install failed (offline?); continuing" >&2
+        # Run the installer as the home-dir owner so files land user-owned.
+        # When darwin-rebuild runs under sudo this matters; outside sudo the
+        # `sudo -u` is a no-op for the current user (no password prompt).
+        if [ "$(id -u)" = "0" ] && [ "$hm_user" != "root" ]; then
+          /usr/bin/sudo -u "$hm_user" -H /bin/bash -c \
+            '/usr/bin/curl -fsSL https://claude.ai/install.sh | /bin/bash' \
+            || echo "[claude] WARN install failed (offline?); continuing" >&2
+        else
+          /usr/bin/curl -fsSL https://claude.ai/install.sh | /bin/bash \
+            || echo "[claude] WARN install failed (offline?); continuing" >&2
+        fi
       else
         echo "[claude] WARN /usr/bin/curl not available; skipping" >&2
       fi
@@ -837,31 +881,39 @@ in
   # on a fresh machine because the marketplace isn't registered yet.
   # Idempotent: `claude plugin marketplace add` is a no-op when already added.
   # Non-fatal: skips silently if claude isn't on PATH yet (cold-start case).
+  #
+  # CRITICAL: invokes the `claude` CLI, which writes to ~/.claude.json and
+  # ~/.claude/. When darwin-rebuild runs under `sudo`, those writes land
+  # root-owned and break every subsequent user-side Claude write. We drop to
+  # the home-dir owner before invoking claude.
   # NB: never use bare `exit 0` to skip — see bootstrapQqqClaudeMd note above.
   home.activation.installClaudePluginMarketplaces = lib.hm.dag.entryAfter [ "bootstrapClaude" ] ''
-    export PATH="${homeDir}/.local/bin:${homeDir}/.npm-global/bin:/opt/homebrew/opt/node@22/bin:$PATH"
+    hm_user="$(/usr/bin/stat -f %Su "${homeDir}")"
+    runUser() {
+      if [ "$(id -u)" = "0" ] && [ "$hm_user" != "root" ]; then
+        /usr/bin/sudo -u "$hm_user" -H /bin/bash -c "$1"
+      else
+        /bin/bash -c "$1"
+      fi
+    }
 
-    if ! command -v claude >/dev/null 2>&1; then
+    if ! runUser 'export PATH="'"${homeDir}"'/.local/bin:'"${homeDir}"'/.npm-global/bin:/opt/homebrew/opt/node@22/bin:$PATH"; command -v claude >/dev/null 2>&1'; then
       echo "[claude-marketplaces] claude CLI not on PATH yet; skipping (will register on next rebuild)" >&2
     else
-      # Marketplaces we want present on every machine. Add new ones here.
-      # Format: "<short-name>:<github-source>"
+      # Marketplaces we want present on every machine.
       marketplaces=(
         "claude-plugins-official:anthropics/claude-plugins-official"
       )
-
-      current="$(claude plugin marketplace list 2>/dev/null || true)"
       for entry in "''${marketplaces[@]}"; do
         name="''${entry%%:*}"
         source="''${entry#*:}"
-        if echo "$current" | grep -q "❯ $name$\|❯ $name "; then
-          # Already registered — stay silent so steady-state rebuilds aren't noisy.
-          :
-        else
-          echo "[claude-marketplaces] Adding $name ($source)..."
-          claude plugin marketplace add "$source" 2>&1 || \
-            echo "[claude-marketplaces] WARN: add of $name failed; continuing" >&2
-        fi
+        runUser 'export PATH="'"${homeDir}"'/.local/bin:'"${homeDir}"'/.npm-global/bin:/opt/homebrew/opt/node@22/bin:$PATH"; \
+          current="$(claude plugin marketplace list 2>/dev/null || true)"; \
+          if echo "$current" | /usr/bin/grep -q "❯ '"$name"'$\|❯ '"$name"' "; then :; else \
+            echo "[claude-marketplaces] Adding '"$name"' ('"$source"')..."; \
+            claude plugin marketplace add "'"$source"'" 2>&1 || \
+              echo "[claude-marketplaces] WARN: add of '"$name"' failed; continuing" >&2; \
+          fi'
       done
     fi
   '';
@@ -876,33 +928,70 @@ in
   # NPM_CONFIG_PREFIX. Nix's nodejs pins its prefix to a read-only /nix/store
   # path, which fails with EACCES. node@22 + ~/.npm-global mirrors the
   # home/npm-globals pattern so everything lands in a user-writable tree.
+  # CRITICAL: like installClaudePluginMarketplaces, npx + the GSD installer
+  # write into ~/.claude/, ~/.npm-global/, and several user-side state dirs.
+  # Must run as the home-dir owner — otherwise sudo'd rebuilds leak root
+  # ownership into npm-global and Claude's data tree.
   home.activation.installGsd = lib.hm.dag.entryAfter [ "syncClaudeUserSettings" "installNpmGlobals" ] ''
-    export NPM_CONFIG_PREFIX="${homeDir}/.npm-global"
-    # Include ~/.npm-global/bin so GSD's post-install PATH check (which looks
-    # for gsd-sdk on PATH) passes. The interactive shell already gets this via
-    # home.sessionPath, but activation runs with a minimal environment.
-    export PATH="${homeDir}/.npm-global/bin:/opt/homebrew/opt/node@22/bin:$PATH"
-    # GSD's installer migrates leftover artifacts on every update. Some
-    # categories the classifier can't auto-resolve (e.g. user-owned skill
-    # files whose hash diverged from the bundled version) and need a
-    # keep/remove decision. Activation has no TTY, so without this the
-    # installer hard-aborts with the "non-interactive runs … no stdin TTY"
-    # path and we lose the update silently. `keep` preserves anything the
-    # classifier flags as user-owned; the bundled GSD-managed hooks get
-    # auto-removed regardless via classifyPromptUserAction. Override to
-    # `remove` only if a stale artifact is actively breaking something.
-    export GSD_INSTALLER_MIGRATION_RESOLVE=keep
-    mkdir -p "$NPM_CONFIG_PREFIX"
+    hm_user="$(/usr/bin/stat -f %Su "${homeDir}")"
 
     if [ ! -x "/opt/homebrew/opt/node@22/bin/npx" ]; then
       echo "[gsd] /opt/homebrew/opt/node@22/bin/npx not found; skipping (install node@22 via Homebrew first)" >&2
     else
-      echo "[gsd] Installing/updating to latest..."
-      if /opt/homebrew/opt/node@22/bin/npx -y get-shit-done-cc@latest --global 2>&1; then
-        echo "[gsd] Install/update complete."
+      # GSD's installer migrates leftover artifacts on every update. Some
+      # categories the classifier can't auto-resolve and need a keep/remove
+      # decision. Activation has no TTY; without `GSD_INSTALLER_MIGRATION_RESOLVE=keep`
+      # the installer hard-aborts on the "non-interactive runs … no stdin TTY"
+      # path and we lose the update silently. `keep` preserves user-owned
+      # artifacts; bundled GSD-managed hooks get auto-removed via
+      # classifyPromptUserAction regardless.
+      install_cmd='export NPM_CONFIG_PREFIX="'"${homeDir}"'/.npm-global"; \
+        export PATH="'"${homeDir}"'/.npm-global/bin:/opt/homebrew/opt/node@22/bin:$PATH"; \
+        export GSD_INSTALLER_MIGRATION_RESOLVE=keep; \
+        /bin/mkdir -p "$NPM_CONFIG_PREFIX"; \
+        echo "[gsd] Installing/updating to latest..."; \
+        if /opt/homebrew/opt/node@22/bin/npx -y get-shit-done-cc@latest --global 2>&1; then \
+          echo "[gsd] Install/update complete."; \
+        else \
+          echo "[gsd] WARNING: Install/update failed — GSD may be stale or missing." >&2; \
+        fi'
+
+      if [ "$(id -u)" = "0" ] && [ "$hm_user" != "root" ]; then
+        /usr/bin/sudo -u "$hm_user" -H /bin/bash -c "$install_cmd"
       else
-        echo "[gsd] WARNING: Install/update failed — GSD may be stale or missing." >&2
+        /bin/bash -c "$install_cmd"
       fi
+    fi
+  '';
+
+  # Final ownership sweep — runs LAST after every Claude-touching activation.
+  # `bootstrapClaude`, `installClaudePluginMarketplaces`, and `installGsd` all
+  # shell out to processes (curl|bash, the `claude` CLI, npx) that write into
+  # $HOME with whatever UID the activation is running under. When darwin-rebuild
+  # is invoked via `sudo`, those writes land root-owned and Claude can never
+  # modify its own state again. The sync activations above already chown the
+  # specific files they touch; this sweep handles everything else those
+  # sub-processes can create (mcp-needs-auth-cache.json, plans/, plugin state,
+  # etc.) so we don't accumulate root-owned crud across rebuilds.
+  home.activation.fixClaudeOwnership = lib.hm.dag.entryAfter [
+    "bootstrapClaude"
+    "installClaudePluginMarketplaces"
+    "installGsd"
+    "syncClaudeJson"
+    "syncClaudeSettings"
+    "syncClaudeUserSettings"
+  ] ''
+    hm_user="$(/usr/bin/stat -f %Su "${homeDir}")"
+    if [ -z "$hm_user" ] || [ "$hm_user" = "root" ]; then
+      echo "[claude-ownership] homeDir owned by root; refusing to sweep" >&2
+    else
+      # -h chowns symlinks (not their targets); -depth ensures children before parents.
+      for target in "${homeDir}/.claude" "${homeDir}/.claude.json"; do
+        if [ -e "$target" ]; then
+          /usr/bin/find "$target" ! -user "$hm_user" -print0 2>/dev/null \
+            | /usr/bin/xargs -0 -r /usr/sbin/chown -h "$hm_user" 2>/dev/null || true
+        fi
+      done
     fi
   '';
 }
