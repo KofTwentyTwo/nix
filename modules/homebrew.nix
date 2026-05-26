@@ -3,9 +3,47 @@
 # All Homebrew taps, formulae, casks, and Mac App Store apps.
 # Imported by flake.nix as a nix-darwin module.
 
-{ pkgs, ... }:
+{ pkgs, config, ... }:
 
 {
+  # Post-bundle global brew upgrade.
+  # ================================
+  # nix-darwin's brew bundle (below) only operates on what's declared in
+  # this file. Transitive dependencies (e.g. libheif, luajit pulled in by
+  # other casks) and any one-off `brew install foo` packages that aren't
+  # declared here are left untouched on every rebuild and drift behind
+  # upstream until manually upgraded. This hook closes that gap: after
+  # nix-darwin runs its brew bundle, we run a global `brew upgrade` so
+  # everything brew knows about — declared, transitive, or manual — gets
+  # bumped on every `darwin-rebuild switch`.
+  #
+  # Why a separate hook rather than relying on `homebrew.onActivation.upgrade`:
+  # that option just toggles `--no-upgrade` on `brew bundle`, which still
+  # only touches Brewfile-declared deps. Catching the rest requires a
+  # `brew upgrade` call outside the bundle.
+  #
+  # Runs as the primary user via `sudo --user=<primaryUser>`: brew refuses
+  # to operate on its prefix as root, so we mirror the same sudo-drop
+  # pattern nix-darwin's own brew bundle activation uses. HOMEBREW_NO_AUTO_UPDATE=1
+  # avoids a redundant metadata refresh — `onActivation.autoUpdate = true`
+  # already refreshed it before the bundle step.
+  #
+  # Non-fatal: a single broken formula or transient network hiccup logs
+  # a warning but does not abort the rest of the activation.
+  system.activationScripts.postActivation.text = ''
+    if [ -x /opt/homebrew/bin/brew ]; then
+      echo >&2 "Upgrading remaining brew packages (transitive deps + undeclared brews)..."
+      PATH="/opt/homebrew/bin:$PATH" \
+      sudo \
+        --preserve-env=PATH \
+        --user=${config.system.primaryUser} \
+        --set-home \
+        env HOMEBREW_NO_AUTO_UPDATE=1 \
+        /opt/homebrew/bin/brew upgrade 2>&1 \
+        || echo >&2 "[brew-upgrade-all] non-zero exit; some packages may not be current"
+    fi
+  '';
+
   homebrew = {
     enable = true;
     onActivation.cleanup = "uninstall";
@@ -88,6 +126,7 @@
       "ffmpeg"
       "gemini-cli"
       "fish"
+      "fzf"
       "gh"
       "git"
       "git-absorb"
