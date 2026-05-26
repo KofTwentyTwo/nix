@@ -46,9 +46,13 @@
     fi
 
     uid="$(/usr/bin/id -u)"
+    # ''${TMPDIR:-} not ''${TMPDIR%/}: activation runs under `set -u` and
+    # sudo strips TMPDIR, so referencing it directly aborts the rebuild.
+    # An empty value collapses to "/tmux-$uid/default", which the [ -S ]
+    # test below safely rejects.
     candidates=(
       "/tmp/tmux-$uid/default"
-      "''${TMPDIR%/}/tmux-$uid/default"
+      "''${TMPDIR:-}/tmux-$uid/default"
     )
 
     reloaded=0
