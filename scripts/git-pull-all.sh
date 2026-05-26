@@ -64,8 +64,7 @@ for dir in */; do
 
         printf "%-${max_len}s  pulling... " "$repo_name"
 
-        output=$(git -C "$dir" pull --quiet 2>&1)
-        if [[ $? -eq 0 ]]; then
+        if output=$(git -C "$dir" pull --quiet 2>&1); then
             if [[ "$output" == *"Already up to date"* ]] || [[ -z "$output" ]]; then
                 echo -e "${GREEN}up to date${NC}"
                 ((uptodate++))

@@ -22,7 +22,14 @@ if [[ ! -d "$sessions_dir" ]]; then
 fi
 
 # Find the most recent session file (exclude agent-* files, get UUID sessions only)
-latest_session=$(ls -t "$sessions_dir"/*.jsonl 2>/dev/null | grep -v 'agent-' | head -1 || true)
+latest_session=""
+for session in "$sessions_dir"/*.jsonl; do
+    [[ -e "$session" ]] || continue
+    [[ "$(basename "$session")" == agent-* ]] && continue
+    if [[ -z "$latest_session" || "$session" -nt "$latest_session" ]]; then
+        latest_session="$session"
+    fi
+done
 
 if [[ -z "$latest_session" ]]; then
     echo "No sessions found in $sessions_dir"

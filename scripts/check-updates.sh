@@ -5,13 +5,6 @@
 
 set -euo pipefail
 
-# Colors for output (though this runs in background, useful for manual runs)
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-CYAN='\033[0;36m'
-NC='\033[0m'
-
 # Path to notification file (in user's home directory)
 NOTIFICATION_FILE="$HOME/.config/nix/.updates-available"
 NIX_CONFIG_DIR="$HOME/.config/nix"
@@ -30,7 +23,8 @@ check_brew_updates() {
     brew update >/dev/null 2>&1 || true
     
     # Check for outdated packages
-    local outdated=$(brew outdated 2>/dev/null | wc -l | tr -d ' ')
+    local outdated
+    outdated=$(brew outdated 2>/dev/null | wc -l | tr -d ' ')
     
     if [[ "$outdated" -gt 0 ]]; then
         UPDATES_FOUND=true
@@ -38,7 +32,8 @@ check_brew_updates() {
     fi
     
     # Check for outdated casks
-    local outdated_casks=$(brew outdated --cask 2>/dev/null | wc -l | tr -d ' ')
+    local outdated_casks
+    outdated_casks=$(brew outdated --cask 2>/dev/null | wc -l | tr -d ' ')
     
     if [[ "$outdated_casks" -gt 0 ]]; then
         UPDATES_FOUND=true
@@ -65,8 +60,10 @@ check_nix_updates() {
     local should_check=true
     
     if [[ -f "$last_check_file" ]]; then
-        local last_check=$(cat "$last_check_file" 2>/dev/null || echo "0")
-        local now=$(date +%s)
+        local last_check
+        local now
+        last_check=$(cat "$last_check_file" 2>/dev/null || echo "0")
+        now=$(date +%s)
         local six_hours_ago=$((now - 21600))  # 6 hours ago
         
         # Only check if it's been more than 6 hours since last check
@@ -85,7 +82,7 @@ check_nix_updates() {
     
     # Resolve the tracking remote and branch dynamically
     local upstream
-    upstream=$(git rev-parse --abbrev-ref @{u} 2>/dev/null || echo "origin/main")
+    upstream=$(git rev-parse --abbrev-ref '@{u}' 2>/dev/null || echo "origin/main")
     local remote="${upstream%%/*}"
     local branch="${upstream#*/}"
     
@@ -98,8 +95,10 @@ check_nix_updates() {
         UPDATE_MESSAGES+=("nix: flake inputs have updates available")
     else
         # Check if lock file is old (suggest manual check)
-        local lock_age=$(stat -f "%m" flake.lock 2>/dev/null || stat -c "%Y" flake.lock 2>/dev/null || echo "0")
-        local now=$(date +%s)
+        local lock_age
+        local now
+        lock_age=$(stat -f "%m" flake.lock 2>/dev/null || stat -c "%Y" flake.lock 2>/dev/null || echo "0")
+        now=$(date +%s)
         local days_old=$(((now - lock_age) / 86400))
         
         # If lock file is more than 7 days old, suggest checking
@@ -110,7 +109,7 @@ check_nix_updates() {
     fi
     
     # Update last check time
-    echo "$(date +%s)" > "$last_check_file" 2>/dev/null || true
+    date +%s > "$last_check_file" 2>/dev/null || true
 }
 
 # Main execution

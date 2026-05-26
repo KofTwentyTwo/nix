@@ -26,28 +26,26 @@ done
 
 for dir in */; do
     if [[ -d "${dir}.git" ]]; then
-        cd "$dir"
-
         repo_name="${dir%/}"
         is_dirty=false
         dirty_details=""
         sync_status=""
 
         # Check for uncommitted changes
-        if [[ -n $(git status --porcelain 2>/dev/null) ]]; then
-            staged=$(git diff --cached --name-only 2>/dev/null | wc -l | tr -d ' ')
-            unstaged=$(git diff --name-only 2>/dev/null | wc -l | tr -d ' ')
-            untracked=$(git ls-files --others --exclude-standard 2>/dev/null | wc -l | tr -d ' ')
+        if [[ -n $(git -C "$dir" status --porcelain 2>/dev/null) ]]; then
+            staged=$(git -C "$dir" diff --cached --name-only 2>/dev/null | wc -l | tr -d ' ')
+            unstaged=$(git -C "$dir" diff --name-only 2>/dev/null | wc -l | tr -d ' ')
+            untracked=$(git -C "$dir" ls-files --others --exclude-standard 2>/dev/null | wc -l | tr -d ' ')
             dirty_details="staged:${staged} unstaged:${unstaged} untracked:${untracked}"
             is_dirty=true
         fi
 
         # Check for unpushed commits
-        upstream=$(git rev-parse --abbrev-ref "@{upstream}" 2>/dev/null || echo "")
+        upstream=$(git -C "$dir" rev-parse --abbrev-ref "@{upstream}" 2>/dev/null || echo "")
 
         if [[ -n "$upstream" ]]; then
-            ahead=$(git rev-list --count "@{upstream}..HEAD" 2>/dev/null || echo "0")
-            behind=$(git rev-list --count "HEAD..@{upstream}" 2>/dev/null || echo "0")
+            ahead=$(git -C "$dir" rev-list --count "@{upstream}..HEAD" 2>/dev/null || echo "0")
+            behind=$(git -C "$dir" rev-list --count "HEAD..@{upstream}" 2>/dev/null || echo "0")
 
             if [[ "$ahead" -gt 0 ]]; then
                 sync_status="${sync_status} ${YELLOW}+${ahead} ahead${NC}"
@@ -68,8 +66,6 @@ for dir in */; do
             printf "%-${max_len}s  ${GREEN}CLEAN${NC}%b\n" "$repo_name" "$sync_status"
             ((clean_count++)) || true
         fi
-
-        cd ..
     fi
 done
 

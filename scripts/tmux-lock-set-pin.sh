@@ -22,8 +22,11 @@ read_secret() {
         printf '*'
     done
     printf '\n'
-    eval "$1=\$result"
+    printf -v "$1" '%s' "$result"
 }
+
+pin=""
+pin2=""
 
 printf 'New PIN: '
 read_secret pin

@@ -276,7 +276,8 @@ let
       "Bash(npx:*)"
       "Bash(yarn:*)"
       "Bash(pnpm:*)"
-      "Bash(node:*)"
+      "Bash(node --version:*)"
+      "Bash(node -v:*)"
 
       # Rust
       "Bash(cargo:*)"
@@ -284,8 +285,8 @@ let
       "Bash(rustup:*)"
 
       # Python
-      "Bash(python:*)"
-      "Bash(python3:*)"
+      "Bash(python --version:*)"
+      "Bash(python3 --version:*)"
       "Bash(pip:*)"
       "Bash(pip3:*)"
       "Bash(pytest:*)"
@@ -354,15 +355,12 @@ let
       "Bash(ansible-playbook --check:*)"
       "Bash(ansible-playbook --syntax-check:*)"
 
-      # Terragrunt — diverges from the terraform/tofu "no apply" policy above.
-      # Daily DMD infra workflow runs terragrunt apply against vended workload
-      # accounts; gated upstream by SSO credential rotation, not by the harness.
+      # Terragrunt read/plan operations. Mutating operations such as apply,
+      # taint, run, or arbitrary state edits deliberately require approval.
       "Bash(terragrunt init:*)"
       "Bash(terragrunt plan:*)"
-      "Bash(terragrunt apply:*)"
-      "Bash(terragrunt taint:*)"
-      "Bash(terragrunt run:*)"
-      "Bash(terragrunt state:*)"
+      "Bash(terragrunt state list:*)"
+      "Bash(terragrunt state show:*)"
       "Bash(terragrunt output:*)"
       "Bash(terragrunt validate:*)"
 
@@ -462,7 +460,6 @@ let
       "Bash(base64:*)"
       "Bash(pbcopy:*)"
       "Bash(pbpaste:*)"
-      "Bash(open:*)"
       "Bash(column:*)"
       "Bash(nl:*)"
       "Bash(fold:*)"
@@ -559,7 +556,6 @@ let
       "Write"
       "Bash(mkdir:*)"
       "Bash(touch:*)"
-      "Bash(rm:*)"
 
       # Web access (read-only) — universal allow, no prompts for any site.
       # Per docs (code.claude.com/docs/en/settings), the bare tool name matches

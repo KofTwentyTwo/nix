@@ -97,7 +97,8 @@ EOF
   
   # Get all items from vault in one call (optimized)
   echo -e "${YELLOW}[*]${NC} Accessing secure vault..."
-  local vault_data=$(op --account "$account" item list --vault "$vault" --format json 2>/dev/null)
+  local vault_data
+  vault_data=$(op --account "$account" item list --vault "$vault" --format json 2>/dev/null)
   
   if [[ -z "$vault_data" ]] || [[ "$vault_data" == "[]" ]]; then
     echo -e "${RED}✗${NC} No items found in vault: ${BOLD}$vault${NC} (account: $account)" >&2
@@ -105,7 +106,10 @@ EOF
   fi
   
   # Count items and extract IDs in one pass
-  local item_ids=($(echo "$vault_data" | jq -r '.[] | .id' 2>/dev/null))
+  local item_ids=()
+  while IFS= read -r item_id; do
+    [[ -n "$item_id" ]] && item_ids+=("$item_id")
+  done < <(printf '%s\n' "$vault_data" | jq -r '.[] | .id' 2>/dev/null)
   local item_count=${#item_ids[@]}
   
   if [[ $item_count -eq 0 ]]; then
@@ -123,14 +127,16 @@ EOF
   # Process items (optimized: single jq call per item, but sequential for exports)
   for item_id in "${item_ids[@]}"; do
     # Get item details (single API call per item - can't be avoided)
-    local item_json=$(op --account "$account" item get "$item_id" --format json 2>/dev/null)
+    local item_json
+    item_json=$(op --account "$account" item get "$item_id" --format json 2>/dev/null)
     
     if [[ -z "$item_json" ]]; then
       continue
     fi
     
     # Extract all needed data in one jq call (faster)
-    local item_data=$(echo "$item_json" | jq -r '
+    local item_data
+    item_data=$(printf '%s\n' "$item_json" | jq -r '
       if .category == "API_CREDENTIAL" then
         (.fields[]? | select(.id == "credential") | .value) as $cred |
         if $cred then
@@ -156,7 +162,8 @@ EOF
     fi
     
     # Convert title to environment variable name
-    local env_name=$(echo "$item_title" | tr '[:lower:]' '[:upper:]' | tr ' ' '_' | tr -cd '[:alnum:]_')
+    local env_name
+    env_name=$(printf '%s\n' "$item_title" | tr '[:lower:]' '[:upper:]' | tr ' ' '_' | tr -cd '[:alnum:]_')
     
     # Export as environment variable
     export "$env_name=$credential"

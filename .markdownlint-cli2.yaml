@@ -1,0 +1,11 @@
+config:
+  # This repository uses dense operational docs with long command examples,
+  # compact tables, and checklist notes. Keep markdown lint focused on structural
+  # issues instead of reflow churn.
+  MD013: false
+  MD031: false
+  MD032: false
+  MD036: false
+  MD040: false
+  MD058: false
+  MD060: false

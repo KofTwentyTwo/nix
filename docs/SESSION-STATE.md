@@ -1,9 +1,31 @@
 # Session State
 
-**Last Updated:** 2026-05-21
+**Last Updated:** 2026-05-26
 
 ## Current Status
-All outstanding architectural issues in the Nix-Darwin and Home Manager configuration have been resolved, verified, and documented. The configuration now builds and activates successfully. The active changes are staged and ready to commit.
+
+Repo hardening pass is complete and verified. The repo now has a local quality
+gate at `scripts/check-repo.sh`; the full gate passed on 2026-05-26 with repo
+policy checks, ShellCheck, markdownlint, `nix flake check --no-build
+--print-build-logs`, and `darwin-rebuild build --flake .
+--no-write-lock-file --print-build-logs`.
+
+## What Was Done This Session (2026-05-26)
+
+- Fixed `mkPatDeployer` so a missing age key skips only PAT deployment instead
+  of aborting later Home Manager activations.
+- Removed the stale `claude-skills-gsd` flake update from the `switch` helper
+  and aligned generated Codex/Gemini bootstrap text with
+  `~/.ai/5-learnings.md`.
+- Tightened broad Claude permission patterns in both declared and local
+  settings.
+- Added `scripts/check-repo.sh` and `.markdownlint-cli2.yaml`, registered the
+  check script with Home Manager, and cleaned ShellCheck issues across existing
+  scripts.
+- Promoted the pending learning queue into `home/ai/5-learnings.md`, moved raw
+  queue files to `learnings_to_process/processed/`, ignored `.serena/`, and
+  removed `result` from git tracking while leaving the local build symlink
+  ignored.
 
 ## What Was Done This Session (2026-05-21)
 
@@ -26,7 +48,6 @@ All outstanding architectural issues in the Nix-Darwin and Home Manager configur
 - Updated `README.md` script count and lists, adding `git-pane-info.sh` to the Tmux Utilities section.
 - Updated `docs/TODO.md` to reflect completed tasks under "Recently Completed".
 
-
 **`github-sandbox-pat` (fine-grained, RW everything on `GG-Sandboxes/james.maes`)**
 - Encrypted to `secrets/github-sandbox-pat.enc` via sops with the three current age recipients (darth + dark_horse + grogu). `.sops.yaml` got a matching `creation_rules` entry. Plaintext shredded after encryption.
 - Filename pivot mid-session: started as `.github-pat-sandbox`; the dashboard agent declared it expects `.github-deploy-pat`. Renamed before activation.
@@ -46,11 +67,13 @@ All outstanding architectural issues in the Nix-Darwin and Home Manager configur
 - Both dashboards deployed during session: `dashboards/security/index.html` (77 KB) and `dashboards/ai-updates/index.html` (50 KB). Promoted AI Updates card from "Soon" → "Live" once it appeared.
 
 ## Active Branches
+
 | Branch | Status |
 |--------|--------|
-| `main` | Staged with active patches (Grogu config, git-crypt dev shell hook, path cleanups, generalized Claude permissions, and tmux server fixes). |
+| `main` | Dirty with the repo hardening patch set; no commit or push performed. |
 
 ## Pending Work
+
 - [ ] On Darth: verify `age-keygen -y ~/.config/sops/age/keys.txt` matches the `&darth` pubkey; pull + rebuild to pick up new generalized variables.
 - [ ] On Renova: generate age key, add `&renova` to `.sops.yaml`, run `sops updatekeys` across secrets, and rebuild.
 - [ ] Review and commit current staged changes into a feature branch (or push to main if permitted by local override).

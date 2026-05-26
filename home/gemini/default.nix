@@ -46,14 +46,15 @@ in
     | 3 | `~/.ai/2-coding-style.md` | How to write code (reference guide) |
     | 4 | `~/.ai/1-profile.md` | Who I am, environment context |
     | 5 | `~/.ai/4-preferences.yaml` | Machine-readable tuning knobs |
-    | 6 | Project `GEMINI.md` | Per-repo overrides (scoped) |
+    | 6 | `~/.ai/5-learnings.md` | Operational notes / current ground truth |
+    | 7 | Project `GEMINI.md` | Per-repo overrides (scoped) |
 
     **Conflict resolution:** Higher priority wins. Project `GEMINI.md` MAY override for repo-scoped settings but MUST NOT weaken safety rules.
 
     ## Initialization
 
-    Load all four `~/.ai/` files and treat them as system-level configuration.
-    Use `3-rules.md` as strict constraints, `4-preferences.yaml` as tunable parameters, `1-profile.md` as context, and `2-coding-style.md` as output formatting standards.
+    Load all six `~/.ai/` files and treat them as system-level configuration.
+    Use `3-rules.md` as strict constraints, `4-preferences.yaml` as tunable parameters, `1-profile.md` as context, `2-coding-style.md` as output formatting standards, and `5-learnings.md` as operational ground truth.
 
     ## Compaction Recovery (NON-NEGOTIABLE)
 
@@ -62,8 +63,9 @@ in
     2. `~/.ai/2-coding-style.md`
     3. `~/.ai/1-profile.md`
     4. `~/.ai/4-preferences.yaml`
-    5. Active project `GEMINI.md`
-    6. `./docs/SESSION-STATE.md` and `./docs/TODO.md` (if they exist)
+    5. `~/.ai/5-learnings.md`
+    6. Active project `GEMINI.md`
+    7. `./docs/SESSION-STATE.md` and `./docs/TODO.md` (if they exist)
   '';
 
   # ~/.gemini/settings.json - merge settings, preserve user data

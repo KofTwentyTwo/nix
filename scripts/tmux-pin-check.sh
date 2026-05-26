@@ -13,4 +13,4 @@ PIN_FILE="$HOME/.config/tmux-lock-pin"
 sleep 1
 
 tmux display-popup -E -w 52 -h 10 -T " Lock PIN Required " \
-    bash -c 'printf "Sessions lock after 15 minutes idle.\nSet a PIN to secure the lock screen.\n\n"; exec "$HOME/.local/bin/tmux-lock-set-pin.sh"'
+    bash -c "printf 'Sessions lock after 15 minutes idle.\nSet a PIN to secure the lock screen.\n\n'; exec \"\$HOME/.local/bin/tmux-lock-set-pin.sh\""

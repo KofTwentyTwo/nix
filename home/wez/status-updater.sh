@@ -120,7 +120,7 @@ while :; do
                 fi
             done < <(git -C "$cwd" status --porcelain 2>/dev/null)
 
-            ab=$(git -C "$cwd" rev-list --left-right --count HEAD...@{upstream} 2>/dev/null)
+            ab=$(git -C "$cwd" rev-list --left-right --count 'HEAD...@{upstream}' 2>/dev/null)
             git_ahead=${ab%%$'\t'*}
             git_behind=${ab##*$'\t'}
             [[ "$git_ahead" =~ ^[0-9]+$ ]] || git_ahead=0

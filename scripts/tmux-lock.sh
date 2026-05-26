@@ -42,7 +42,6 @@ if [[ -z "$STORED_HASH" ]]; then
 fi
 
 # Colors
-G=$'\033[0;32m'
 BG=$'\033[1;32m'
 DG=$'\033[38;5;22m'
 RED=$'\033[0;31m'

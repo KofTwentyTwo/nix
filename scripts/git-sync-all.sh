@@ -92,7 +92,8 @@ is_only_ignored_files() {
                 break
             fi
             # Check glob match on the basename or full path
-            # shellcheck disable=SC2254
+            # Intentional glob match against user-configured ignore patterns.
+            # shellcheck disable=SC2053
             if [[ "$(basename "$filepath")" == ${pattern} ]] || [[ "$filepath" == ${pattern} ]]; then
                 matched=true
                 break
@@ -124,7 +125,8 @@ discard_ignored_files() {
                 matched=true
                 break
             fi
-            # shellcheck disable=SC2254
+            # Intentional glob match against user-configured ignore patterns.
+            # shellcheck disable=SC2053
             if [[ "$(basename "$filepath")" == ${pattern} ]] || [[ "$filepath" == ${pattern} ]]; then
                 matched=true
                 break
@@ -134,7 +136,7 @@ discard_ignored_files() {
         if [[ "$matched" == true ]]; then
             if [[ "$status" == "??" ]]; then
                 # Untracked: just remove it
-                rm -rf "${repo_dir}/${filepath}"
+                rm -rf -- "${repo_dir:?}/${filepath:?}"
             else
                 # Tracked: restore from index
                 git -C "$repo_dir" checkout -- "$filepath" 2>/dev/null

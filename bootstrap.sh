@@ -243,7 +243,7 @@ add_machine() {
   info "Adding '$hostname' to flake.nix..."
 
   # Use python for reliable multi-line insertion (sed is fragile for this)
-  python3 -c "
+  if python3 -c "
 import sys
 
 with open('flake.nix', 'r') as f:
@@ -275,10 +275,12 @@ with open('flake.nix', 'w') as f:
     f.write(content)
 
 print('OK')
-" && success "Added '$hostname' to flake.nix" || {
+  "; then
+    success "Added '$hostname' to flake.nix"
+  else
     fail "Auto-add failed. Add the machine config to flake.nix manually."
     fail "Copy any existing darwinConfigurations block and change the name to '$hostname'."
-  }
+  fi
 
   echo "$hostname"
 }

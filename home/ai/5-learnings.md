@@ -404,3 +404,56 @@ Scheduled tasks running inside a Claude Cowork project only mount the project fo
 
 ### GitHub fine-grained PATs are limited to one resource owner per token
 A single fine-grained PAT cannot span multiple GitHub organizations. For org-wide reads across N orgs you need N tokens (each requiring org-admin approval if "Require admin approval" is enabled), or a single classic PAT with the relevant scopes. For security alerts (Dependabot + code scanning + secret scanning), a classic PAT with `security_events` + `read:org` covers all three alert types on private repos across any number of orgs. Note that classic PAT scope is broader than per-org fine-grained equivalents.
+
+## MCP / Claude Code Runtime (verified 2026-04-27)
+
+### FastMCP `custom_route` is pre-auth by design
+FastMCP's `@mcp.custom_route` routes are mounted ahead of auth middleware. Use only for deliberately public surfaces: OAuth callbacks, health checks, readiness checks, or spec metadata endpoints. Do not put authenticated tools behind `custom_route`; use normal `@mcp.tool()` handlers.
+
+### No-auth MCP HTTP servers need RFC 9728 metadata stubs
+Claude Code MCP HTTP clients probe `/.well-known/oauth-protected-resource` during startup. For local no-auth POCs, return a valid protected-resource metadata payload with an empty `authorization_servers` array at both root and path-suffixed forms. A missing endpoint can surface as a misleading auth or JSON parse failure.
+
+### Project `.mcp.json` requires trust and per-server enablement
+Claude Code registers repo-local `.mcp.json` files but does not activate them until the project trust dialog is accepted and the server name appears in the project's enabled MCP JSON server list. `claude mcp get <server>` can report connectivity while the in-session `/mcp` list remains empty. User-scope MCP registration bypasses this per-project gate but writes to `~/.claude.json`, not the Nix-managed settings path.
+
+### Keep user-scope MCP definitions out of `~/.claude.json`
+For this setup, root `~/.claude.json.mcpServers` is intentionally managed by Nix for non-plugin services. Running `claude mcp add ... -s user` can split MCP definitions across files again. Prefer editing `home/claude/default.nix` and the generated settings merge path.
+
+### Permission allowlist drift can hide arbitrary execution
+Claude Code may auto-add narrow-looking interpreter patterns that are effectively arbitrary execution, e.g. `python3 -c`, `node -e`, `bash -c`, `sh -c`, or bare `bash`. Treat those as drop candidates during permission audits even when the literal string looks specific.
+
+### Serena dashboard auto-open is runtime config
+Serena's dashboard auto-open knob is `web_dashboard_open_on_launch` in `~/.serena/serena_config.yml`. Setting it to `false` suppresses browser spam while leaving the dashboard server and MCP tools available. Serena creates runtime config outside Nix, so use an idempotent activation patch rather than a read-only symlink.
+
+## GitHub Automation (verified 2026-05-20)
+
+### Internal GitHub Pages sites use obscured hostnames
+Pages on internal or private repos serves from an obscured random-looking `<name>.pages.github.io` hostname and redirects anonymous traffic to GitHub login. A `curl -L` 200 may only prove the login wall rendered. Verify content through the GitHub contents or tree APIs, and verify deployment through the Pages latest-build endpoint.
+
+### GitHub Contents API can bootstrap empty repos
+PUT to `/repos/{owner}/{repo}/contents/{path}` with `branch=main` creates `main` as the initial commit in an empty repo, even if `default_branch` points at a nonexistent branch. After that first commit, PATCH the repo's `default_branch` to `main`.
+
+### GitHub Contents listing can lag behind tree state
+Immediately after a deploy commit, the contents API directory listing can miss a new subdirectory for a few minutes. The recursive git tree endpoint returns ground truth immediately and is better for deployment verification.
+
+### Repository renames keep API redirects alive
+GitHub can continue returning HTTP 200 for old repository names after a rename. Useful for link migration, risky for Terraform and audit code because stale canonical names can compile and drift. Update canonical repo references at rename time.
+
+## Obsidian Plugin Development (verified 2026-04-27)
+
+### Vitest and Obsidian runtime builds are separate
+`vitest` can pass through in-memory TypeScript transforms while the `main.js` bundle that Obsidian loads remains stale. Keep `npm run dev` running during plugin iteration; use `npm run check` for CI-style verification, not as proof the runtime bundle changed.
+
+### Obsidian Hot Reload is marker-file opt-in
+pjeby Hot Reload only watches plugin directories containing a `.hotreload` marker file. If the bundle rebuilds but Obsidian does not reload the plugin, create the marker in the plugin install folder and restart Obsidian once.
+
+## Portable macOS/Linux Shell (verified 2026-05-21)
+
+### File modification checks need BSD/GNU `stat` fallback
+macOS uses `stat -f "%m" <file>` for mtime, while GNU/Linux uses `stat -c "%Y" <file>`. Use a fallback chain with stderr redirected and a numeric default, e.g. `stat -f "%m" "$file" 2>/dev/null || stat -c "%Y" "$file" 2>/dev/null || echo "0"`.
+
+### User LaunchAgents belong in Home Manager `launchd.agents`
+Custom nix-darwin system activation scripts that install user `Library/LaunchAgents` plists can race ownership and launchd state. Prefer Home Manager's native `launchd.agents` option for user services.
+
+### Home Manager activation under nix-darwin 2025 runs through system activation
+`sudo darwin-rebuild switch --flake .` runs Home Manager activation inside the system activation path. `/run/current-system/activate-user` is only a deprecation shim. If user activation appears missing, look for earlier build or activation failures before blaming the shim.

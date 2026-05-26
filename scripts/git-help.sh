@@ -35,7 +35,6 @@ done
 # Column widths
 COL1=10   # alias
 COL2=32   # command
-COL3=50   # description
 
 print_row() {
     local color="$1"

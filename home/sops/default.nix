@@ -41,32 +41,31 @@ let
 
       if [ ! -f "$AGE_KEY" ]; then
         echo "[${name}] no age key at $AGE_KEY; skipping deployment"
-        exit 0
-      fi
+      else
+        deploy_one() {
+          dst="$1"
+          dst_dir="$(dirname "$dst")"
 
-      deploy_one() {
-        dst="$1"
-        dst_dir="$(dirname "$dst")"
+          if [ ! -d "$dst_dir" ]; then
+            echo "[${name}] $dst_dir missing; skipping $dst"
+            return 0
+          fi
 
-        if [ ! -d "$dst_dir" ]; then
-          echo "[${name}] $dst_dir missing; skipping $dst"
-          return 0
+          tmp="$(mktemp "$dst_dir/.pat.XXXXXX")"
+          if SOPS_AGE_KEY_FILE="$AGE_KEY" ${pkgs.sops}/bin/sops --decrypt \
+               --input-type binary --output-type binary "$ENC" > "$tmp"; then
+            mv "$tmp" "$dst"
+            echo "[${name}] deployed to $dst (mode 0600)"
+          else
+            rm -f "$tmp"
+            echo "[${name}] sops decryption failed; $dst not updated" >&2
+          fi
+        }
+
+        ${lib.concatMapStringsSep "\n        "
+            (d: "deploy_one ${lib.escapeShellArg d}")
+            destinations}
         fi
-
-        tmp="$(mktemp "$dst_dir/.pat.XXXXXX")"
-        if SOPS_AGE_KEY_FILE="$AGE_KEY" ${pkgs.sops}/bin/sops --decrypt \
-             --input-type binary --output-type binary "$ENC" > "$tmp"; then
-          mv "$tmp" "$dst"
-          echo "[${name}] deployed to $dst (mode 0600)"
-        else
-          rm -f "$tmp"
-          echo "[${name}] sops decryption failed; $dst not updated" >&2
-        fi
-      }
-
-      ${lib.concatMapStringsSep "\n      "
-          (d: "deploy_one ${lib.escapeShellArg d}")
-          destinations}
     '';
 in
 {

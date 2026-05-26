@@ -22,6 +22,7 @@ Active tasks and future improvements for the Nix configuration.
 
 ## Recently Completed
 
+- [x] Repo hardening pass: fixed review findings, added `scripts/check-repo.sh`, promoted pending learnings, removed tracked `result`, and verified with the full repo gate (2026-05-26)
 - [x] Resolved tmux pane border redraw latency by querying Git repo and branch asynchronously via `git-pane-info.sh` (2026-05-21)
 - [x] Resolved Nix-Darwin vs Home Manager LaunchAgent activation race condition by defining native Home Manager `launchd.agents.check-updates` (2026-05-21)
 - [x] Fixed Neovim `mason.nvim` plug-in repository typo and hardened `check-updates.sh` branch tracking using dynamic upstream resolution (2026-05-21)

@@ -136,7 +136,8 @@ selected=$(printf '%s\n' "${display_lines[@]}" | fzf \
 [[ "$selected" == "───"* ]] && exit 0
 
 # Find the matching command entry and extract the tmux command
-selected_hotkey=$(echo "$selected" | sed 's/[[:space:]]*  .*//')
+selected_hotkey="${selected%%  *}"
+selected_hotkey="${selected_hotkey%"${selected_hotkey##*[![:space:]]}"}"
 for entry in "${commands[@]}"; do
   [[ "$entry" == "# "* ]] && continue
   hotkey=$(echo "$entry" | cut -d'|' -f1 | sed 's/[[:space:]]*$//')

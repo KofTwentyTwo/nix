@@ -99,9 +99,9 @@ The terminal emulator layer. OpenGL frontend at 60 FPS with a custom hacker-aest
 **Features:**
 - Auto-starts tmux on every new window/split (`default_prog = tmux new-session`)
 - SSH host detection from process tree (status bar turns orange when remote)
-- Git status caching (2s interval) with full starship-style indicators: `=`conflicts, `⇡`ahead, `⇣`behind, `⇕`diverged, ``stashed, `++`staged, ``modified, ``untracked
+- Git status caching (2s interval) with full starship-style indicators for conflicts, ahead, behind, diverged, stashed, staged, modified, and untracked files
 - Splits spawn new tmux sessions inheriting the current pane's working directory
-- Screen management: `Cmd+`` cycles screens, `Cmd+0` moves to largest
+- Screen management: `Cmd+Backtick` cycles screens, `Cmd+0` moves to largest
 - Pane navigation: `Cmd+h/j/k/l` or `Cmd+arrows`
 
 ### Tmux (Terminal Multiplexer)

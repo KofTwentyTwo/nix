@@ -13,9 +13,8 @@
 
 set -euo pipefail
 
-BASE_URL="${CONFLUENCE_BASE_URL:?Set CONFLUENCE_BASE_URL (e.g. https://yoursite.atlassian.net/wiki)}"
-V1_API="${BASE_URL}/rest/api/content"
-EMAIL="${CONFLUENCE_EMAIL:?Set CONFLUENCE_EMAIL}"
+: "${CONFLUENCE_BASE_URL:?Set CONFLUENCE_BASE_URL (e.g. https://yoursite.atlassian.net/wiki)}"
+: "${CONFLUENCE_EMAIL:?Set CONFLUENCE_EMAIL}"
 
 if [[ -z "${CONFLUENCE_API_TOKEN:-}" ]]; then
     echo "Error: CONFLUENCE_API_TOKEN env var is not set" >&2

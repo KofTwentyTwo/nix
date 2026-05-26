@@ -1,7 +1,11 @@
 .last-update-check
 .updates-available
+result
 
-# Claude Code (keep settings.local.json out -- machine-specific permissions)
+# Local semantic-code assistant state.
+.serena/
+
+# Claude Code (keep settings.local.json out, machine-specific permissions)
 .claude/settings.local.json
 
 # Antigravity CLI -- agy drops per-workspace project config wherever it's run

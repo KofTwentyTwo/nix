@@ -543,13 +543,10 @@ TIP: shelp KEYWORD   filter output (e.g., shelp kubectl, shelp replace, shelp gi
              return $brew_exit
            }
 
-           # darwin-rebuild switch wrapper - bumps GSD flake input on every run
-           # so /gsd commands and agents stay current with upstream.
+           # darwin-rebuild switch wrapper. GSD updates during Home Manager
+           # activation in home/claude/default.nix; it is no longer a flake
+           # input, so this wrapper should not update a removed input name.
            switch() {
-             (cd "$HOME/.config/nix" && nix flake update claude-skills-gsd) || {
-               echo "GSD flake update failed; aborting switch" >&2
-               return 1
-             }
              clear
              sudo darwin-rebuild switch --flake "$HOME/.config/nix"
            }
