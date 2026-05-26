@@ -859,7 +859,8 @@ in
         name="''${entry%%:*}"
         source="''${entry#*:}"
         if echo "$current" | grep -q "❯ $name$\|❯ $name "; then
-          echo "[claude-marketplaces] $name already registered"
+          # Already registered — stay silent so steady-state rebuilds aren't noisy.
+          :
         else
           echo "[claude-marketplaces] Adding $name ($source)..."
           claude plugin marketplace add "$source" 2>&1 || \

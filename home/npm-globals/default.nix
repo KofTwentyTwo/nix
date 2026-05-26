@@ -27,8 +27,13 @@ let
   # `npm uninstall -g` and fought our always-upgrade activation loop here,
   # breaking the install on 2026-05-11. Bootstrap now lives in
   # home/claude/default.nix:bootstrapClaude.
+  #
+  # pi-coding-agent moved scopes: @mariozechner/* is deprecated, all packages
+  # republished under @earendil-works/*. Both ship a `pi` bin; if the old
+  # scope is declared while the new one is already installed, npm refuses to
+  # overwrite the binary (EEXIST) and the activation hard-fails every rebuild.
   packages = [
-    "@mariozechner/pi-coding-agent"
+    "@earendil-works/pi-coding-agent"
     "ruflo"
   ];
 
