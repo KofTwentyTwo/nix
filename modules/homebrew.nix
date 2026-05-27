@@ -59,18 +59,28 @@
       "charmbracelet/tap"
       "qrun-io/qctl"
       "steipete/tap"
+      "tilt-dev/tap"
     ];
 
     # Mac App Store apps (managed via mas CLI 6.0+)
+    # IMPORTANT: With onActivation.cleanup="uninstall", any MAS app not listed
+    # here is removed on `darwin-rebuild switch`. Re-add any you want to keep.
     masApps = {
       "1Password for Safari"         = 1569813296;
+      "aSPICE Pro"                   = 1560593107;
       "Airmail"                      = 918858936;
+      "Blackmagic Disk Speed Test"   = 425264550;
+      "DaisyDisk"                    = 411643860;
       "GarageBand"                   = 682658836;
       "iMovie"                       = 408981434;
+      "Kagi for Safari"              = 1622835804;
       "Keynote"                      = 409183694;
+      "LanScan"                      = 472226235;
+      "MindNode"                     = 6446116532;
       "Numbers"                      = 409203825;
       "Pages"                        = 409201541;
       "Parcel - Delivery Tracking"   = 375589283;
+      "Unread"                       = 1363637349;
       "Xcode"                        = 497799835;
     };
 
@@ -138,7 +148,6 @@
       "glow"
       "gnu-sed"
       "gnupg"
-      "steipete/tap/gogcli"
       "go"
       "go-task"
       "gradle"
