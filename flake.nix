@@ -66,6 +66,12 @@
          flake = false;
       };
 
+      # Engineering-focused skills (TDD, PRD/issues, handoff, prototype, etc.)
+      claude-skills-mattpocock = {
+         url = "github:mattpocock/skills";
+         flake = false;
+      };
+
       # Creative writing skills, agents, and commands
       claude-skills-creative-writing = {
          url = "github:haowjy/creative-writing-skills";

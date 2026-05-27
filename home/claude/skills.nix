@@ -13,6 +13,9 @@
 #   PM/PO/Agile:
 #     - phuryn/pm-skills, alirezarezvani/claude-skills, SpillwaveSolutions/jira
 #     - product-on-purpose/pm-skills, deanpeters/Product-Manager-Skills, automazeio/ccpm
+#   Engineering / agentic coding workflows:
+#     - mattpocock/skills (aihero.dev): TDD, PRD/issues, handoff, prototype,
+#       architecture review, codebase grilling, triage, diagnose, zoom-out
 #   Creative writing:
 #     - haowjy/creative-writing-skills: 17 agents + 13 skills for fiction authoring
 #     - blader/humanizer: Strip AI-sounding patterns from prose
@@ -33,6 +36,7 @@ let
   pop = inputs.claude-skills-product-on-purpose or null;
   deanpeters = inputs.claude-skills-deanpeters or null;
   ccpm = inputs.claude-skills-ccpm or null;
+  mattpocock = inputs.claude-skills-mattpocock or null;
   creativew = inputs.claude-skills-creative-writing or null;
   humanizer = inputs.claude-skills-humanizer or null;
   beautifulProse = inputs.claude-skills-beautiful-prose or null;
@@ -217,6 +221,30 @@ let
     mkSkill "ccpm" "project-management" ccpm "skill/ccpm"
   );
 
+  # mattpocock/skills (aihero.dev "Skills for Real Engineers"):
+  # Engineering-focused agentic coding workflows. Skills live at
+  # skills/<category>/<name>/SKILL.md. We pull the documented featured
+  # set from `engineering/` and `productivity/` and skip `personal/`,
+  # `deprecated/`, and `in-progress/`.
+  mattpocockSkills = lib.optionalAttrs (mattpocock != null) (lib.attrsets.mergeAttrsList [
+    # engineering/
+    (mkSkill "mattpocock" "diagnose" mattpocock "skills/engineering/diagnose")
+    (mkSkill "mattpocock" "grill-with-docs" mattpocock "skills/engineering/grill-with-docs")
+    (mkSkill "mattpocock" "improve-codebase-architecture" mattpocock "skills/engineering/improve-codebase-architecture")
+    (mkSkill "mattpocock" "prototype" mattpocock "skills/engineering/prototype")
+    (mkSkill "mattpocock" "tdd" mattpocock "skills/engineering/tdd")
+    (mkSkill "mattpocock" "to-issues" mattpocock "skills/engineering/to-issues")
+    (mkSkill "mattpocock" "to-prd" mattpocock "skills/engineering/to-prd")
+    (mkSkill "mattpocock" "triage" mattpocock "skills/engineering/triage")
+    (mkSkill "mattpocock" "zoom-out" mattpocock "skills/engineering/zoom-out")
+
+    # productivity/
+    (mkSkill "mattpocock" "caveman" mattpocock "skills/productivity/caveman")
+    (mkSkill "mattpocock" "grill-me" mattpocock "skills/productivity/grill-me")
+    (mkSkill "mattpocock" "handoff" mattpocock "skills/productivity/handoff")
+    (mkSkill "mattpocock" "write-a-skill" mattpocock "skills/productivity/write-a-skill")
+  ]);
+
   # ─────────────────────────────────────────────────────────────
   # CREATIVE WRITING
   # ─────────────────────────────────────────────────────────────
@@ -349,6 +377,7 @@ let
     // popSkills
     // deanpetersSkills
     // ccpmSkills
+    // mattpocockSkills
     // cwSkills
     // cwAgents
     // cwCommands

@@ -96,6 +96,22 @@
         "type": "github"
       }
     },
+    "claude-skills-mattpocock": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1779266813,
+        "narHash": "sha256-Qwuu27f95xgAJ4hdv/4TNahHhprCMIxl1H9f9ymEsno=",
+        "owner": "mattpocock",
+        "repo": "skills",
+        "rev": "b8be62ffacb0118fa3eaa29a0923c87c8c11985c",
+        "type": "github"
+      },
+      "original": {
+        "owner": "mattpocock",
+        "repo": "skills",
+        "type": "github"
+      }
+    },
     "claude-skills-obsidian": {
       "flake": false,
       "locked": {
@@ -240,6 +256,7 @@
         "claude-skills-creative-writing": "claude-skills-creative-writing",
         "claude-skills-deanpeters": "claude-skills-deanpeters",
         "claude-skills-humanizer": "claude-skills-humanizer",
+        "claude-skills-mattpocock": "claude-skills-mattpocock",
         "claude-skills-obsidian": "claude-skills-obsidian",
         "claude-skills-phuryn": "claude-skills-phuryn",
         "claude-skills-product-on-purpose": "claude-skills-product-on-purpose",
