@@ -880,24 +880,71 @@ in
       /bin/rm -rf "$brew_claude_pkg" 2>/dev/null || /usr/bin/sudo -n /bin/rm -rf "$brew_claude_pkg" 2>/dev/null || true
     fi
 
+    # Helper: run a command as the home-dir owner. Under `sudo darwin-rebuild`
+    # the activation runs as root; we need anything that writes into $HOME to
+    # land user-owned. Outside sudo this is a no-op for the current user.
+    runAsOwner() {
+      if [ "$(id -u)" = "0" ] && [ "$hm_user" != "root" ]; then
+        /usr/bin/sudo -u "$hm_user" -H /bin/bash -c "$1"
+      else
+        /bin/bash -c "$1"
+      fi
+    }
+
     if [ -x "$native_claude" ]; then
       echo "[claude] already installed at $native_claude (self-updates)"
     else
-      echo "[claude] not installed; running native installer (curl claude.ai/install.sh)"
-      if [ -x /usr/bin/curl ]; then
-        # Run the installer as the home-dir owner so files land user-owned.
-        # When darwin-rebuild runs under sudo this matters; outside sudo the
-        # `sudo -u` is a no-op for the current user (no password prompt).
-        if [ "$(id -u)" = "0" ] && [ "$hm_user" != "root" ]; then
-          /usr/bin/sudo -u "$hm_user" -H /bin/bash -c \
-            '/usr/bin/curl -fsSL https://claude.ai/install.sh | /bin/bash' \
-            || echo "[claude] WARN install failed (offline?); continuing" >&2
-        else
-          /usr/bin/curl -fsSL https://claude.ai/install.sh | /bin/bash \
-            || echo "[claude] WARN install failed (offline?); continuing" >&2
+      # Repair path: if a previous install left a version binary on disk but
+      # the launcher symlink at ~/.local/bin/claude is gone (e.g. user wiped
+      # ~/.local/bin, or our own npm-eviction step nuked an old symlink),
+      # we can rebuild the launcher without any network call by invoking the
+      # latest existing version binary's `install` subcommand. install.sh
+      # itself does the same thing on its last line after downloading the
+      # binary, so this is the same code path Anthropic ships, just without
+      # the download step.
+      versions_dir="${homeDir}/.local/share/claude/versions"
+      repaired=0
+      if [ -d "$versions_dir" ]; then
+        # Pick the most recently modified executable file under versions/.
+        # `ls -t` orders by mtime descending; we just want the first hit.
+        latest_bin="$(/bin/ls -t "$versions_dir" 2>/dev/null \
+          | /usr/bin/awk -v d="$versions_dir" '{print d"/"$0; exit}')"
+        if [ -n "$latest_bin" ] && [ -x "$latest_bin" ]; then
+          echo "[claude] launcher missing but binary present at $latest_bin; repairing without network" >&2
+          if runAsOwner "'$latest_bin' install latest"; then
+            repaired=1
+          else
+            echo "[claude] WARN local repair via '$latest_bin install latest' failed; will try network installer" >&2
+          fi
         fi
-      else
-        echo "[claude] WARN /usr/bin/curl not available; skipping" >&2
+      fi
+
+      if [ "$repaired" -eq 0 ]; then
+        echo "[claude] running native installer (curl claude.ai/install.sh)"
+        if [ -x /usr/bin/curl ]; then
+          # Capture installer output so a failure is diagnosable on the next
+          # rebuild instead of being absorbed by the trailing `|| echo WARN`.
+          install_log="$(/usr/bin/mktemp -t claude-install.XXXXXX)"
+          if runAsOwner "/usr/bin/curl -fsSL https://claude.ai/install.sh | /bin/bash" \
+               >"$install_log" 2>&1; then
+            echo "[claude] installer reported success"
+          else
+            echo "[claude] WARN installer exited non-zero; tail of log:" >&2
+            /usr/bin/tail -n 20 "$install_log" >&2 || true
+            echo "[claude] full installer log retained at $install_log" >&2
+          fi
+        else
+          echo "[claude] WARN /usr/bin/curl not available; skipping" >&2
+        fi
+      fi
+
+      # Hard verification: by this point either the local repair or the
+      # network installer should have produced an executable launcher. If
+      # not, log loudly so the next rebuild surfaces the problem instead
+      # of silently leaving claude off PATH again.
+      if [ ! -x "$native_claude" ]; then
+        echo "[claude] ERROR launcher still missing at $native_claude after install attempts" >&2
+        echo "[claude] ERROR check ~/.local/share/claude/versions and the installer log above" >&2
       fi
     fi
   '';
