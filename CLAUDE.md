@@ -122,6 +122,17 @@ The `ls()` wrapper function in zsh initContent translates standard ls flags to e
 | `atlassian` | Jira/Confluence |
 | `ruflo` | Multi-agent orchestration (swarms, hive-mind, persistent memory). CLI installed via `home/npm-globals`. |
 
+## Skills & Plugins
+
+Skills come from two mechanisms (see `home/claude/skills.nix` and `home/codex/default.nix`):
+- **Symlinked skills** — flake inputs pinned in `flake.lock`, symlinked into `~/.claude/skills/` (namespaced `ns--name`) and `~/.codex/skills/` (plain names). Codex gets skills this way only — it has no plugin system.
+- **Claude plugins** — `enabledPlugins` + the `installClaudePluginMarketplaces` activation in `home/claude/default.nix` reproduce `claude plugin marketplace add` / `claude plugin install` declaratively.
+
+Operational notes:
+- **mattpocock engineering skills**: run `/setup-matt-pocock-skills` (Claude) once per repo before using `triage` / `to-issues` / `to-prd` / `tdd` / `diagnose` / `improve-codebase-architecture` / `zoom-out` — it scaffolds the repo's issue tracker, triage labels, and domain docs that those skills read.
+- **`product-management@knowledge-work-plugins`** (Anthropic): installed as a full Claude plugin (8 PM skills + `/brainstorm` + 16 HTTP MCP servers). Its `.mcp.json` registers its own `atlassian` and `figma` servers that **overlap** the official-marketplace plugins → expect duplicate MCP servers and possible first-use OAuth prompts. No per-server opt-out; disable the whole plugin or leave the unused ones idle (HTTP MCPs are silent until invoked). The same 8 PM skills are mirrored into Codex as plain symlinks.
+- **Marketplace activation** forces HTTPS for clones (`GIT_CONFIG_* insteadOf`) so it works in the keyless `sudo` activation context on fresh machines.
+
 ## Known Issues
 
 **Tmux**: Auto-start disabled due to flickering/lag. See `./docs/TMUX-ISSUES.md`.
