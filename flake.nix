@@ -72,6 +72,13 @@
          flake = false;
       };
 
+      # Anthropic's official knowledge-work plugins (we pull the
+      # product-management skill set: roadmap-update, write-spec, etc.)
+      claude-skills-anthropic-knowledge-work = {
+         url = "github:anthropics/knowledge-work-plugins";
+         flake = false;
+      };
+
       # Creative writing skills, agents, and commands
       claude-skills-creative-writing = {
          url = "github:haowjy/creative-writing-skills";

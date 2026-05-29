@@ -5,11 +5,63 @@
 # Files managed:
 #   - ~/.codex/config.toml: Settings + MCP servers (activation script, write-once)
 #   - ~/.codex/AGENTS.md: Instruction file pointing to shared ~/.ai/ context (symlink, read-only)
+#   - ~/.codex/skills/<name>: mattpocock/aihero "Skills for Real Engineers"
+#     (read-only symlinks into the nix store; same SKILL.md set Claude gets)
 
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib, inputs ? {}, ... }:
 
 let
   homeDir = config.home.homeDirectory;
+
+  # mattpocock/skills (aihero.dev). Same flake input the Claude module consumes;
+  # Codex discovers skills at ~/.codex/skills/<name>/SKILL.md, so we symlink the
+  # same engineering + productivity set in under plain names (matching Codex's
+  # native bundled-skill convention, e.g. /tdd, /triage). Mirrors the selection
+  # in home/claude/skills.nix; keep the two lists in sync.
+  mattpocock = inputs.claude-skills-mattpocock or null;
+
+  mkCodexSkill = name: category: {
+    ".codex/skills/${name}".source = "${mattpocock}/skills/${category}/${name}";
+  };
+
+  mattpocockCodexSkills = lib.optionalAttrs (mattpocock != null) (lib.attrsets.mergeAttrsList [
+    # engineering/ — setup-matt-pocock-skills is the documented prerequisite;
+    # run `/setup-matt-pocock-skills` once per repo before the others.
+    (mkCodexSkill "setup-matt-pocock-skills" "engineering")
+    (mkCodexSkill "diagnose" "engineering")
+    (mkCodexSkill "grill-with-docs" "engineering")
+    (mkCodexSkill "improve-codebase-architecture" "engineering")
+    (mkCodexSkill "prototype" "engineering")
+    (mkCodexSkill "tdd" "engineering")
+    (mkCodexSkill "to-issues" "engineering")
+    (mkCodexSkill "to-prd" "engineering")
+    (mkCodexSkill "triage" "engineering")
+    (mkCodexSkill "zoom-out" "engineering")
+
+    # productivity/
+    (mkCodexSkill "caveman" "productivity")
+    (mkCodexSkill "grill-me" "productivity")
+    (mkCodexSkill "handoff" "productivity")
+    (mkCodexSkill "write-a-skill" "productivity")
+  ]);
+
+  # anthropics/knowledge-work-plugins — product-management skill set. Same flake
+  # input the Claude module consumes; skills at product-management/skills/<name>/.
+  # Mirrors the selection in home/claude/skills.nix; keep the two lists in sync.
+  anthropicKW = inputs.claude-skills-anthropic-knowledge-work or null;
+
+  anthropicPmCodexSkills = lib.optionalAttrs (anthropicKW != null) (lib.attrsets.mergeAttrsList (
+    map (name: { ".codex/skills/${name}".source = "${anthropicKW}/product-management/skills/${name}"; }) [
+      "competitive-brief"
+      "metrics-review"
+      "product-brainstorming"
+      "roadmap-update"
+      "sprint-planning"
+      "stakeholder-update"
+      "synthesize-research"
+      "write-spec"
+    ]
+  ));
 
   # Codex config in TOML format
   # Write-once: no TOML merge tool exists, so we only write if file is missing.
@@ -54,8 +106,12 @@ let
   '';
 in
 {
+  # mattpocock/aihero skills are read-only symlinks into the nix store at
+  # ~/.codex/skills/<name>/, merged with the AGENTS.md symlink below.
+  home.file = mattpocockCodexSkills // anthropicPmCodexSkills // {
+
   # AGENTS.md - read-only symlink
-  home.file.".codex/AGENTS.md".text = ''
+  ".codex/AGENTS.md".text = ''
     # Global Development Context
 
     ## File Hierarchy (load order)
@@ -88,6 +144,7 @@ in
     6. Active project `AGENTS.md`
     7. `./docs/SESSION-STATE.md` and `./docs/TODO.md` (if they exist)
   '';
+  };
 
   # ~/.codex/config.toml - write-once (no TOML merge tool like jq)
   home.activation.syncCodexConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''

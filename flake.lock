@@ -16,6 +16,22 @@
         "type": "github"
       }
     },
+    "claude-skills-anthropic-knowledge-work": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1780007471,
+        "narHash": "sha256-ZKTVscFjYj3SOg1yPxsYbmmQb+IkeK1wcK683aybzGw=",
+        "owner": "anthropics",
+        "repo": "knowledge-work-plugins",
+        "rev": "827b25f0cd4ff231567ef746281a874208bde56a",
+        "type": "github"
+      },
+      "original": {
+        "owner": "anthropics",
+        "repo": "knowledge-work-plugins",
+        "type": "github"
+      }
+    },
     "claude-skills-beautiful-prose": {
       "flake": false,
       "locked": {
@@ -251,6 +267,7 @@
     "root": {
       "inputs": {
         "claude-skills-alireza": "claude-skills-alireza",
+        "claude-skills-anthropic-knowledge-work": "claude-skills-anthropic-knowledge-work",
         "claude-skills-beautiful-prose": "claude-skills-beautiful-prose",
         "claude-skills-ccpm": "claude-skills-ccpm",
         "claude-skills-creative-writing": "claude-skills-creative-writing",

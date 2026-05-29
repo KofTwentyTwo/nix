@@ -625,6 +625,16 @@ let
       "frontend-design@claude-plugins-official"        = true;
       "github@claude-plugins-official"                 = true;
       "playwright@claude-plugins-official"             = true;
+
+      # --- Product management (anthropics/knowledge-work-plugins marketplace) ---
+      # Full plugin parity for `claude plugin install product-management@
+      # knowledge-work-plugins`: ships 8 PM skills (roadmap-update, write-spec,
+      # competitive-brief, metrics-review, product-brainstorming, sprint-planning,
+      # stakeholder-update, synthesize-research), a /brainstorm command, and a
+      # bundle of HTTP MCP servers (linear, asana, notion, amplitude, pendo,
+      # intercom, fireflies, similarweb, slack, monday, clickup, gmail, gcal, +
+      # atlassian/figma which overlap the official plugins above).
+      "product-management@knowledge-work-plugins"      = true;
     };
 
     # Additional MCP servers (settings.json scope)
@@ -976,13 +986,23 @@ in
       # Marketplaces we want present on every machine.
       marketplaces=(
         "claude-plugins-official:anthropics/claude-plugins-official"
+        "knowledge-work-plugins:anthropics/knowledge-work-plugins"
       )
       for entry in "''${marketplaces[@]}"; do
         name="''${entry%%:*}"
         source="''${entry#*:}"
+        # Force HTTPS for claude's internal `git clone`: marketplace repos are
+        # public so HTTPS is auth-free, whereas the SSH form (git@github.com:)
+        # fails in the sudo-dropped activation context (no ssh-agent/keys) and
+        # silently skipped knowledge-work-plugins on first add. The GIT_CONFIG_*
+        # env vars inject an insteadOf rewrite into every git subprocess claude
+        # spawns. Detection matches the unique "(owner/repo)" Source line rather
+        # than the ❯-prefixed name (which only marks the *selected* marketplace,
+        # so a registered-but-unselected one would be re-added every rebuild).
         runUser 'export PATH="'"${homeDir}"'/.local/bin:'"${homeDir}"'/.npm-global/bin:/opt/homebrew/opt/node@22/bin:$PATH"; \
+          export GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0="url.https://github.com/.insteadOf" GIT_CONFIG_VALUE_0="git@github.com:"; \
           current="$(claude plugin marketplace list 2>/dev/null || true)"; \
-          if echo "$current" | /usr/bin/grep -q "❯ '"$name"'$\|❯ '"$name"' "; then :; else \
+          if echo "$current" | /usr/bin/grep -qF "('"$source"')"; then :; else \
             echo "[claude-marketplaces] Adding '"$name"' ('"$source"')..."; \
             claude plugin marketplace add "'"$source"'" 2>&1 || \
               echo "[claude-marketplaces] WARN: add of '"$name"' failed; continuing" >&2; \

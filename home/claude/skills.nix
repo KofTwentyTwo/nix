@@ -37,6 +37,12 @@ let
   deanpeters = inputs.claude-skills-deanpeters or null;
   ccpm = inputs.claude-skills-ccpm or null;
   mattpocock = inputs.claude-skills-mattpocock or null;
+  # NB: anthropics/knowledge-work-plugins is NOT symlinked here for Claude.
+  # Claude consumes its `product-management` plugin via the marketplace +
+  # enabledPlugins mechanism in home/claude/default.nix (true `claude plugin
+  # install` parity: skills + commands + MCP). The flake input still exists
+  # because the Codex module (home/codex/default.nix) symlinks those same PM
+  # skills — Codex has no plugin system, so symlinking is its only option.
   creativew = inputs.claude-skills-creative-writing or null;
   humanizer = inputs.claude-skills-humanizer or null;
   beautifulProse = inputs.claude-skills-beautiful-prose or null;
@@ -228,6 +234,11 @@ let
   # `deprecated/`, and `in-progress/`.
   mattpocockSkills = lib.optionalAttrs (mattpocock != null) (lib.attrsets.mergeAttrsList [
     # engineering/
+    # setup-matt-pocock-skills is the documented prerequisite: it scaffolds the
+    # per-repo `## Agent skills` block (issue tracker, triage labels, domain docs)
+    # that triage/to-issues/to-prd/tdd/diagnose/improve-codebase-architecture/zoom-out
+    # all read. Run `/mattpocock--setup-matt-pocock-skills` once per repo first.
+    (mkSkill "mattpocock" "setup-matt-pocock-skills" mattpocock "skills/engineering/setup-matt-pocock-skills")
     (mkSkill "mattpocock" "diagnose" mattpocock "skills/engineering/diagnose")
     (mkSkill "mattpocock" "grill-with-docs" mattpocock "skills/engineering/grill-with-docs")
     (mkSkill "mattpocock" "improve-codebase-architecture" mattpocock "skills/engineering/improve-codebase-architecture")
