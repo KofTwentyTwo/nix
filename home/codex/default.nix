@@ -12,18 +12,42 @@ let
   homeDir = config.home.homeDirectory;
 
   # Codex config in TOML format
-  # Write-once: no TOML merge tool exists, so we only write if file is missing
+  # Write-once: no TOML merge tool exists, so we only write if file is missing.
+  # Codex itself writes back to this file (project trust levels, marketplaces,
+  # plugins), so we cannot use a symlink. To force re-seed: rm ~/.codex/config.toml
+  # then re-run darwin-rebuild switch.
   codexConfigToml = pkgs.writeText "codex-config.toml" ''
-    model = "o3"
-    approval_policy = "on-request"
+    model = "gpt-5.5"
+    approval_policy = "on-failure"
     sandbox_mode = "workspace-write"
-    model_reasoning_effort = "high"
+    model_reasoning_effort = "xhigh"
+
+    # Relax the workspace-write sandbox for code-writing tasks:
+    #   - network_access lets the agent install deps and hit APIs
+    #   - writable_roots extends writes to common package/build caches outside cwd
+    [sandbox_workspace_write]
+    network_access = true
+    exclude_tmpdir_env_var = false
+    exclude_slash_tmp = false
+    writable_roots = [
+      "${homeDir}/.cache",
+      "${homeDir}/.npm",
+      "${homeDir}/.cargo",
+      "${homeDir}/.rustup",
+      "${homeDir}/.gradle",
+      "${homeDir}/.m2",
+      "${homeDir}/.local/share",
+      "${homeDir}/Library/Caches",
+    ]
 
     [mcp_servers.qqq-mcp]
     url = "http://localhost:8080/mcp"
 
+    # Codex expects `command` to be a single executable; args go separately.
+    # The previous single-string form parsed the whole thing as a binary name.
     [mcp_servers.circleci]
-    command = "npx -y @circleci/mcp-server-circleci@latest"
+    command = "npx"
+    args = ["-y", "@circleci/mcp-server-circleci@latest"]
 
     [mcp_servers.circleci.env]
     CIRCLECI_TOKEN = "$CIRCLECI_TOKEN"
