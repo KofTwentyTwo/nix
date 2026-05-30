@@ -350,6 +350,7 @@ let
     ".claude/skills/local--sales-admin".source             = "${localSkillsDir}/sales-admin";
     ".claude/skills/local--review-pr".source               = "${localSkillsDir}/review-pr";
     ".claude/skills/local--brownfield-onboarding".source   = "${localSkillsDir}/brownfield-onboarding";
+    ".claude/skills/local--initiative-playbook".source     = "${localSkillsDir}/initiative-playbook";
     ".claude/skills/local--pre-merge-checklist".source     = "${localSkillsDir}/pre-merge-checklist";
     ".claude/skills/local--mqtt-topic-design".source       = "${localSkillsDir}/mqtt-topic-design";
     ".claude/skills/local--circleci-mac-runner-debug".source = "${localSkillsDir}/circleci-mac-runner-debug";
