@@ -44,7 +44,6 @@ fi
 # Colors
 BG=$'\033[1;32m'
 DG=$'\033[38;5;22m'
-RED=$'\033[0;31m'
 R=$'\033[0m'
 
 # Center a string on a given row
@@ -113,17 +112,6 @@ show_lock_screen() {
     center $(( mid + 6 )) "${DG}enter pin to authenticate${R}"
 }
 
-show_denied() {
-    local rows mid w=24
-    rows=$(tput lines)
-    mid=$(( rows / 2 ))
-    local msg="ACCESS DENIED"
-    local mlen=${#msg}
-    local lpad=$(( (w - mlen) / 2 ))
-    local rpad=$(( w - mlen - lpad ))
-    center $(( mid + 2 )) "${RED}│$(printf '%*s' $lpad '')${msg}$(printf '%*s' $rpad '')│${R}"
-}
-
 while true; do
     run_screensaver
     show_lock_screen 0
@@ -154,11 +142,10 @@ while true; do
                 tput cnorm
                 exit 0
             fi
-            show_denied
-            sleep 0.5
-            buffer=""
-            display_count=0
-            show_lock_screen 0
+            # Mismatch: leave the rolling window intact. The trim above keeps
+            # buffer at the last PIN_LEN chars, so the next keystroke just
+            # shifts the window by one. Any PIN_LEN-length run anywhere in the
+            # typed stream unlocks — no starting over from the first character.
         fi
     done
 done
