@@ -125,7 +125,7 @@ The `ls()` wrapper function in zsh initContent translates standard ls flags to e
 ## Skills & Plugins
 
 Skills come from two mechanisms (see `home/claude/skills.nix` and `home/codex/default.nix`):
-- **Symlinked skills** — flake inputs pinned in `flake.lock`, symlinked into `~/.claude/skills/` (namespaced `ns--name`) and `~/.codex/skills/` (plain names). Codex gets skills this way only — it has no plugin system.
+- **Symlinked skills** — flake inputs pinned in `flake.lock`, symlinked into `~/.claude/skills/` (namespaced `ns--name`) and `~/.codex/skills/` (plain names). This is how Codex gets the mattpocock/anthropic skill sets. (Codex ≥0.135.0 *also* has its own plugin system + a Claude-plugin compat layer that can load `claude-plugins-official` marketplace plugins, but those are Codex/user-managed in `~/.codex/config.toml`, not seeded by Nix — see the security-guidance Stop hook note under Known Issues.)
 - **Claude plugins** — `enabledPlugins` + the `installClaudePluginMarketplaces` activation in `home/claude/default.nix` reproduce `claude plugin marketplace add` / `claude plugin install` declaratively.
 
 Operational notes:
@@ -140,6 +140,8 @@ Operational notes:
 **Neovim**: `lazy-lock.json` is NOT version controlled. After updates, may need: `rm -rf ~/.local/share/nvim/lazy ~/.cache/nvim`
 
 **sops `aws-credentials`**: `secrets/aws-credentials.enc` is encrypted only to the `&darth` age key. The declaration in `home/sops/default.nix` is commented out because `sops-install-secrets` is fail-fast — leaving it active would block every other sops-managed secret on non-Darth hosts. To restore: on Darth, after the other machines' pubkeys are in `.sops.yaml`, run `sops updatekeys secrets/aws-credentials.enc`, commit, then uncomment the block. Until then, AWS credentials need to come from elsewhere (1Password, aws-vault, etc.) on non-Darth hosts.
+
+**Codex + security-guidance Stop hook**: Codex 0.135.0's Claude-plugin compat layer maps `security-guidance@claude-plugins-official`'s `Stop` hook into a Codex stop hook. The hook's `emit_metrics()` always prints Claude's `{"metrics":…}` (`SyncHookJSONOutput`) — even on the disabled path — which Codex rejects: *"hook returned invalid stop hook JSON output."* `ENABLE_STOP_REVIEW=0` / `SECURITY_GUIDANCE_DISABLE=1` don't fix it. Fix: `home/codex/default.nix` has a `disableCodexSgStopHook` activation that idempotently sets `enabled = false` on the `[hooks.state."security-guidance@…:stop:*"]` entry in `~/.codex/config.toml` (per-hook disable; edit-time pattern warnings stay on). Caveat: `config.toml` is Codex-owned — if Codex rewrites `hooks.state` on a trust event it may drop the flag until the next `darwin-rebuild switch` re-applies it. The plugin enablement itself is Codex/user drift, not Nix-seeded.
 
 **sops deferred machines**: `.sops.yaml` lists Darth + Dark-Horse + Grogu age recipients. Renova is not yet added (no key collected); the `&darth` pubkey is also unconfirmed against the actual Darth host. Add them by collecting `age-keygen -y ~/.config/sops/age/keys.txt` output on each, appending to `.sops.yaml`, and running `sops updatekeys` on each `secrets/*.enc` from a host that can already decrypt.
 
