@@ -6,6 +6,13 @@
 { pkgs, config, ... }:
 
 {
+  # Silence Homebrew's pre-deprecation warnings about non-official taps. Every
+  # third-party tap below is explicitly declared in this file, so it's already
+  # trusted — opt out of the noisy "future release will require trust" hint.
+  # Set in `environment.variables` so it lands in both nix-darwin's brew bundle
+  # activation env and interactive shells.
+  environment.variables.HOMEBREW_NO_REQUIRE_TAP_TRUST = "1";
+
   # Post-bundle global brew upgrade.
   # ================================
   # nix-darwin's brew bundle (below) only operates on what's declared in
@@ -47,6 +54,11 @@
   homebrew = {
     enable = true;
     onActivation.cleanup = "uninstall";
+    # Homebrew now refuses `brew bundle install --cleanup` without an explicit
+    # confirmation flag — non-interactive activation must opt in to the
+    # destructive uninstall. Pass `--force-cleanup` so nix-darwin's bundle call
+    # survives the new safety check.
+    onActivation.extraFlags = [ "--force-cleanup" ];
     # Auto-upgrade all brew formulae and casks on every `darwin-rebuild switch`.
     # Keeps AI tools (chatgpt, claude, codex, codex-app, gemini-cli, aicommits,
     # ollama-app, openai-whisper) current; also upgrades all other brews as a side effect.

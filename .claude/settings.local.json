@@ -366,7 +366,14 @@
       "Bash(sudo /run/current-system/sw/bin/darwin-rebuild switch --flake /Users/james.maes/.config/nix)",
       "Bash(/opt/homebrew/bin/rg \"claude|jq:|permission|already installed|stray|npm-channel|marketplace|evict|chown\" -i)",
       "Bash(sudo /opt/homebrew/bin/jq '.mcpServers | keys, .installMethod' /Users/james.maes/.claude.json)",
-      "Bash(/opt/homebrew/bin/jq '{plugins: \\(.enabledPlugins | length\\), mcp: \\(.mcpServers | keys\\)}' /Users/james.maes/.claude/settings.json)"
+      "Bash(/opt/homebrew/bin/jq '{plugins: \\(.enabledPlugins | length\\), mcp: \\(.mcpServers | keys\\)}' /Users/james.maes/.claude/settings.json)",
+      "Bash(curl -fsSL \"https://raw.githubusercontent.com/LnL7/nix-darwin/06648f4902343228ce2de79f291dd5a58ee12146/modules/homebrew.nix\")",
+      "Bash(curl -fsSL \"https://raw.githubusercontent.com/nix-community/home-manager/master/modules/files.nix\")",
+      "Bash(curl -fsSL \"https://raw.githubusercontent.com/nix-community/home-manager/master/nix-darwin/default.nix\")",
+      "Bash(nix-store --realise /nix/store/hqpv6wc82cibxp6v3zvj7cfh11iwkryr-hm-backup)",
+      "Bash(claude --version)",
+      "Bash(GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=url.https://github.com/.insteadOf GIT_CONFIG_VALUE_0=git@github.com: git ls-remote git@github.com:anthropics/knowledge-work-plugins.git)",
+      "Bash(GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=url.https://github.com/.insteadOf GIT_CONFIG_VALUE_0=git@github.com: claude plugin marketplace add anthropics/knowledge-work-plugins)"
     ]
   }
 }

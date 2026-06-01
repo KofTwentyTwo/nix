@@ -123,6 +123,19 @@
       username = userConfig.username;
       userHome = "/Users/${username}";
 
+      # home-manager backup command (timestamped, collision-free).
+      # Replaces `home-manager.backupFileExtension = "backup"`, which uses a
+      # single static suffix — any second activation that needed to back up the
+      # same file would collide on `*.backup` and abort. This script renames
+      # each target to `<path>.backup-<UTC-timestamp>` so every run gets a
+      # unique name. Invoked by home-manager's activation as: `<script> $1`
+      # where $1 is the absolute path being overwritten.
+      hmBackupScript = nixpkgs.legacyPackages.aarch64-darwin.writeShellScript "hm-backup" ''
+        set -eu
+        ts=$(date -u +%Y%m%dT%H%M%SZ)
+        mv -- "$1" "$1.backup-$ts"
+      '';
+
       # Per-machine Tailscale preferences, applied by ./modules/tailscale.nix
       # via an activation script. See that module for behavior and caveats.
       # Admin-console approvals (subnet routes, exit node) remain manual.
@@ -426,9 +439,9 @@
                   # update /run/current-system. Keep this off until upstream HM
                   # uses BSD-compatible flags.
                   home-manager.verbose = false;
-                  # Backup existing files when Home Manager would overwrite them
-                  # This prevents errors when migrating to Home Manager
-                  home-manager.backupFileExtension = "backup";
+                  # Timestamped backup of any file HM would overwrite. See
+                  # `hmBackupScript` above for the contract.
+                  home-manager.backupCommand = "${hmBackupScript}";
                   home-manager.extraSpecialArgs = { inherit inputs userConfig; };
                   home-manager.users."${username}" = homeconfig;
                }
@@ -445,9 +458,9 @@
                   home-manager.useUserPackages = true;
                   # See Darth note above on verbose=false (BSD coreutils flag).
                   home-manager.verbose = false;
-                  # Backup existing files when Home Manager would overwrite them
-                  # This prevents errors when migrating to Home Manager
-                  home-manager.backupFileExtension = "backup";
+                  # Timestamped backup of any file HM would overwrite. See
+                  # `hmBackupScript` above for the contract.
+                  home-manager.backupCommand = "${hmBackupScript}";
                   home-manager.extraSpecialArgs = { inherit inputs userConfig; };
                   home-manager.users."${username}" = homeconfig;
                }
@@ -464,9 +477,9 @@
                   home-manager.useUserPackages = true;
                   # See Darth note above on verbose=false (BSD coreutils flag).
                   home-manager.verbose = false;
-                  # Backup existing files when Home Manager would overwrite them
-                  # This prevents errors when migrating to Home Manager
-                  home-manager.backupFileExtension = "backup";
+                  # Timestamped backup of any file HM would overwrite. See
+                  # `hmBackupScript` above for the contract.
+                  home-manager.backupCommand = "${hmBackupScript}";
                   home-manager.extraSpecialArgs = { inherit inputs userConfig; };
                   home-manager.users."${username}" = homeconfig;
                }
@@ -483,7 +496,7 @@
                   home-manager.useUserPackages = true;
                   # See Darth note above on verbose=false (BSD coreutils flag).
                   home-manager.verbose = false;
-                  home-manager.backupFileExtension = "backup";
+                  home-manager.backupCommand = "${hmBackupScript}";
                   home-manager.extraSpecialArgs = { inherit inputs userConfig; };
                   home-manager.users."${username}" = homeconfig;
                }
