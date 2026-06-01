@@ -1,7 +1,13 @@
 # Viscosity VPN Client Configuration
 # ====================================
-# Deploys OpenVPN connection bundles to Viscosity's config directory.
-# Config files are git-crypt encrypted in the repo.
+# Deploys OpenVPN connection bundles to Viscosity's config directory AND
+# reproduces the Viscosity sidebar folder structure. Config files are
+# git-crypt encrypted in the repo (see .gitattributes: configs/**).
+#
+# Nix is AUTHORITATIVE for the connection/folder layout: each activation
+# rebuilds the plist's :ConnectionOrder to match `folders` below. Reorganizing
+# folders or setting per-connection options in Viscosity's UI will be
+# overwritten on the next `darwin-rebuild switch` — change them here instead.
 
 { config, lib, pkgs, ... }:
 
@@ -9,19 +15,35 @@ let
   viscosityDir = "Library/Application Support/Viscosity/OpenVPN";
   configDir = ./configs;
 
-  # Each connection: slot number, config dir name, extra files beyond the base set
+  # Each connection: slot number -> { name = configs/<name> dir; extras = files
+  # beyond the base set }. The slot number IS the on-disk folder name under
+  # Viscosity's OpenVPN/ dir and the stable id referenced by `folders`.
   connections = {
-    "1" = { name = "dev";           extras = []; };
-    "2" = { name = "prod";          extras = []; };
-    "3" = { name = "staging";       extras = []; };
-    "4" = { name = "st-marys-lan";  extras = [ "ta.key" ]; };
-    "5" = { name = "galaxy-lan";    extras = [ "ta.key" ]; };
+    "1" = { name = "dev";                  extras = []; };          # me-health-portal-dev
+    "2" = { name = "prod";                 extras = []; };          # me-health-portal-prod
+    "3" = { name = "staging";              extras = []; };          # me-health-portal-staging
+    "4" = { name = "st-marys-lan";         extras = [ "ta.key" ]; };
+    "5" = { name = "galaxy-lan";           extras = [ "ta.key" ]; };
+    "6" = { name = "greater-goods-dev";    extras = []; };
+    "7" = { name = "greater-goods-staging"; extras = []; };
+    # When the greater-goods prod bundle exists, add it here as "8" and append
+    # "8" to the "Greater Goods - AFT" folder below.
   };
+
+  # Viscosity sidebar folders (order = display order). `slots` lists the slot
+  # ids in each folder, in display order. This mirrors the structure captured
+  # from the live machine on 2026-06-01.
+  folders = [
+    { name = "Greater Goods - AFT";    slots = [ "7" "6" ]; }
+    { name = "Greater Goods - Legacy"; slots = [ "2" "3" "1" ]; }
+    { name = "Personal";               slots = [ "5" ]; }
+    { name = "Clients";                slots = [ "4" ]; }
+  ];
 
   # Base files present in every connection
   baseFiles = [ "config.conf" "ca.crt" "cert.crt" "key.key" ];
 
-  # Generate home.file entries for all files in a connection
+  # ---- file deployment (symlinks into the nix store) ----
   mkFileEntry = slot: dir: file: {
     "${viscosityDir}/${slot}/${file}" = {
       source = "${configDir}/${dir}/${file}";
@@ -32,42 +54,64 @@ let
     let allFiles = baseFiles ++ conn.extras;
     in lib.foldl (acc: file: acc // mkFileEntry slot conn.name file) {} allFiles;
 
-  # All slot numbers for the activation script
-  allSlots = lib.attrNames connections;
+  # ---- plist :ConnectionOrder reproduction ----
+  # Build the nested nix value that matches Viscosity's plist schema, then
+  # render it to an Apple XML plist (root = array). Field values mirror what
+  # Viscosity writes: folders carry sharedAuth/sharedReconnect=false; openvpn
+  # entries carry empty options + empty children.
+  mkOpenvpnEntry = slot: {
+    options = {};
+    name = slot;
+    type = "openvpn";
+    children = [];
+  };
+
+  mkFolderEntry = folder: {
+    # Viscosity stores these as the *strings* "false", not booleans — match
+    # exactly so the activation's structural compare is a no-op (no needless
+    # plist rewrite / Viscosity restart that would drop an active VPN).
+    options = { sharedAuth = "false"; sharedReconnect = "false"; };
+    type = "folder";
+    name = folder.name;
+    children = map mkOpenvpnEntry folder.slots;
+  };
+
+  connectionOrderValue = map mkFolderEntry folders;
+
+  connectionOrderPlist = pkgs.writeText "viscosity-connectionorder.plist"
+    (lib.generators.toPlist {} connectionOrderValue);
 in
 {
   home.file = lib.mkMerge (lib.mapAttrsToList mkConnection connections);
 
-  # Register connections in Viscosity's plist on activation
+  # Reproduce Viscosity's :ConnectionOrder (folders + connections) from the nix
+  # declaration above. Idempotent: only rewrites + restarts Viscosity when the
+  # live structure differs from the desired one (a normalized JSON compare),
+  # so a no-op `switch` never drops an active VPN session.
+  #
   # NB: never use bare `exit 0` to skip — home-manager runs every
   # `home.activation.*` block as one bash process, so `exit` aborts every
   # downstream activation (notably syncClaudeJson). Wrap the body in `if`.
   home.activation.viscosityConnections = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     PLIST="$HOME/Library/Preferences/com.viscosityvpn.Viscosity.plist"
+    DESIRED="${connectionOrderPlist}"
 
-    # Skip if Viscosity has never been launched (no plist yet)
+    # Skip if Viscosity has never been launched (no plist yet). It will be
+    # seeded on the next switch after first launch.
     if [ -f "$PLIST" ]; then
-      PLISTBUDDY=/usr/libexec/PlistBuddy
-      changed=false
+      desired_json=$(/usr/bin/plutil -convert json -o - "$DESIRED" 2>/dev/null \
+        | ${pkgs.jq}/bin/jq -S . 2>/dev/null || echo "DESIRED_ERR")
+      current_json=$(/usr/bin/plutil -extract ConnectionOrder json -o - "$PLIST" 2>/dev/null \
+        | ${pkgs.jq}/bin/jq -S . 2>/dev/null || echo "MISSING")
 
-      for slot in ${lib.concatStringsSep " " allSlots}; do
-        # Check if this slot is already registered
-        if ! $PLISTBUDDY -c "Print :ConnectionOrder" "$PLIST" 2>/dev/null | grep -q "name = $slot"; then
-          # Find the next array index
-          count=$($PLISTBUDDY -c "Print :ConnectionOrder" "$PLIST" 2>/dev/null | grep -c "name = " || echo "0")
-          $PLISTBUDDY \
-            -c "Add :ConnectionOrder:$count dict" \
-            -c "Add :ConnectionOrder:$count:name string $slot" \
-            -c "Add :ConnectionOrder:$count:type string openvpn" \
-            -c "Add :ConnectionOrder:$count:children array" \
-            -c "Add :ConnectionOrder:$count:options dict" \
-            "$PLIST" 2>/dev/null
-          changed=true
-        fi
-      done
+      if [ "$desired_json" = "DESIRED_ERR" ]; then
+        echo "viscosity: could not render desired ConnectionOrder; leaving plist untouched" >&2
+      elif [ "$desired_json" != "$current_json" ]; then
+        /usr/libexec/PlistBuddy -c "Delete :ConnectionOrder" "$PLIST" 2>/dev/null || true
+        /usr/libexec/PlistBuddy -c "Import :ConnectionOrder $DESIRED" "$PLIST"
+        echo "viscosity: ConnectionOrder updated from nix declaration"
 
-      # Restart Viscosity if we added connections and it's running
-      if [ "$changed" = true ]; then
+        # Restart Viscosity so it picks up the new structure.
         if pgrep -x Viscosity >/dev/null 2>&1; then
           osascript -e 'tell application "Viscosity" to quit' 2>/dev/null || true
           sleep 1
