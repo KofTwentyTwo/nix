@@ -43,6 +43,7 @@ in
     ./pi
     ./procs
     ./python
+    ./rust
     ./scripts
     ./sops
     ./ssh

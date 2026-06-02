@@ -116,6 +116,7 @@
       "boxes"
       "btop"
       "calicoctl"
+      "cargo-dist"        # `dist` release/installer generator (generated workflows pin dist 0.x)
       "cargo-spellcheck"
       "cbonsai"
       "charmbracelet/tap/gum"
@@ -227,7 +228,13 @@
       "qrun-io/qctl/qctl"
       "steipete/tap/remindctl"
       "ripgrep"
-      "rust"
+      # Rust toolchain is managed by rustup (NOT the `rust` formula). rustup is
+      # required for the cross-compile targets `dist` checks/installs, and it
+      # conflicts_with "rust" in Homebrew — they cannot coexist. rustfmt, clippy
+      # AND rust-analyzer come from rustup components, NOT brew: rustup proxies
+      # those tool names on PATH, so a brew `rust-analyzer` would be shadowed by
+      # rustup's proxy and recurse infinitely. See home/rust for toolchain setup.
+      "rustup"
       "sd"
       "sdl2"
       "semgrep"
