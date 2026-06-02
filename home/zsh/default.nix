@@ -130,6 +130,13 @@ in
            if [[ -r "$HOME/.config/secrets/circleci-token" ]]; then
              export CIRCLECI_TOKEN="$(< "$HOME/.config/secrets/circleci-token")"
            fi
+           # GitHub PAT for Codex's remote GitHub MCP (api.githubcopilot.com).
+           # config.toml's [mcp_servers.github].bearer_token_env_var points here
+           # (wired by home/codex fixMcpServers). Terminal `codex` only — the
+           # desktop Codex.app does not inherit interactive-shell exports.
+           if [[ -r "$HOME/.config/secrets/github-codex-pat" ]]; then
+             export CODEX_GITHUB_PERSONAL_ACCESS_TOKEN="$(< "$HOME/.config/secrets/github-codex-pat")"
+           fi
 
            # ls wrapper - translates standard ls flags to eza equivalents
            # Handles: -t (sort by time), -S (sort by size), -s (show size), -h (skip, eza default)

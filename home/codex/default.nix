@@ -144,6 +144,170 @@ let
         print("codex: security-guidance Stop hook already disabled")
   '';
 
+  # Fix MCP server entries in Codex's (write-once, Codex-owned) config.toml.
+  # ----------------------------------------------------------------
+  # Same problem as the Stop-hook patcher above: the codexConfigToml seed only
+  # lands on a fresh machine (syncCodexConfig is write-once), so corrections to
+  # MCP-server config never reach an existing live file — and Codex itself
+  # rewrites this file. This idempotent patcher reconciles the MCP servers that
+  # otherwise misbehave at `codex` startup:
+  #
+  #   0. Removals — circleci-mcp-server (duplicate of circleci), qqq-mcp (dead
+  #      localhost server), ruflo (leaks ONNX-loader logs onto stdout, breaking
+  #      the strict MCP JSON-RPC stream; kept in Claude, dropped from Codex).
+  #   1. circleci — older seeds wrote `command = "npx -y @circleci/..."` as a
+  #      SINGLE string. Codex execs that literally as one binary name and dies
+  #      with "No such file or directory (os error 2)". Force the command/args
+  #      split form (matches the corrected seed below).
+  #   2. github — the plugin-provided GitHub remote MCP (api.githubcopilot.com)
+  #      authenticates via a PAT in an env var. Set bearer_token_env_var so it
+  #      reads CODEX_GITHUB_PERSONAL_ACCESS_TOKEN (sourced from sops by zsh; see
+  #      home/sops + home/zsh). A [mcp_servers.github] table needs a transport
+  #      to parse, so the url is set too. Created if no override exists.
+  #   3. figma — disable the plugin-provided figma MCP (enabled=false override)
+  #      while keeping its skills.
+  #
+  # Same Codex-ownership limitation as the Stop-hook patcher: if Codex rewrites
+  # mcp_servers on its own, the flags hold until the next darwin-rebuild switch.
+  fixMcpServers = pkgs.writeText "codex-fix-mcp-servers.py" ''
+    import os, sys, tempfile
+
+    path = sys.argv[1]
+    try:
+        with open(path, "r", encoding="utf-8") as fh:
+            lines = fh.read().split("\n")
+    except FileNotFoundError:
+        sys.exit(0)
+
+    def is_header(s):
+        t = s.strip()
+        return t.startswith("[") and t.endswith("]")
+
+    def find_block(header):
+        start = None
+        for i, ln in enumerate(lines):
+            if ln.strip() == header:
+                start = i
+                break
+        if start is None:
+            return None
+        end = len(lines)
+        for j in range(start + 1, len(lines)):
+            if is_header(lines[j]):
+                end = j
+                break
+        return (start, end)
+
+    def key_idx(start, end, key):
+        for i in range(start + 1, end):
+            if is_header(lines[i]):
+                break
+            ln = lines[i]
+            if "=" in ln and ln.split("=", 1)[0].strip() == key:
+                return i
+        return None
+
+    def last_key_line(start, end):
+        last = start
+        for i in range(start + 1, end):
+            if is_header(lines[i]):
+                break
+            if lines[i].strip() != "":
+                last = i
+        return last
+
+    changed = False
+
+    def ensure_table(header):
+        global changed
+        if find_block(header) is None:
+            if lines and lines[-1].strip() != "":
+                lines.append("")
+            lines.append(header)
+            changed = True
+
+    def set_key(header, key, value_line, only_if_absent=False):
+        global changed
+        blk = find_block(header)
+        if blk is None:
+            return
+        s, e = blk
+        ki = key_idx(s, e, key)
+        if ki is not None:
+            if only_if_absent:
+                return
+            if lines[ki].strip() != value_line:
+                lines[ki] = value_line
+                changed = True
+            return
+        lines.insert(last_key_line(s, e) + 1, value_line)
+        changed = True
+
+    def remove_table(header):
+        global changed
+        blk = find_block(header)
+        if blk is None:
+            return
+        # find_block runs to the next header, so the block already absorbs its
+        # own trailing blank line(s); a plain delete leaves the single blank
+        # that preceded the table as the separator. No extra trimming needed.
+        s, e = blk
+        del lines[s:e]
+        changed = True
+
+    # 0. Drop dead / redundant servers:
+    #    - circleci-mcp-server duplicates `circleci` (same npx package, with a
+    #      non-standard `env_vars` key).
+    #    - qqq-mcp pointed at a local server (localhost:8080) that no longer
+    #      exists.
+    #    - ruflo leaks ONNX-loader progress logs onto stdout, which corrupts
+    #      the MCP stdio JSON-RPC stream; Codex's strict rmcp client closes the
+    #      connection on the first non-JSON line. ruflo stays in Claude (lenient
+    #      client) where it's actually used; it's dropped from Codex.
+    remove_table("[mcp_servers.circleci-mcp-server]")
+    remove_table("[mcp_servers.qqq-mcp]")
+    remove_table("[mcp_servers.ruflo]")
+
+    # 1. circleci: collapse the broken single-string command into command/args.
+    if find_block("[mcp_servers.circleci]") is not None:
+        set_key("[mcp_servers.circleci]", "command", 'command = "npx"')
+        set_key("[mcp_servers.circleci]", "args",
+                'args = ["-y", "@circleci/mcp-server-circleci@latest"]')
+
+    # 2. github: point the remote MCP at the PAT env var. A [mcp_servers.github]
+    #    table in config.toml is validated as a STANDALONE server definition —
+    #    Codex requires a transport, so a bare table (bearer only) fails to load
+    #    with "invalid transport". Provide the streamable_http `url` (same
+    #    endpoint the plugin uses) alongside the bearer so the table is complete.
+    ensure_table("[mcp_servers.github]")
+    set_key("[mcp_servers.github]", "url",
+            'url = "https://api.githubcopilot.com/mcp/"', only_if_absent=True)
+    set_key("[mcp_servers.github]", "bearer_token_env_var",
+            'bearer_token_env_var = "CODEX_GITHUB_PERSONAL_ACCESS_TOKEN"',
+            only_if_absent=True)
+
+    # 3. figma: disable the plugin-provided figma MCP via a config.toml override
+    #    (same name as the plugin server -> Codex applies enabled=false). The
+    #    figma skills stay; only the MCP is suppressed. `enabled` is enforced
+    #    (not only-if-absent) so it re-disables if Codex flips it back on. The
+    #    url just satisfies the "table needs a transport" parse requirement.
+    ensure_table("[mcp_servers.figma]")
+    set_key("[mcp_servers.figma]", "url",
+            'url = "https://mcp.figma.com/mcp"', only_if_absent=True)
+    set_key("[mcp_servers.figma]", "enabled", "enabled = false")
+
+    if changed:
+        data = "\n".join(lines)
+        fd, tmp = tempfile.mkstemp(dir=os.path.dirname(path))
+        with os.fdopen(fd, "w", encoding="utf-8") as fh:
+            fh.write(data)
+        os.chmod(tmp, 0o600)
+        os.replace(tmp, path)
+        print("codex: patched MCP servers (circleci/ruflo/github)")
+    else:
+        print("codex: MCP servers already patched")
+  '';
+
   # Codex config in TOML format
   # Write-once: no TOML merge tool exists, so we only write if file is missing.
   # Codex itself writes back to this file (project trust levels, marketplaces,
@@ -172,9 +336,6 @@ let
       "${homeDir}/.local/share",
       "${homeDir}/Library/Caches",
     ]
-
-    [mcp_servers.qqq-mcp]
-    url = "http://localhost:8080/mcp"
 
     # Codex expects `command` to be a single executable; args go separately.
     # The previous single-string form parsed the whole thing as a binary name.
@@ -246,6 +407,16 @@ in
     codex_toml="${homeDir}/.codex/config.toml"
     if [ -f "$codex_toml" ]; then
       ${pkgs.python3}/bin/python3 "${disableSgStopHook}" "$codex_toml" || true
+    fi
+  '';
+
+  # Reconcile MCP server entries (circleci/ruflo/github) in the live config.
+  # Serialized after the Stop-hook patcher so the two never race on rewriting
+  # the same Codex-owned file. See the fixMcpServers comment for the why.
+  home.activation.fixCodexMcpServers = lib.hm.dag.entryAfter [ "disableCodexSgStopHook" ] ''
+    codex_toml="${homeDir}/.codex/config.toml"
+    if [ -f "$codex_toml" ]; then
+      ${pkgs.python3}/bin/python3 "${fixMcpServers}" "$codex_toml" || true
     fi
   '';
 }

@@ -21,10 +21,6 @@ let
   # GitHub and Atlassian removed: plugin:github:github and plugin:atlassian:atlassian
   # provide superset functionality via the enabled plugins
   mcpServers = {
-    qqq-mcp = {
-      type = "http";
-      url = "http://localhost:8080/mcp";
-    };
     circleci-mcp-server = {
       type = "stdio";
       command = "npx";

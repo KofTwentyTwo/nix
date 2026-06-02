@@ -17,9 +17,6 @@ let
       theme = "dark";
     };
     mcpServers = {
-      qqq-mcp = {
-        httpUrl = "http://localhost:8080/mcp";
-      };
       circleci = {
         command = "npx";
         args = [ "-y" "@circleci/mcp-server-circleci@latest" ];

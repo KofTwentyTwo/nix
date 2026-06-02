@@ -111,12 +111,19 @@ in
 
     # Org-wide GitHub security alert reads (greater-goods + gg-engineering
     # + gg-devops + gg-sandboxes). Consumed by the Cowork morning-digest
-    # dashboard at ~/Documents/Claude/Projects/Security Alerts/.
+    # dashboard at ~/Documents/Claude/Projects/Security Alerts/, and reused as
+    # the bearer token for Codex's GitHub remote MCP: the second destination
+    # lands the (classic ghp_) PAT at ~/.config/secrets/github-codex-pat, which
+    # zsh sources into CODEX_GITHUB_PERSONAL_ACCESS_TOKEN (see home/zsh) — the
+    # env var home/codex's fixMcpServers wires bearer_token_env_var to. The
+    # github MCP therefore inherits this PAT's scopes (org-wide reads); swap in
+    # a dedicated secret later if narrower scopes are wanted.
     home.activation.deployGithubSecurityPat = mkPatDeployer {
       name = "github-security-pat";
       encFile = ../../secrets/github-security-pat.enc;
       destinations = [
         "${homeDir}/Documents/Claude/Projects/Security Alerts/.github-pat"
+        "${homeDir}/.config/secrets/github-codex-pat"
       ];
     };
 
@@ -140,8 +147,11 @@ in
     # CIRCLECI_TOKEN env var for every interactive shell. Rotate at:
     # https://app.circleci.com/settings/user/tokens, then re-encrypt with
     # `sops secrets/circleci-token.enc` and rebuild.
-    home.activation.ensureCircleciSecretsDir =
-      lib.hm.dag.entryBefore [ "deployCircleciToken" ] ''
+    # Ensure ~/.config/secrets exists before any deployer that targets it.
+    # mkPatDeployer skips destinations whose parent dir is missing, so both the
+    # CircleCI token and the github-codex-pat destination depend on this.
+    home.activation.ensureSecretsDir =
+      lib.hm.dag.entryBefore [ "deployCircleciToken" "deployGithubSecurityPat" ] ''
         mkdir -p "${homeDir}/.config/secrets"
         chmod 0700 "${homeDir}/.config/secrets"
       '';
