@@ -105,7 +105,7 @@ return {
 
   -- Mason for LSP server management
   {
-    "williamboman/mason.nvim",
+    "mason-org/mason.nvim",
     opts = {
       ensure_installed = {
         -- LSP servers
