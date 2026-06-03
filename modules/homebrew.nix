@@ -69,6 +69,7 @@
     taps = [
       "antoniorodr/memo"
       "charmbracelet/tap"
+      "koftwentytwo/tap"
       "qrun-io/qctl"
       "steipete/tap"
       "tilt-dev/tap"
@@ -202,8 +203,8 @@
       "ninja"
       "no-more-secrets"
       "nmap"
-      "node@20"
-      "node@22"
+      "node@24"  # current Active LTS; the default node (see home/default.nix sessionPath)
+      "koftwentytwo/tap/notion-sql"  # Notion CLI manager + scripts
       "numpy"
       "openai-whisper"
       "opencode"

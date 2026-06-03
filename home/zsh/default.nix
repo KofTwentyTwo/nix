@@ -334,7 +334,7 @@ TOOLS - Development Languages
   graalvm-jdk@21  GraalVM 21             native image compilation
   maven           Java build             project management and build tool
   gradle          Java build             build automation tool
-  node@22         Node.js 22             default node (v25, v22, v20 installed)
+  node@24         Node.js 24             default node (current Active LTS)
   go              Go                     Go programming language
   rust            Rust                   Rust programming language (cargo in PATH)
   python/pipx     Python                 Python 3 with pipx for isolated CLI tools

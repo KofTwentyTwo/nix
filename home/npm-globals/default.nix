@@ -37,10 +37,10 @@ let
     "ruflo"
   ];
 
-  # Node.js bin dir from Homebrew (node@22 in modules/homebrew.nix).
+  # Node.js bin dir from Homebrew (node@24 in modules/homebrew.nix).
   # We reference it directly so the activation script works even if PATH
   # isn't yet set up (activation runs before login shell init).
-  nodeBin = "/opt/homebrew/opt/node@22/bin";
+  nodeBin = "/opt/homebrew/opt/node@24/bin";
 
   packageList = lib.concatStringsSep " " packages;
 in
@@ -99,7 +99,7 @@ in
     mkdir -p "$NPM_CONFIG_PREFIX"
 
     if [ ! -x "${nodeBin}/npm" ]; then
-      echo "npm-globals: ${nodeBin}/npm not found; skipping (install node@22 via Homebrew first)" >&2
+      echo "npm-globals: ${nodeBin}/npm not found; skipping (install node@24 via Homebrew first)" >&2
     else
       for pkg in ${packageList}; do
         echo "npm-globals: installing/upgrading $pkg@latest"

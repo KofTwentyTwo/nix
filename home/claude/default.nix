@@ -976,7 +976,7 @@ in
       fi
     }
 
-    if ! runUser 'export PATH="'"${homeDir}"'/.local/bin:'"${homeDir}"'/.npm-global/bin:/opt/homebrew/opt/node@22/bin:$PATH"; command -v claude >/dev/null 2>&1'; then
+    if ! runUser 'export PATH="'"${homeDir}"'/.local/bin:'"${homeDir}"'/.npm-global/bin:/opt/homebrew/opt/node@24/bin:$PATH"; command -v claude >/dev/null 2>&1'; then
       echo "[claude-marketplaces] claude CLI not on PATH yet; skipping (will register on next rebuild)" >&2
     else
       # Marketplaces we want present on every machine.
@@ -995,7 +995,7 @@ in
         # spawns. Detection matches the unique "(owner/repo)" Source line rather
         # than the ❯-prefixed name (which only marks the *selected* marketplace,
         # so a registered-but-unselected one would be re-added every rebuild).
-        runUser 'export PATH="'"${homeDir}"'/.local/bin:'"${homeDir}"'/.npm-global/bin:/opt/homebrew/opt/node@22/bin:$PATH"; \
+        runUser 'export PATH="'"${homeDir}"'/.local/bin:'"${homeDir}"'/.npm-global/bin:/opt/homebrew/opt/node@24/bin:$PATH"; \
           export GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0="url.https://github.com/.insteadOf" GIT_CONFIG_VALUE_0="git@github.com:"; \
           current="$(claude plugin marketplace list 2>/dev/null || true)"; \
           if echo "$current" | /usr/bin/grep -qF "('"$source"')"; then :; else \
@@ -1012,10 +1012,10 @@ in
   # Runs AFTER syncClaudeUserSettings so GSD's hooks/statusline writes to
   # settings.json aren't clobbered by our merge.
   #
-  # Uses brew-managed node@22 (not pkgs.nodejs) because GSD's installer
+  # Uses brew-managed node@24 (not pkgs.nodejs) because GSD's installer
   # internally runs `npm install -g .` to build its SDK, and `-g` writes to
   # NPM_CONFIG_PREFIX. Nix's nodejs pins its prefix to a read-only /nix/store
-  # path, which fails with EACCES. node@22 + ~/.npm-global mirrors the
+  # path, which fails with EACCES. node@24 + ~/.npm-global mirrors the
   # home/npm-globals pattern so everything lands in a user-writable tree.
   # CRITICAL: like installClaudePluginMarketplaces, npx + the GSD installer
   # write into ~/.claude/, ~/.npm-global/, and several user-side state dirs.
@@ -1024,8 +1024,8 @@ in
   home.activation.installGsd = lib.hm.dag.entryAfter [ "syncClaudeUserSettings" "installNpmGlobals" ] ''
     hm_user="$(/usr/bin/stat -f %Su "${homeDir}")"
 
-    if [ ! -x "/opt/homebrew/opt/node@22/bin/npx" ]; then
-      echo "[gsd] /opt/homebrew/opt/node@22/bin/npx not found; skipping (install node@22 via Homebrew first)" >&2
+    if [ ! -x "/opt/homebrew/opt/node@24/bin/npx" ]; then
+      echo "[gsd] /opt/homebrew/opt/node@24/bin/npx not found; skipping (install node@24 via Homebrew first)" >&2
     else
       # GSD's installer migrates leftover artifacts on every update. Some
       # categories the classifier can't auto-resolve and need a keep/remove
@@ -1035,11 +1035,11 @@ in
       # artifacts; bundled GSD-managed hooks get auto-removed via
       # classifyPromptUserAction regardless.
       install_cmd='export NPM_CONFIG_PREFIX="'"${homeDir}"'/.npm-global"; \
-        export PATH="'"${homeDir}"'/.npm-global/bin:/opt/homebrew/opt/node@22/bin:$PATH"; \
+        export PATH="'"${homeDir}"'/.npm-global/bin:/opt/homebrew/opt/node@24/bin:$PATH"; \
         export GSD_INSTALLER_MIGRATION_RESOLVE=keep; \
         /bin/mkdir -p "$NPM_CONFIG_PREFIX"; \
         echo "[gsd] Installing/updating to latest..."; \
-        if /opt/homebrew/opt/node@22/bin/npx -y get-shit-done-cc@latest --global 2>&1; then \
+        if /opt/homebrew/opt/node@24/bin/npx -y get-shit-done-cc@latest --global 2>&1; then \
           echo "[gsd] Install/update complete."; \
         else \
           echo "[gsd] WARNING: Install/update failed — GSD may be stale or missing." >&2; \
