@@ -107,8 +107,9 @@ in
       if [ "$desired_json" = "DESIRED_ERR" ]; then
         echo "viscosity: could not render desired ConnectionOrder; leaving plist untouched" >&2
       elif [ "$desired_json" != "$current_json" ]; then
-        /usr/libexec/PlistBuddy -c "Delete :ConnectionOrder" "$PLIST" 2>/dev/null || true
-        /usr/libexec/PlistBuddy -c "Import :ConnectionOrder $DESIRED" "$PLIST"
+        # plutil -replace writes the JSON as a typed plist value (array of dicts).
+        # PlistBuddy Import would store the whole plist file as a raw <data> blob.
+        /usr/bin/plutil -replace ConnectionOrder -json "$desired_json" "$PLIST"
         echo "viscosity: ConnectionOrder updated from nix declaration"
 
         # Restart Viscosity so it picks up the new structure.
