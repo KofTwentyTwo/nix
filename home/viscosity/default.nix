@@ -67,10 +67,8 @@ let
   };
 
   mkFolderEntry = folder: {
-    # Viscosity stores these as the *strings* "false", not booleans — match
-    # exactly so the activation's structural compare is a no-op (no needless
-    # plist rewrite / Viscosity restart that would drop an active VPN).
-    options = { sharedAuth = "false"; sharedReconnect = "false"; };
+    # Viscosity requires boolean false here, not the string "false".
+    options = { sharedAuth = false; sharedReconnect = false; };
     type = "folder";
     name = folder.name;
     children = map mkOpenvpnEntry folder.slots;
@@ -107,15 +105,21 @@ in
       if [ "$desired_json" = "DESIRED_ERR" ]; then
         echo "viscosity: could not render desired ConnectionOrder; leaving plist untouched" >&2
       elif [ "$desired_json" != "$current_json" ]; then
-        # plutil -replace writes the JSON as a typed plist value (array of dicts).
-        # PlistBuddy Import would store the whole plist file as a raw <data> blob.
-        /usr/bin/plutil -replace ConnectionOrder -json "$desired_json" "$PLIST"
-        echo "viscosity: ConnectionOrder updated from nix declaration"
-
-        # Restart Viscosity so it picks up the new structure.
+        # Quit Viscosity before writing — cfprefsd caches preferences for the
+        # running app and Viscosity would overwrite any change made while open.
+        viscosity_was_running=false
         if pgrep -x Viscosity >/dev/null 2>&1; then
           osascript -e 'tell application "Viscosity" to quit' 2>/dev/null || true
           sleep 1
+          viscosity_was_running=true
+        fi
+
+        # plutil -replace writes the JSON as a typed plist value (array of dicts).
+        /usr/bin/plutil -replace ConnectionOrder -json "$desired_json" "$PLIST"
+        killall cfprefsd 2>/dev/null || true
+        echo "viscosity: ConnectionOrder updated from nix declaration"
+
+        if [ "$viscosity_was_running" = true ]; then
           open -a Viscosity
         fi
       fi
