@@ -553,9 +553,102 @@ TIP: shelp KEYWORD   filter output (e.g., shelp kubectl, shelp replace, shelp gi
            # darwin-rebuild switch wrapper. GSD updates during Home Manager
            # activation in home/claude/default.nix; it is no longer a flake
            # input, so this wrapper should not update a removed input name.
+           #
+           # Prints a per-step report (each activation step ✓/⚠/✗) followed by an
+           # unambiguous verdict box. darwin-rebuild can exit 0 even when a
+           # guarded step grumbled (e.g. the `|| echo`-guarded `brew upgrade`
+           # hook in modules/homebrew.nix), so a guarded failure shows ⚠ and a
+           # yellow "OK (with warnings)" box rather than a false green 100%.
            switch() {
              clear
-             sudo darwin-rebuild switch --flake "$HOME/.config/nix"
+             # Cache sudo credentials up front so the password prompt isn't
+             # tangled up inside the tee'd pipeline below.
+             sudo -v || { echo "sudo authentication failed."; return 1; }
+
+             local log; log=$(mktemp -t darwin-switch)
+             sudo darwin-rebuild switch --flake "$HOME/.config/nix" 2>&1 | tee "$log"
+             local rc=''${pipestatus[1]}
+
+             # Segment the captured output into named steps and grade each one.
+             # Step boundaries are the headers nix-darwin / Home Manager / our
+             # own hooks print: "Trusting declared Homebrew taps", "Homebrew
+             # bundle...", every "Activating X", and "Upgrading remaining brew".
+             # A step is FAIL on a hard error line (nix `error:`, brew `Error:`,
+             # tap-trust refusal), WARN on a guarded grumble (brew-upgrade-all
+             # non-zero, tmux source-file failed), else OK. ANSI is stripped
+             # first; `command awk`/`grep` bypass any aliases.
+             local report
+             report=$(perl -pe 's/\e\[[0-9;]*m//g' "$log" | command awk '
+               function flush() {
+                 if (name != "") {
+                   st = err ? "FAIL" : (warn ? "WARN" : "OK")
+                   printf "%s\t%s\t%s\n", st, name, note
+                 }
+               }
+               /^Trusting declared Homebrew taps/   { flush(); name="Homebrew tap trust"; err=0; warn=0; note=""; next }
+               /^Homebrew bundle\.\.\./             { flush(); name="Homebrew bundle"; err=0; warn=0; note=""; next }
+               /^Upgrading remaining brew packages/ { flush(); name="Brew upgrade (guarded)"; err=0; warn=0; note=""; next }
+               /^Activating / {
+                 flush(); name=$0; sub(/^Activating /, "", name); err=0; warn=0; note=""
+                 if (name ~ /^home-manager configuration/) name="Home-Manager activation"
+                 next
+               }
+               /^(error|Error):|Refusing to load|[Uu]ntrusted tap/ { err=1; if (note=="") note=$0 }
+               /\[brew-upgrade-all\] non-zero/ { warn=1; note="some packages may not be current" }
+               /source-file failed/            { warn=1; note="tmux config reload failed" }
+               END { flush() }
+             ')
+
+             # Also catch hard errors that occur outside any named step (e.g. a
+             # nix build error before activation even starts).
+             local build_errs
+             build_errs=$(perl -pe 's/\e\[[0-9;]*m//g' "$log" \
+                          | command grep -nE '^(error|Error):|Refusing to load|[Uu]ntrusted tap')
+
+             local g=$'\033[0;32m' y=$'\033[0;33m' r=$'\033[0;31m' dim=$'\033[2m' x=$'\033[0m'
+             local n_ok=0 n_warn=0 n_fail=0 st name note
+
+             echo ""
+             echo "''${dim}── Switch report ──────────────────────────────────''${x}"
+             while IFS=$'\t' read -r st name note; do
+               [[ -z "$st" ]] && continue
+               case "$st" in
+                 OK)   (( n_ok++ ));   print -r -- "  ''${g}✓''${x} $name" ;;
+                 WARN) (( n_warn++ )); print -r -- "  ''${y}⚠''${x} $name  ''${dim}$note''${x}" ;;
+                 FAIL) (( n_fail++ )); print -r -- "  ''${r}✗ $name  ($note)''${x}" ;;
+               esac
+             done <<< "$report"
+             echo "''${dim}── $n_ok ok · $n_warn warn · $n_fail fail ─────────────────────''${x}"
+
+             # Verdict. Fatal failure = non-zero exit OR a FAIL step OR a hard
+             # error line anywhere; otherwise OK, downgraded to yellow if any
+             # guarded warnings showed up.
+             if [[ $rc -eq 0 && $n_fail -eq 0 && -z "$build_errs" ]]; then
+               command rm -f "$log"
+               if (( n_warn > 0 )); then
+                 printf '%s\n' \
+                   "Switch applied, but $n_warn step(s) reported warnings." \
+                   "Review the ⚠ items above ($n_ok ok · $n_warn warn)." \
+                   | draw_box --color yellow --title "✓ SWITCH OK (with warnings)"
+               else
+                 printf '%s\n' \
+                   "darwin-rebuild switch ran 100% successfully." \
+                   "$n_ok steps activated · 0 warnings · 0 failures." \
+                   | draw_box --color green --title "✓ SWITCH OK"
+               fi
+             else
+               {
+                 [[ $rc -ne 0 ]] && echo "darwin-rebuild exited non-zero (code $rc)."
+                 (( n_fail > 0 )) && echo "$n_fail step(s) failed — see the ✗ lines above."
+                 if [[ $n_fail -eq 0 && -n "$build_errs" ]]; then
+                   echo "Errors outside any step (likely a build error):"
+                   echo "$build_errs" | command head -n 15
+                 fi
+                 echo ""
+                 echo "Full output kept at: $log"
+               } | draw_box --color red --title "✗ SWITCH FAILED"
+             fi
+             return $rc
            }
 
            # Help - colored --help output via bat
