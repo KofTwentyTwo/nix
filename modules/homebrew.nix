@@ -5,13 +5,49 @@
 
 { pkgs, config, ... }:
 
+let
+  # Third-party (non-official) Homebrew taps. Each is explicitly vouched for
+  # here, so all of them are marked trusted via trust.json below. Referenced by
+  # both `homebrew.taps` and the tap-trust writer so the two can never drift.
+  trustedTaps = [
+    "antoniorodr/memo"
+    "charmbracelet/tap"
+    "koftwentytwo/tap"
+    "qrun-io/qctl"
+    "steipete/tap"
+    "tilt-dev/tap"
+  ];
+in
 {
-  # Silence Homebrew's pre-deprecation warnings about non-official taps. Every
-  # third-party tap below is explicitly declared in this file, so it's already
-  # trusted — opt out of the noisy "future release will require trust" hint.
-  # Set in `environment.variables` so it lands in both nix-darwin's brew bundle
-  # activation env and interactive shells.
-  environment.variables.HOMEBREW_NO_REQUIRE_TAP_TRUST = "1";
+  # Trust all declared third-party taps.
+  # ====================================
+  # Homebrew 5.1+ refuses to load formulae/casks from non-official taps unless
+  # they're trusted (`HOMEBREW_REQUIRE_TAP_TRUST` defaults to true). An
+  # untrusted tap aborts `brew upgrade` with "Refusing to load formula ... from
+  # untrusted tap" and makes `brew bundle` spam outdated-check warnings.
+  #
+  # The `HOMEBREW_NO_REQUIRE_TAP_TRUST` escape hatch is a dead end: it's
+  # deprecated upstream (slated for removal) and never reached the brew commands
+  # anyway — nix-darwin runs `brew bundle` / `brew upgrade` under
+  # `sudo --preserve-env=PATH`, which strips every other env var, so setting it
+  # in `environment.variables` silently did nothing in the activation context.
+  #
+  # brew reads `~/.homebrew/trust.json` regardless of the environment, and
+  # trusting a tap short-circuits the per-formula/per-cask trust check, so we
+  # write that file declaratively from `trustedTaps`. preActivation runs as root
+  # early — before both nix-darwin's `brew bundle` and the upgrade hook below —
+  # so the trust file is in place before any tap is loaded.
+  system.activationScripts.preActivation.text =
+    let
+      user = config.system.primaryUser;
+      trustJson = pkgs.writeText "homebrew-trust.json"
+        (builtins.toJSON { trustedtaps = trustedTaps; });
+    in
+    ''
+      echo >&2 "Trusting declared Homebrew taps (trust.json)..."
+      install -d -o ${user} -g staff -m 0755 "/Users/${user}/.homebrew"
+      install -o ${user} -g staff -m 0644 ${trustJson} "/Users/${user}/.homebrew/trust.json"
+    '';
 
   # Post-bundle global brew upgrade.
   # ================================
@@ -24,10 +60,11 @@
   # everything brew knows about — declared, transitive, or manual — gets
   # bumped on every `darwin-rebuild switch`.
   #
-  # Why a separate hook rather than relying on `homebrew.onActivation.upgrade`:
-  # that option just toggles `--no-upgrade` on `brew bundle`, which still
-  # only touches Brewfile-declared deps. Catching the rest requires a
-  # `brew upgrade` call outside the bundle.
+  # This is the ONLY upgrade path: `onActivation.upgrade` is deliberately false
+  # (see below) because nix-darwin's `brew bundle` runs unguarded under the
+  # activation's `set -e`, so an upgrade failure there would abort the whole
+  # switch. That option also only touches Brewfile-declared deps; a bare
+  # `brew upgrade` outside the bundle catches transitive + undeclared brews too.
   #
   # Runs as the primary user via `sudo --user=<primaryUser>`: brew refuses
   # to operate on its prefix as root, so we mirror the same sudo-drop
@@ -53,31 +90,35 @@
 
   homebrew = {
     enable = true;
-    onActivation.cleanup = "uninstall";
-    # Homebrew now refuses `brew bundle install --cleanup` without an explicit
-    # confirmation flag — non-interactive activation must opt in to the
-    # destructive uninstall. Pass `--force-cleanup` so nix-darwin's bundle call
-    # survives the new safety check.
+    # Uninstall any formula/cask/MAS app not declared here on every switch.
+    # We drive this with `--force-cleanup` (via extraFlags) rather than
+    # nix-darwin's `onActivation.cleanup = "uninstall"`: that option emits the
+    # bare `--cleanup` switch, which Homebrew now deprecates ("Calling the
+    # `--cleanup` switch is deprecated! There is no replacement."). Per brew's
+    # source (bundle/subcommand/install.rb) `--force-cleanup` alone performs the
+    # same non-interactive cleanup — `cleanup_requested = args.force_cleanup? ||
+    # args.cleanup?` — without the deprecation warning.
     onActivation.extraFlags = [ "--force-cleanup" ];
-    # Auto-upgrade all brew formulae and casks on every `darwin-rebuild switch`.
-    # Keeps AI tools (chatgpt, claude, codex, codex-app, gemini-cli, aicommits,
-    # ollama-app, openai-whisper) current; also upgrades all other brews as a side effect.
-    onActivation.upgrade = true;
+    # Do NOT upgrade during the bundle. nix-darwin's `brew bundle` runs unguarded
+    # under the system activation's `set -e`, so with upgrade enabled a single
+    # flaky cask/formula upgrade (a 404, a build failure, a transient network
+    # hiccup) aborts the ENTIRE `darwin-rebuild switch` with exit 1. Instead the
+    # bundle only installs missing declared deps + cleans up undeclared ones
+    # (rarely fails), and all upgrades are handled by the `|| echo`-guarded
+    # `brew upgrade` postActivation hook above — which keeps AI tools (claude,
+    # codex, gemini-cli, etc.) and everything else current without ever aborting
+    # the switch. The `switch` wrapper's error scan still surfaces brew failures
+    # as a clear ✗ box.
+    onActivation.upgrade = false;
     # Refresh brew's package metadata before upgrading so we pull the latest versions.
     onActivation.autoUpdate = true;
 
-    taps = [
-      "antoniorodr/memo"
-      "charmbracelet/tap"
-      "koftwentytwo/tap"
-      "qrun-io/qctl"
-      "steipete/tap"
-      "tilt-dev/tap"
-    ];
+    taps = trustedTaps;
 
     # Mac App Store apps (managed via mas CLI 6.0+)
-    # IMPORTANT: With onActivation.cleanup="uninstall", any MAS app not listed
-    # here is removed on `darwin-rebuild switch`. Re-add any you want to keep.
+    # IMPORTANT: `--force-cleanup` (extraFlags above) uninstalls anything not
+    # declared here, so any MAS app not listed is removed on
+    # `darwin-rebuild switch`. Re-add any you want to keep.
     masApps = {
       "1Password for Safari"         = 1569813296;
       "aSPICE Pro"                   = 1560593107;
