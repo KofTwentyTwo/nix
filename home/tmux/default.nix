@@ -62,9 +62,13 @@
         echo "tmux:   $sock: not a socket"
         continue
       fi
-      ls_out=$("$tmux_bin" -S "$sock" list-sessions 2>&1)
-      ls_rc=$?
-      if [ $ls_rc -eq 0 ]; then
+      # Test list-sessions in the `if` condition, NOT as `ls_out=$(...); rc=$?`.
+      # Activation runs under `set -e`, where a bare command-substitution
+      # assignment that fails aborts the entire switch before `$?` can be read.
+      # A stale/dead tmux socket makes list-sessions exit non-zero, which would
+      # otherwise kill the rebuild. The `if` form is errexit-safe (and matches
+      # the source-file check below).
+      if ls_out=$("$tmux_bin" -S "$sock" list-sessions 2>&1); then
         echo "tmux:   $sock: live (sessions found)"
         if out=$("$tmux_bin" -S "$sock" source-file "$HOME/.config/tmux/tmux.conf" 2>&1); then
           echo "tmux: reloaded config in running server ($sock)"
@@ -74,7 +78,7 @@
           echo "tmux: source-file failed against $sock: $out" >&2
         fi
       else
-        echo "tmux:   $sock: list-sessions failed (rc=$ls_rc): $ls_out"
+        echo "tmux:   $sock: list-sessions failed: $ls_out"
       fi
     done
 
