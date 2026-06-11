@@ -12,6 +12,7 @@ let
   trustedTaps = [
     "antoniorodr/memo"
     "charmbracelet/tap"
+    "darinkelkhoff/tap"
     "koftwentytwo/tap"
     "qrun-io/qctl"
     "steipete/tap"
@@ -354,6 +355,7 @@ in
       "lm-studio"
       "loopback"
       "mactex-no-gui"
+      "markdownviewr"
       "notion-calendar"
       "notion-mail"
       "notion"
