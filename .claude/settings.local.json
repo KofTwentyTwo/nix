@@ -396,10 +396,7 @@
       "Bash(python3 -)",
       "Bash(/opt/homebrew/bin/dist --version)",
       "Bash(/opt/homebrew/opt/rustup/bin/rustup show *)",
-      "Bash(grep -vE '^\\(modules/homebrew.nix|home/default.nix|home/rust/default.nix\\)$')",
-      "Bash(AWS_PROFILE=kingsrook_root_admin aws route53*)",
-      "Bash(AWS_PROFILE=kingsrook_root_admin aws route53domains*)",
-      "Bash(AWS_PROFILE=kingsrook_root_admin tofu -chdir=*apply*)"
+      "Bash(grep -vE '^\\(modules/homebrew.nix|home/default.nix|home/rust/default.nix\\)$')"
     ]
   }
 }

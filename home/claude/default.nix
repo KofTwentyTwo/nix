@@ -351,6 +351,14 @@ let
       "Bash(ansible-playbook --check:*)"
       "Bash(ansible-playbook --syntax-check:*)"
 
+      # KingsRook root-admin scoped grants. These intentionally relax the
+      # "tofu apply deliberately omitted" policy above, but ONLY for the
+      # kingsrook_root_admin AWS profile invoked inline. Route53 / Route53
+      # Domains management runs unprompted under that profile.
+      "Bash(AWS_PROFILE=kingsrook_root_admin aws route53*)"
+      "Bash(AWS_PROFILE=kingsrook_root_admin aws route53domains*)"
+      "Bash(AWS_PROFILE=kingsrook_root_admin tofu -chdir=*apply*)"
+
       # Terragrunt read/plan operations. Mutating operations such as apply,
       # taint, run, or arbitrary state edits deliberately require approval.
       "Bash(terragrunt init:*)"
