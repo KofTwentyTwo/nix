@@ -292,7 +292,7 @@
       "Bash(rg -l \"stray_bins\\\\|stray claude at\" /nix/store/*-home-manager-generation*/activate)",
       "Bash(/opt/homebrew/bin/rg -l \"stray_bins\" /nix/store/*-home-manager-generation/activate)",
       "Bash(/opt/homebrew/bin/rg -A 30 \"stray_bins\" /nix/store/4phxyss58cbqrd4hgnw3ya129mqj9wrb-home-manager-generation/activate)",
-      "Bash(sudo /run/current-system/sw/bin/darwin-rebuild switch --flake .)",
+      "Bash(sudo darwin-rebuild switch --flake .)",
       "Bash(sudo /run/current-system/sw/bin/darwin-rebuild activate)",
       "Bash(/opt/homebrew/bin/rg \"claude|antigravity|opencode|hermes|stray|installGsd|gsd|pi-coding|root-owned|permission\" -i)",
       "Bash(xattr -l /Users/james.maes/.claude.json)",
@@ -396,7 +396,10 @@
       "Bash(python3 -)",
       "Bash(/opt/homebrew/bin/dist --version)",
       "Bash(/opt/homebrew/opt/rustup/bin/rustup show *)",
-      "Bash(grep -vE '^\\(modules/homebrew.nix|home/default.nix|home/rust/default.nix\\)$')"
+      "Bash(grep -vE '^\\(modules/homebrew.nix|home/default.nix|home/rust/default.nix\\)$')",
+      "Bash(AWS_PROFILE=kingsrook_root_admin aws route53*)",
+      "Bash(AWS_PROFILE=kingsrook_root_admin aws route53domains*)",
+      "Bash(AWS_PROFILE=kingsrook_root_admin tofu -chdir=*apply*)"
     ]
   }
 }
