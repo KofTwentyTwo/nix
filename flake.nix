@@ -205,6 +205,28 @@
       #####################################################################
       security.pam.services.sudo_local.touchIdAuth = true;
       security.pam.services.sudo_local.reattach = true;  # Enable Touch ID in tmux
+
+      #####################################################################
+      ## Internal PKI trust (Galaxy LAN). Additive: keep G1 during the    ##
+      ## transition. New root = Galaxy LAN Root CA 2026.                  ##
+      ## SoT: cluster-gitops/pki/roots/galaxy-lan-root-ca-2026.pem        ##
+      ## Trusts *.galaxy.lan leaves from step-ca (ca.galaxy.lan), incl.   ##
+      ## infisical.galaxy.lan so `tofu -chdir=infisical-config` verifies  ##
+      ## TLS without the SSH-tunnel workaround. Drop G1 only at the       ##
+      ## owner-gated flag day (RUNBOOK-pki-deploy.md section 8).          ##
+      #####################################################################
+      security.pki.installCACerts = true;
+      security.pki.certificateFiles = [
+        ./certs/galaxy-lan-root-ca-2026.pem
+      ];
+      # NOTE: security.pki above covers SSL_CERT_FILE-aware tools, but the macOS System
+      # keychain TRUST that Safari/Chrome and Go binaries (e.g. the OpenTofu infisical
+      # provider) verify against CANNOT be set headlessly — `security add-trusted-cert`
+      # requires an interactive auth session. So it is a ONE-TIME MANUAL step per Mac
+      # (cluster-gitops RUNBOOK-pki-client-trust.md section 1):
+      #   sudo security add-trusted-cert -d -r trustRoot \
+      #     -k /Library/Keychains/System.keychain ~/.config/nix/certs/galaxy-lan-root-ca-2026.pem
+
       system.defaults.NSGlobalDomain.InitialKeyRepeat = 15;
       system.defaults.NSGlobalDomain.KeyRepeat = 2;
       system.defaults.finder.ShowStatusBar = true;
