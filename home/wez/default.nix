@@ -18,7 +18,6 @@
    config = {
       programs.wezterm = {
          enable = true;
-         package = pkgs.wezterm;
       };
 
       # Install WezTerm configuration directory

@@ -440,6 +440,33 @@
       # Note: Packages managed in home/default.nix and modules/homebrew.nix
       # Note: sessionPath is now managed in home/default.nix for better modularity
    };
+
+   # One darwinConfiguration per host. Every host's wiring is identical bar the
+   # hostname (and its machineConfig lookup), so define it once. All hosts run
+   # Determinate Nix, hence nix.enable = false everywhere.
+   mkDarwin = hostName: nix-darwin.lib.darwinSystem {
+      specialArgs = { machineConfig = machineConfigs.${hostName}; inherit userConfig; };
+      modules = [
+         configuration
+         { nix.enable = false; networking.hostName = hostName; }
+         home-manager.darwinModules.home-manager
+         {
+            home-manager.useGlobalPkgs = true;
+            home-manager.useUserPackages = true;
+            # verbose=true exports VERBOSE_ARG=--verbose, which BSD coreutils
+            # (rm, mkdir, etc.) reject with "illegal option -- -". HM's EXIT
+            # trap then returns non-zero and the switch silently fails to
+            # update /run/current-system. Keep this off until upstream HM
+            # uses BSD-compatible flags.
+            home-manager.verbose = false;
+            # Timestamped backup of any file HM would overwrite. See
+            # `hmBackupScript` above for the contract.
+            home-manager.backupCommand = "${hmBackupScript}";
+            home-manager.extraSpecialArgs = { inherit inputs userConfig; };
+            home-manager.users."${username}" = homeconfig;
+         }
+      ];
+   };
    in
    {
       # Dev shell with auto git-crypt unlock
@@ -458,83 +485,8 @@
         '';
       };
 
-      darwinConfigurations."Darth" = nix-darwin.lib.darwinSystem {
-         specialArgs = { machineConfig = machineConfigs."Darth"; inherit userConfig; };
-         modules = [
-            configuration
-            # Darth uses Determinate Nix — disable nix-darwin's daemon management
-            { nix.enable = false; networking.hostName = "Darth"; }
-               home-manager.darwinModules.home-manager  {
-                  home-manager.useGlobalPkgs = true;
-                  home-manager.useUserPackages = true;
-                  # verbose=true exports VERBOSE_ARG=--verbose, which BSD coreutils
-                  # (rm, mkdir, etc.) reject with "illegal option -- -". HM's EXIT
-                  # trap then returns non-zero and the switch silently fails to
-                  # update /run/current-system. Keep this off until upstream HM
-                  # uses BSD-compatible flags.
-                  home-manager.verbose = false;
-                  # Timestamped backup of any file HM would overwrite. See
-                  # `hmBackupScript` above for the contract.
-                  home-manager.backupCommand = "${hmBackupScript}";
-                  home-manager.extraSpecialArgs = { inherit inputs userConfig; };
-                  home-manager.users."${username}" = homeconfig;
-               }
-         ];
-      };
-      darwinConfigurations."Grogu" = nix-darwin.lib.darwinSystem {
-         specialArgs = { machineConfig = machineConfigs."Grogu"; inherit userConfig; };
-         modules = [
-            configuration
-            # Grogu uses Determinate Nix — disable nix-darwin's daemon management
-            { nix.enable = false; networking.hostName = "Grogu"; }
-               home-manager.darwinModules.home-manager  {
-                  home-manager.useGlobalPkgs = true;
-                  home-manager.useUserPackages = true;
-                  # See Darth note above on verbose=false (BSD coreutils flag).
-                  home-manager.verbose = false;
-                  # Timestamped backup of any file HM would overwrite. See
-                  # `hmBackupScript` above for the contract.
-                  home-manager.backupCommand = "${hmBackupScript}";
-                  home-manager.extraSpecialArgs = { inherit inputs userConfig; };
-                  home-manager.users."${username}" = homeconfig;
-               }
-         ];
-      };
-      darwinConfigurations."Renova" = nix-darwin.lib.darwinSystem {
-         specialArgs = { machineConfig = machineConfigs."Renova"; inherit userConfig; };
-         modules = [
-            configuration
-            # Renova uses Determinate Nix — disable nix-darwin's daemon management
-            { nix.enable = false; networking.hostName = "Renova"; }
-               home-manager.darwinModules.home-manager  {
-                  home-manager.useGlobalPkgs = true;
-                  home-manager.useUserPackages = true;
-                  # See Darth note above on verbose=false (BSD coreutils flag).
-                  home-manager.verbose = false;
-                  # Timestamped backup of any file HM would overwrite. See
-                  # `hmBackupScript` above for the contract.
-                  home-manager.backupCommand = "${hmBackupScript}";
-                  home-manager.extraSpecialArgs = { inherit inputs userConfig; };
-                  home-manager.users."${username}" = homeconfig;
-               }
-         ];
-      };
-      darwinConfigurations."Dark-Horse" = nix-darwin.lib.darwinSystem {
-         specialArgs = { machineConfig = machineConfigs."Dark-Horse"; inherit userConfig; };
-         modules = [
-            configuration
-            # Dark-Horse uses Determinate Nix - disable nix-darwin daemon management
-            { nix.enable = false; networking.hostName = "Dark-Horse"; }
-               home-manager.darwinModules.home-manager  {
-                  home-manager.useGlobalPkgs = true;
-                  home-manager.useUserPackages = true;
-                  # See Darth note above on verbose=false (BSD coreutils flag).
-                  home-manager.verbose = false;
-                  home-manager.backupCommand = "${hmBackupScript}";
-                  home-manager.extraSpecialArgs = { inherit inputs userConfig; };
-                  home-manager.users."${username}" = homeconfig;
-               }
-         ];
-      };
+      # Bodies are identical bar the hostname; see mkDarwin in the let block
+      # above. machineConfigs is the single source of the host list.
+      darwinConfigurations = builtins.mapAttrs (name: _: mkDarwin name) machineConfigs;
    };
 }

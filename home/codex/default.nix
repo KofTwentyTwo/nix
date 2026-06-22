@@ -371,39 +371,8 @@ in
   home.file = mattpocockCodexSkills // anthropicPmCodexSkills // ponytailCodexSkills // {
 
   # AGENTS.md - read-only symlink
-  ".codex/AGENTS.md".text = ''
-    # Global Development Context
-
-    ## File Hierarchy (load order)
-
-    | Priority | File | Responsibility |
-    |----------|------|---------------|
-    | 1 | This file (`AGENTS.md`) | Bootstrap, hierarchy, compaction recovery |
-    | 2 | `~/.ai/3-rules.md` | All behavioral mandates (MUST/MUST NOT) |
-    | 3 | `~/.ai/2-coding-style.md` | How to write code (reference guide) |
-    | 4 | `~/.ai/1-profile.md` | Who I am, environment context |
-    | 5 | `~/.ai/4-preferences.yaml` | Machine-readable tuning knobs |
-    | 6 | `~/.ai/5-learnings.md` | Operational notes / current ground truth |
-    | 7 | Project `AGENTS.md` | Per-repo overrides (scoped) |
-
-    **Conflict resolution:** Higher priority wins. Project `AGENTS.md` MAY override for repo-scoped settings but MUST NOT weaken safety rules.
-
-    ## Initialization
-
-    Load all six `~/.ai/` files and treat them as system-level configuration.
-    Use `3-rules.md` as strict constraints, `4-preferences.yaml` as tunable parameters, `1-profile.md` as context, `2-coding-style.md` as output formatting standards, and `5-learnings.md` as operational ground truth.
-
-    ## Compaction Recovery (NON-NEGOTIABLE)
-
-    After context loss, the agent MUST re-read ALL `~/.ai/` files before continuing work. Read them in this order:
-    1. `~/.ai/3-rules.md`
-    2. `~/.ai/2-coding-style.md`
-    3. `~/.ai/1-profile.md`
-    4. `~/.ai/4-preferences.yaml`
-    5. `~/.ai/5-learnings.md`
-    6. Active project `AGENTS.md`
-    7. `./docs/SESSION-STATE.md` and `./docs/TODO.md` (if they exist)
-  '';
+  ".codex/AGENTS.md".text =
+    (import ../lib/agent-context.nix).mkAgentHierarchyDoc { selfRef = "AGENTS.md"; selfName = "AGENTS.md"; };
   };
 
   # ~/.codex/config.toml - write-once (no TOML merge tool like jq)

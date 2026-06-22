@@ -71,12 +71,6 @@ def api_post(url, payload):
             return None
         raise
 
-def api_put_property(url, payload):
-    data = json.dumps(payload).encode("utf-8")
-    req = urllib.request.Request(url, data=data, method="PUT", headers=HEADERS)
-    with urllib.request.urlopen(req) as resp:
-        return json.loads(resp.read())
-
 
 # ── Full-width layout fixes ────────────────────────────────────────────────
 def fix_storage_layout(html):
@@ -107,7 +101,7 @@ def set_appearance_properties(content_id):
                     "value": "full-width",
                     "version": {"number": ver + 1}
                 }
-                api_put_property(f"{props_url}/{key}", update_payload)
+                api_put(f"{props_url}/{key}", update_payload)
             except urllib.error.HTTPError:
                 pass  # Best effort
     print("  Layout properties set to full-width", file=sys.stderr)

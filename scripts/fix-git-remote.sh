@@ -39,7 +39,6 @@ echo -e "${CYAN}Current remote URL:${NC} $current_url"
 
 # Try to fetch and see if GitHub tells us the new location
 echo -e "${CYAN}Checking for repository redirect...${NC}"
-new_url=$(git ls-remote --get-url "$remote_name" 2>&1 | grep -i "moved\|new location" || true)
 
 # If git fetch shows a redirect message, extract the new URL
 if git fetch "$remote_name" 2>&1 | grep -q "new location"; then

@@ -941,8 +941,6 @@ EOF
 
             # History shortcuts
             hist        = "history";
-            his         = "history";
-            hi          = "history";
             
             # Task management
             tl          = "task --list-all";
@@ -970,7 +968,6 @@ EOF
             ll          = "eza -l";                            # long listing
             la          = "eza -la";                           # long listing, all
             tree        = "eza --tree";                        # tree view
-            "ls-la"     = "eza -la";                          # ls -la    (long, all)
             "ls-lt"     = "eza -l --sort=modified";           # ls -lt    (long, newest first)
             "ls-lrt"    = "eza -lr --sort=modified";          # ls -lrt   (long, oldest first)
             "ls-lsrt"   = "eza -lrS --sort=modified";        # ls -lsrt  (long, sizes, oldest first)

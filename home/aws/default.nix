@@ -9,20 +9,14 @@
 
 { config, pkgs, lib, ... }:
 
-let
-  enable = true;
-in
-
 {
-  config = lib.mkIf enable {
-    home.packages = with pkgs; [ awscli2 ];
+  home.packages = with pkgs; [ awscli2 ];
 
-    # AWS config (not sensitive, safe in Nix store)
-    home.file.".aws/config" = {
-      source = ./config/config;
-    };
-
-    # Credentials managed by sops-nix (home/sops/default.nix)
-    # Decrypted from secrets/aws-credentials.enc -> ~/.aws/credentials (mode 0600)
+  # AWS config (not sensitive, safe in Nix store)
+  home.file.".aws/config" = {
+    source = ./config/config;
   };
+
+  # Credentials managed by sops-nix (home/sops/default.nix)
+  # Decrypted from secrets/aws-credentials.enc -> ~/.aws/credentials (mode 0600)
 }

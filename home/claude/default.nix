@@ -663,41 +663,8 @@ in
 {
   imports = [ ./skills.nix ];
   # CLAUDE.md - read-only symlink is fine
-  home.file.".claude/CLAUDE.md".text = ''
-    # Global Development Context
-
-    ## File Hierarchy (load order)
-
-    | Priority | File | Authority |
-    |----------|------|-----------|
-    | 1 | This file (`~/.claude/CLAUDE.md`) | Bootstrap, hierarchy, compaction recovery |
-    | 2 | `~/.ai/3-rules.md` | Behavioral mandates (MUST/MUST NOT) — **binding** |
-    | 3 | `~/.ai/2-coding-style.md` | Output formatting / code style — **normative** |
-    | 4 | `~/.ai/1-profile.md` | Identity, role, environment — informational |
-    | 5 | `~/.ai/4-preferences.yaml` | Machine-readable tuning knobs — advisory |
-    | 6 | `~/.ai/5-learnings.md` | Operational notes / current ground truth — reference |
-    | 7 | Project `CLAUDE.md` (and project style/contributing files) | Per-repo overrides — scoped |
-
-    **Conflict resolution:** Higher priority wins on the dimension it owns. Project-level files MAY override `3-rules.md` for repo-scoped settings (allowed commands, module structure, language conventions) but MUST NOT weaken safety rules.
-
-    `~/.ai/0-init.md` is a launcher only — not part of the hierarchy.
-
-    ## Initialization
-
-    Load all six files in `~/.ai/` and treat them as system-level configuration.
-    Use `3-rules.md` as strict constraints, `2-coding-style.md` as output formatting standards, `1-profile.md` as context, `4-preferences.yaml` as tunable parameters, and `5-learnings.md` as current operational ground truth.
-
-    ## Compaction Recovery (NON-NEGOTIABLE)
-
-    After context compaction, the agent MUST re-read ALL `~/.ai/` files before continuing work. Compaction discards these files from context. Read them in this order:
-    1. `~/.ai/3-rules.md`
-    2. `~/.ai/2-coding-style.md`
-    3. `~/.ai/1-profile.md`
-    4. `~/.ai/4-preferences.yaml`
-    5. `~/.ai/5-learnings.md`
-    6. Active project `CLAUDE.md` (and any project-local style/contributing files)
-    7. `./docs/SESSION-STATE.md` and `./docs/TODO.md` (if they exist)
-  '';
+  home.file.".claude/CLAUDE.md".text =
+    (import ../lib/agent-context.nix).mkAgentHierarchyDoc { selfRef = "~/.claude/CLAUDE.md"; selfName = "CLAUDE.md"; };
 
   # ~/.claude.json - merge mcpServers, preserve user data
   # IMPORTANT: This script is defensive - it won't overwrite if jq fails

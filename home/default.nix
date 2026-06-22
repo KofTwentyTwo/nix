@@ -119,15 +119,9 @@ in
           monocraft    # Monospace font
         ] ++ builtins.filter lib.attrsets.isDerivation (builtins.attrValues pkgs.nerd-fonts);
 
-        # Work/Development specific packages
-        # Add machine-specific packages here if needed
-        workPackages = [
-        ];
-
       in
       commonPackages
-      ++ fontPackages
-      ++ workPackages;
+      ++ fontPackages;
     };
 
     #######################################################################

@@ -19,7 +19,9 @@
       enable = true;
       # Oh My Zsh plugins to load
       # Available plugins: https://github.com/ohmyzsh/ohmyzsh/wiki/Plugins
-      plugins = [ "git" "sudo" "docker" "kubectl" "aws" "helm" "terraform" "fzf" "aliases" "extract" ];
+      # fzf integration comes from programs.fzf.enableZshIntegration (home/default.nix),
+      # so the omz fzf plugin is intentionally omitted to avoid double keybindings.
+      plugins = [ "git" "sudo" "docker" "kubectl" "aws" "helm" "terraform" "aliases" "extract" ];
     };
   };
 }
