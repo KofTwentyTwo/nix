@@ -63,6 +63,24 @@ let
     ]
   ));
 
+  # DietrichGebert/ponytail: minimalism skill set. Same flake input the Claude
+  # module consumes; skills at skills/<name>/. Mirrors the selection in
+  # home/claude/skills.nix (core `ponytail` + review/audit/debt; gain/help
+  # skipped). Keep the two lists in sync. Skills ONLY — we never wire ponytail's
+  # plugin hooks into Codex: its SessionStart/UserPromptSubmit hooks would hit
+  # the same Claude-plugin compat-layer drift as security-guidance's Stop hook
+  # (see disableSgStopHook below), so we take the SKILL.md files alone.
+  ponytail = inputs.claude-skills-ponytail or null;
+
+  ponytailCodexSkills = lib.optionalAttrs (ponytail != null) (lib.attrsets.mergeAttrsList (
+    map (name: { ".codex/skills/${name}".source = "${ponytail}/skills/${name}"; }) [
+      "ponytail"
+      "ponytail-review"
+      "ponytail-audit"
+      "ponytail-debt"
+    ]
+  ));
+
   # Disable the security-guidance plugin's Stop hook for Codex.
   # ----------------------------------------------------------------
   # Codex 0.135.0's Claude-plugin compat layer loads
@@ -350,7 +368,7 @@ in
 {
   # mattpocock/aihero skills are read-only symlinks into the nix store at
   # ~/.codex/skills/<name>/, merged with the AGENTS.md symlink below.
-  home.file = mattpocockCodexSkills // anthropicPmCodexSkills // {
+  home.file = mattpocockCodexSkills // anthropicPmCodexSkills // ponytailCodexSkills // {
 
   # AGENTS.md - read-only symlink
   ".codex/AGENTS.md".text = ''

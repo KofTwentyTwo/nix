@@ -37,6 +37,7 @@ let
   deanpeters = inputs.claude-skills-deanpeters or null;
   ccpm = inputs.claude-skills-ccpm or null;
   mattpocock = inputs.claude-skills-mattpocock or null;
+  ponytail = inputs.claude-skills-ponytail or null;
   # NB: anthropics/knowledge-work-plugins is NOT symlinked here for Claude.
   # Claude consumes its `product-management` plugin via the marketplace +
   # enabledPlugins mechanism in home/claude/default.nix (true `claude plugin
@@ -256,6 +257,20 @@ let
     (mkSkill "mattpocock" "write-a-skill" mattpocock "skills/productivity/write-a-skill")
   ]);
 
+  # DietrichGebert/ponytail: minimalism / "least code that works" skill set.
+  # Skills live at skills/<name>/SKILL.md. We install the core `ponytail` skill
+  # plus the three useful on-demand passes (review/audit/debt) and SKIP the
+  # low-value marketing/help cards (gain = benchmark scoreboard, help = cheat
+  # sheet). Skills ONLY — no plugin hooks/commands/MCP; the always-on intent is
+  # carried by the routing line in home/ai/3-rules.md §15. Keep this list in
+  # sync with home/codex/default.nix.
+  ponytailSkills = lib.optionalAttrs (ponytail != null) (lib.attrsets.mergeAttrsList [
+    (mkSkill "ponytail" "ponytail" ponytail "skills/ponytail")
+    (mkSkill "ponytail" "ponytail-review" ponytail "skills/ponytail-review")
+    (mkSkill "ponytail" "ponytail-audit" ponytail "skills/ponytail-audit")
+    (mkSkill "ponytail" "ponytail-debt" ponytail "skills/ponytail-debt")
+  ]);
+
   # ─────────────────────────────────────────────────────────────
   # CREATIVE WRITING
   # ─────────────────────────────────────────────────────────────
@@ -390,6 +405,7 @@ let
     // deanpetersSkills
     // ccpmSkills
     // mattpocockSkills
+    // ponytailSkills
     // cwSkills
     // cwAgents
     // cwCommands

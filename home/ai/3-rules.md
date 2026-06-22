@@ -366,6 +366,8 @@ This ensures the PR review router takes priority across all repos, not just the 
 
 For brownfield onboarding (picking up an unfamiliar repo), invoke `local--brownfield-onboarding` first.
 
+For code-writing tasks, prefer the **minimal correct change** as the default: question whether the work needs to exist at all (YAGNI), reach for the standard library and native platform features before adding dependencies, and do not introduce speculative abstractions, dead flexibility, or future-proofing. The `ponytail` skill — and its `ponytail-review` (diff), `ponytail-audit` (repo), and `ponytail-debt` (ledger) passes — encode this; consult `ponytail` for non-trivial implementation work and the review/audit passes when asked to simplify or find bloat. This means minimal **scope**, NOT fewest lines: it REFINES, and never overrides, "clarity beats brevity" / "explicit over clever" (`2-coding-style.md` General Principles 1-2, 7-8) or the Test-First Commit Policy (§13). Never simplify away trust-boundary validation, error handling for data loss, security, accessibility, or anything the user explicitly requested.
+
 ---
 
 ## 16. Project-Specific Rules Live in Project Files

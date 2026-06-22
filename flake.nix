@@ -72,6 +72,18 @@
          flake = false;
       };
 
+      # DietrichGebert/ponytail: "write the least code that works" minimalism
+      # skill set. Pinned to the v4.7.0 release tag for reproducibility.
+      # Skills ONLY — we deliberately do NOT install ponytail's Claude plugin
+      # (its SessionStart hook, slash commands, statusline, and bundled MCP):
+      # the always-on intent is carried by a routing line in home/ai/3-rules.md
+      # §15, and the skills are symlinked via home/claude/skills.nix +
+      # home/codex/default.nix. See those files for the why.
+      claude-skills-ponytail = {
+         url = "github:DietrichGebert/ponytail/adad50d9b393926b2dd5ed7225dcb1848b9df408";
+         flake = false;
+      };
+
       # Anthropic's official knowledge-work plugins (we pull the
       # product-management skill set: roadmap-update, write-spec, etc.)
       claude-skills-anthropic-knowledge-work = {
