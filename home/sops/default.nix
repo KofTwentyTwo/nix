@@ -151,7 +151,7 @@ in
     # mkPatDeployer skips destinations whose parent dir is missing, so both the
     # CircleCI token and the github-codex-pat destination depend on this.
     home.activation.ensureSecretsDir =
-      lib.hm.dag.entryBefore [ "deployCircleciToken" "deployGithubSecurityPat" ] ''
+      lib.hm.dag.entryBefore [ "deployCircleciToken" "deployGithubSecurityPat" "deployTailscaleAuthkey" ] ''
         mkdir -p "${homeDir}/.config/secrets"
         chmod 0700 "${homeDir}/.config/secrets"
       '';
@@ -162,5 +162,22 @@ in
         "${homeDir}/.config/secrets/circleci-token"
       ];
     };
+
+    # Tailscale reusable auth key (Linux/WSL only; macOS logs in via the GUI
+    # app). Decrypted to a regular file that the tailscale-autoconnect systemd
+    # *user* service reads (see home/tailscale/default.nix). Double-guarded:
+    # Linux-only, AND only when the encrypted secret actually exists — mkIf's
+    # content is lazy, so the path literal below is never forced until the key
+    # has been minted + `git add`-ed, keeping the flake green in the meantime.
+    # Depends on ensureSecretsDir (listed in its entryBefore above).
+    home.activation.deployTailscaleAuthkey = lib.mkIf
+      (pkgs.stdenv.isLinux && builtins.pathExists ../../secrets/tailscale-authkey.enc)
+      (mkPatDeployer {
+        name = "tailscale-authkey";
+        encFile = ../../secrets/tailscale-authkey.enc;
+        destinations = [
+          "${homeDir}/.config/secrets/tailscale-authkey"
+        ];
+      });
   };
 }

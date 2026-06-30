@@ -12,8 +12,20 @@ keys:
   - &darth age17x3xfs46rcxvlu0a6pv3kjnhx8qsakl5w92s6x3kt9s5kpa9cpls37lxs8
   - &dark_horse age1txsv7msn8ydlwr5nwhn3vw6cqjf6kezwjxtrjphzmfmn9pdgly5qsf0m5u
   - &grogu age1vt8rn4ndve3qhjejv8zqadv9q5lt0hur0ql50xpeguggau4vr37srmluug
+  # Linux/WSL standalone Home Manager host (hostname: lore)
+  - &lore age1fghe7s6auqfgya2w895eyyhr36rzj3yksw3d6qa0nqpn9rr8defqhsg3hm
 
 creation_rules:
+  # Tailscale reusable auth key — decryptable by the Linux/WSL host(s) that
+  # join the tailnet, plus the Macs so any host can rotate it. Add a new
+  # Linux box's anchor here, then `sops updatekeys secrets/tailscale-authkey.enc`.
+  - path_regex: secrets/tailscale-authkey\.enc$
+    key_groups:
+      - age:
+          - *darth
+          - *dark_horse
+          - *grogu
+          - *lore
   - path_regex: secrets/aws-credentials\.enc$
     key_groups:
       - age:

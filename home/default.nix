@@ -49,6 +49,7 @@ in
     ./sops
     ./ssh
     ./starship
+    ./tailscale
     ./tmux
     ./updates
     ./viscosity
