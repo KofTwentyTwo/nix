@@ -467,6 +467,24 @@
          }
       ];
    };
+
+   # ---------------------------------------------------------------------
+   # Linux (WSL / standalone Home Manager)
+   # ---------------------------------------------------------------------
+   # There is no nix-darwin on Linux, so Linux hosts run Home Manager
+   # standalone. The shared ./home modules are reused as-is; the few
+   # mac-only pieces self-guard with `pkgs.stdenv.isDarwin`. The git
+   # identity comes from the closure `userConfig` (same as macOS); only the
+   # filesystem paths differ (/Users -> /home). Build/activate with:
+   #   home-manager switch --flake ~/Git.Local/kof22/nix#james
+   linuxUsername = "james";
+   linuxUserConfig = userConfig // {
+      username = linuxUsername;
+      paths = {
+         qqqDevTools = "/home/${linuxUsername}/Git.Local/QRun-IO/qqq/qqq-dev-tools";
+         aicommitsPrompt = "/home/${linuxUsername}/Documents/LLM/aic_prompt.txt";
+      };
+   };
    in
    {
       # Dev shell with auto git-crypt unlock
@@ -488,5 +506,26 @@
       # Bodies are identical bar the hostname; see mkDarwin in the let block
       # above. machineConfigs is the single source of the host list.
       darwinConfigurations = builtins.mapAttrs (name: _: mkDarwin name) machineConfigs;
+
+      # Linux / WSL standalone Home Manager target. Additive — does NOT touch
+      # the macOS darwinConfigurations above. Reuses the same `homeconfig`
+      # module (git, delta, ./home, sops-nix) and just supplies the Linux
+      # username + home directory. Activate with:
+      #   home-manager switch --flake .#james
+      homeConfigurations."${linuxUsername}" = home-manager.lib.homeManagerConfiguration {
+         pkgs = import nixpkgs {
+            system = "x86_64-linux";
+            config.allowUnfree = true;
+            config.allowBroken = true;
+         };
+         extraSpecialArgs = { inherit inputs; userConfig = linuxUserConfig; };
+         modules = [
+            homeconfig
+            {
+               home.username = linuxUsername;
+               home.homeDirectory = "/home/${linuxUsername}";
+            }
+         ];
+      };
    };
 }

@@ -16,7 +16,10 @@
       enable = true;
       defaultCacheTtl = 28800;     # 8 hours
       maxCacheTtl = 28800;         # 8 hours
-      pinentry.package = pkgs.pinentry_mac;
+      # pinentry-mac is darwin-only; on Linux (WSL, typically headless) fall
+      # back to the curses/tty pinentry so the agent still builds and prompts.
+      pinentry.package =
+        if pkgs.stdenv.isDarwin then pkgs.pinentry_mac else pkgs.pinentry-curses;
     };
   };
 }

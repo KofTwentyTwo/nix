@@ -674,7 +674,7 @@ in
   # create the file root-owned with no mcpServers, or wipe an existing one.
   home.activation.syncClaudeJson = lib.hm.dag.entryAfter [ "writeBoundary" "installClaudePluginMarketplaces" ] ''
     claude_json="${homeDir}/.claude.json"
-    hm_user="$(/usr/bin/stat -f %Su "${homeDir}")"
+    hm_user="$(stat -c %U "${homeDir}" 2>/dev/null || /usr/bin/stat -f %Su "${homeDir}")"
 
     if [ ! -f "$claude_json" ]; then
       ${pkgs.jq}/bin/jq -n --slurpfile mcp "${mcpServersJson}" \
@@ -700,7 +700,7 @@ in
   # ~/.claude/settings.local.json - merge permissions, preserve user data
   home.activation.syncClaudeSettings = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     settings_json="${homeDir}/.claude/settings.local.json"
-    hm_user="$(/usr/bin/stat -f %Su "${homeDir}")"
+    hm_user="$(stat -c %U "${homeDir}" 2>/dev/null || /usr/bin/stat -f %Su "${homeDir}")"
     mkdir -p "${homeDir}/.claude"
 
     if [ ! -f "$settings_json" ] || [ ! -s "$settings_json" ]; then
@@ -725,7 +725,7 @@ in
   # CLI wrote during the marketplace add.
   home.activation.syncClaudeUserSettings = lib.hm.dag.entryAfter [ "writeBoundary" "installClaudePluginMarketplaces" ] ''
     user_settings="${homeDir}/.claude/settings.json"
-    hm_user="$(/usr/bin/stat -f %Su "${homeDir}")"
+    hm_user="$(stat -c %U "${homeDir}" 2>/dev/null || /usr/bin/stat -f %Su "${homeDir}")"
     mkdir -p "${homeDir}/.claude"
 
     if [ ! -f "$user_settings" ] || [ ! -s "$user_settings" ]; then
@@ -833,7 +833,7 @@ in
   # deliberately left alone — different artifact, different path.
   # NB: never use bare `exit 0` to skip — see bootstrapQqqClaudeMd note above.
   home.activation.bootstrapClaude = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    hm_user="$(/usr/bin/stat -f %Su "${homeDir}")"
+    hm_user="$(stat -c %U "${homeDir}" 2>/dev/null || /usr/bin/stat -f %Su "${homeDir}")"
     native_claude="${homeDir}/.local/bin/claude"
     npm_claude="${homeDir}/.npm-global/bin/claude"
     npm_pkg_dir="${homeDir}/.npm-global/lib/node_modules/@anthropic-ai"
@@ -942,7 +942,7 @@ in
   # the home-dir owner before invoking claude.
   # NB: never use bare `exit 0` to skip — see bootstrapQqqClaudeMd note above.
   home.activation.installClaudePluginMarketplaces = lib.hm.dag.entryAfter [ "bootstrapClaude" ] ''
-    hm_user="$(/usr/bin/stat -f %Su "${homeDir}")"
+    hm_user="$(stat -c %U "${homeDir}" 2>/dev/null || /usr/bin/stat -f %Su "${homeDir}")"
     runUser() {
       if [ "$(id -u)" = "0" ] && [ "$hm_user" != "root" ]; then
         /usr/bin/sudo -u "$hm_user" -H /bin/bash -c "$1"
@@ -997,7 +997,7 @@ in
   # Must run as the home-dir owner — otherwise sudo'd rebuilds leak root
   # ownership into npm-global and Claude's data tree.
   home.activation.installGsd = lib.hm.dag.entryAfter [ "syncClaudeUserSettings" "installNpmGlobals" ] ''
-    hm_user="$(/usr/bin/stat -f %Su "${homeDir}")"
+    hm_user="$(stat -c %U "${homeDir}" 2>/dev/null || /usr/bin/stat -f %Su "${homeDir}")"
 
     if [ ! -x "/opt/homebrew/opt/node@24/bin/npx" ]; then
       echo "[gsd] /opt/homebrew/opt/node@24/bin/npx not found; skipping (install node@24 via Homebrew first)" >&2
@@ -1045,7 +1045,7 @@ in
     "syncClaudeSettings"
     "syncClaudeUserSettings"
   ] ''
-    hm_user="$(/usr/bin/stat -f %Su "${homeDir}")"
+    hm_user="$(stat -c %U "${homeDir}" 2>/dev/null || /usr/bin/stat -f %Su "${homeDir}")"
     if [ -z "$hm_user" ] || [ "$hm_user" = "root" ]; then
       echo "[claude-ownership] homeDir owned by root; refusing to sweep" >&2
     else

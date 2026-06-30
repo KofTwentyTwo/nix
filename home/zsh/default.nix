@@ -194,7 +194,7 @@ ALIASES - Editors
   vim             nvim
 
 ALIASES - Nix/Darwin
-  switch          darwin-rebuild switch    rebuild and activate nix config
+  switch          rebuild + activate       darwin-rebuild (macOS) / home-manager (Linux)
 
 ALIASES - Git
   gc              git cz c               commitizen commit
@@ -561,13 +561,25 @@ TIP: shelp KEYWORD   filter output (e.g., shelp kubectl, shelp replace, shelp gi
            # yellow "OK (with warnings)" box rather than a false green 100%.
            switch() {
              clear
-             # Cache sudo credentials up front so the password prompt isn't
-             # tangled up inside the tee'd pipeline below.
-             sudo -v || { echo "sudo authentication failed."; return 1; }
-
-             local log; log=$(mktemp -t darwin-switch)
-             sudo darwin-rebuild switch --flake "$HOME/.config/nix" 2>&1 | tee "$log"
-             local rc=''${pipestatus[1]}
+             local log rc cmd_label
+             if [[ "$OSTYPE" == darwin* ]]; then
+               # macOS: nix-darwin, runs as root. Cache sudo credentials up
+               # front so the password prompt isn't tangled up inside the
+               # tee'd pipeline below.
+               sudo -v || { echo "sudo authentication failed."; return 1; }
+               cmd_label="darwin-rebuild switch"
+               log=$(mktemp -t darwin-switch)
+               sudo darwin-rebuild switch --flake "$HOME/.config/nix" 2>&1 | tee "$log"
+               rc=''${pipestatus[1]}
+             else
+               # Linux / WSL: standalone Home Manager (no nix-darwin, no sudo).
+               # Repo lives in Git.Local; the config is the #james flake output.
+               # -b backup so a clashing dotfile never aborts the activation.
+               cmd_label="home-manager switch"
+               log=$(mktemp -t hm-switch)
+               home-manager switch -b backup --flake "$HOME/Git.Local/kof22/nix#james" 2>&1 | tee "$log"
+               rc=''${pipestatus[1]}
+             fi
 
              # Segment the captured output into named steps and grade each one.
              # Step boundaries are the headers nix-darwin / Home Manager / our
@@ -632,13 +644,13 @@ TIP: shelp KEYWORD   filter output (e.g., shelp kubectl, shelp replace, shelp gi
                    | draw_box --color yellow --title "✓ SWITCH OK (with warnings)"
                else
                  printf '%s\n' \
-                   "darwin-rebuild switch ran 100% successfully." \
+                   "$cmd_label ran 100% successfully." \
                    "$n_ok steps activated · 0 warnings · 0 failures." \
                    | draw_box --color green --title "✓ SWITCH OK"
                fi
              else
                {
-                 [[ $rc -ne 0 ]] && echo "darwin-rebuild exited non-zero (code $rc)."
+                 [[ $rc -ne 0 ]] && echo "$cmd_label exited non-zero (code $rc)."
                  (( n_fail > 0 )) && echo "$n_fail step(s) failed — see the ✗ lines above."
                  if [[ $n_fail -eq 0 && -n "$build_errs" ]]; then
                    echo "Errors outside any step (likely a build error):"

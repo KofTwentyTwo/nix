@@ -21,36 +21,41 @@ let
   scriptsDir = ../../scripts;
 in
 {
-  config = {
-    # Install the check-updates script
-    home.file."./.local/bin/check-updates.sh" = {
-      source = "${scriptsDir}/check-updates.sh";
-      executable = true;
-    };
+  config = lib.mkMerge [
+    {
+      # Install the check-updates script
+      home.file."./.local/bin/check-updates.sh" = {
+        source = "${scriptsDir}/check-updates.sh";
+        executable = true;
+      };
 
-    # Create log directory for launchd
-    home.file."./.local/log/.keep" = {
-      text = "";
-    };
+      # Create log directory for launchd
+      home.file."./.local/log/.keep" = {
+        text = "";
+      };
+    }
 
-    # Launchd agent for the scheduled update checker
-    launchd.agents.check-updates = {
-      enable = true;
-      config = {
-        ProgramArguments = [ "${homeDir}/.local/bin/check-updates.sh" ];
-        StartCalendarInterval = [
-          {
-            Hour = 9;
-            Minute = 0;
-          }
-        ];
-        StandardOutPath = "${homeDir}/.local/log/check-updates.log";
-        StandardErrorPath = "${homeDir}/.local/log/check-updates.error.log";
-        RunAtLoad = false;
-        EnvironmentVariables = {
-          PATH = "/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/homebrew/bin:/opt/homebrew/sbin";
+    # Launchd agent for the scheduled update checker (macOS only — `launchd`
+    # is a darwin-only Home Manager option, so it must be guarded out on Linux).
+    (lib.mkIf pkgs.stdenv.isDarwin {
+      launchd.agents.check-updates = {
+        enable = true;
+        config = {
+          ProgramArguments = [ "${homeDir}/.local/bin/check-updates.sh" ];
+          StartCalendarInterval = [
+            {
+              Hour = 9;
+              Minute = 0;
+            }
+          ];
+          StandardOutPath = "${homeDir}/.local/log/check-updates.log";
+          StandardErrorPath = "${homeDir}/.local/log/check-updates.error.log";
+          RunAtLoad = false;
+          EnvironmentVariables = {
+            PATH = "/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/homebrew/bin:/opt/homebrew/sbin";
+          };
         };
       };
-    };
-  };
+    })
+  ];
 }

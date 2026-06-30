@@ -80,6 +80,9 @@ let
     (lib.generators.toPlist {} connectionOrderValue);
 in
 {
+  # Viscosity is a macOS-only VPN client. Guard the whole module so Linux
+  # (WSL) does not deploy dead ~/Library symlinks or run the plutil activation.
+  config = lib.mkIf pkgs.stdenv.isDarwin {
   home.file = lib.mkMerge (lib.mapAttrsToList mkConnection connections);
 
   # Reproduce Viscosity's :ConnectionOrder (folders + connections) from the nix
@@ -125,4 +128,5 @@ in
       fi
     fi
   '';
+  };
 }

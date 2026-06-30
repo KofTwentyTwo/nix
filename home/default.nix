@@ -36,6 +36,7 @@ in
     ./gpg
     ./hermes
     ./k9s
+    ./linux-cli
     ./npm-globals
     ./nvim
     ./ohmyzsh
@@ -88,14 +89,19 @@ in
       };
 
       # PATH configuration - paths are added to $PATH
-      # Uses home directory for portability across machines
-      sessionPath = [
+      # Uses home directory for portability across machines.
+      # Homebrew paths only exist on macOS, so they are guarded with
+      # pkgs.stdenv.isDarwin (Homebrew has no equivalent on Linux/WSL).
+      sessionPath = (lib.optionals pkgs.stdenv.isDarwin [
          "/opt/homebrew/opt/postgresql@17/bin"        # PostgreSQL 17 tools (keg-only)
          "/opt/homebrew/opt/node@24/bin"             # Node.js 24 (current Active LTS) as default
          "/opt/homebrew/sbin"                         # Homebrew sbin (mtr, etc.)
          "/opt/homebrew/bin"                         # Homebrew (Apple Silicon)
+      ]) ++ [
          "${homeDir}/.local/bin"                     # User local binaries
+      ] ++ (lib.optionals pkgs.stdenv.isDarwin [
          "/opt/homebrew/opt/llvm/bin"                # LLVM from Homebrew
+      ]) ++ [
          "$JAVA_HOME/bin"                            # Java (if JAVA_HOME is set)
          "${qqqDevTools}/bin"                        # QQQ dev tools (from userConfig in flake.nix)
       ];

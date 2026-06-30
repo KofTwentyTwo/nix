@@ -1,6 +1,102 @@
 # Session State
 
-**Last Updated:** 2026-05-26 (evening)
+**Last Updated:** 2026-06-30 (WSL Linux port)
+
+## 🟢 ACTIVE TASK — Get this config running on WSL Ubuntu (2026-06-30)
+
+**Goal:** Run the shared `./home` Home Manager modules on WSL Ubuntu 26.04
+(x86_64) via standalone Home Manager. nix-darwin is untouched and mac-only.
+
+**Repo location on WSL:** `/home/james/Git.Local/kof22/nix` (NOT `~/.config/nix`).
+**WSL user:** `james`  ·  **home:** `/home/james`  ·  Linux git identity reuses
+the macOS `userConfig` (same name/email/signing key); only paths differ.
+
+### Done so far (code is ready, uncommitted — `git status` shows the diff)
+- Enabled systemd in `/etc/wsl.conf` (`[boot] systemd=true`). **Needs a WSL
+  restart to take effect** — that is why this session was paused.
+- `flake.nix`: added a Linux `homeConfigurations."james"` output (additive;
+  `darwinConfigurations` untouched) + `linuxUserConfig`/`linuxUsername` in the
+  let block. Reuses the existing `homeconfig` module.
+- Guarded the mac-only eval/build breakers behind `pkgs.stdenv.isDarwin`:
+  - `home/updates/default.nix` — `launchd.agents` (darwin-only option).
+  - `home/gpg/default.nix` — `pinentry_mac` → `pinentry-curses` on Linux.
+  - `home/viscosity/default.nix` — whole module (macOS-only VPN app).
+  - `home/default.nix` — `/opt/homebrew/*` `sessionPath` entries.
+
+### Progress (2026-06-30 cont.)
+- ✅ systemd live after restart; ✅ Determinate Nix 3.21 installed, daemon active.
+- ✅ flake parses; `nix eval .#homeConfigurations.james...` got past the flake and
+  into module eval.
+- ⛔ **BLOCKER hit:** the working tree is git-crypt **LOCKED**. `home/ssh/default.nix`
+  (and `home/ai/4-preferences.yaml`, `home/aws/config/*`) are still encrypted blobs,
+  so Nix reads them as garbage → syntax error. Must `git-crypt unlock` before build.
+- ✅ Installed `git-crypt` 0.8.0 into nix profile. (`_1password-cli` is unfree —
+  skipped; would need NIXPKGS_ALLOW_UNFREE=1 --impure.)
+- 🔑 The git-crypt symmetric key is encrypted to GPG key
+  `62859E8ABE1FC2B7FCCB89080021767055740E6D` — the SAME key as commit signing.
+  System gpg is `/usr/bin/gpg`, keyring currently EMPTY.
+
+### ▶️ RESUME HERE
+1. **Import the GPG secret key** (from 1Password). `gpg --import <file.asc>`. The
+   private half is required — unlock + signing both need it. May be passphrase-
+   protected → `git-crypt unlock` will trigger a pinentry prompt; if running non-
+   interactively fails, have James run `git-crypt unlock` via the `!` prefix.
+2. **Unlock:** `cd /home/james/Git.Local/kof22/nix && git-crypt unlock`
+   (or `git-crypt unlock` with the repo's key). Verify `home/ssh/default.nix` now
+   reads as Nix source, not `GITCRYPT` bytes.
+3. **Re-eval / activate** (first run, HM not yet installed; `-b backup` saves clashing dotfiles):
+   `. /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh`
+   `nix run home-manager/master -- switch -b backup --flake /home/james/Git.Local/kof22/nix#james`
+   (NB: full build pulls the entire nerd-fonts set — large/slow first time.)
+5. **Iterate** on eval/build errors. Expected remaining issues are *runtime* not
+   build: zsh `switch`/help text still says `darwin-rebuild`; some activation
+   scripts reference mac paths but self-guard.
+6. **Import the GPG signing key** (so `git commit` works — `signByDefault=true`,
+   format openpgp, fingerprint `62859E8ABE1FC2B7FCCB89080021767055740E6D`).
+   James keeps the **secret key in 1Password**. After `op` CLI is installed +
+   signed in (note WSL `op` usually integrates with the Windows 1Password app),
+   pull the armored private-key block and `gpg --import` it — e.g.
+   `op document get "<item>" | gpg --import` (item name TBD — ask James / search
+   `op item list`). The public key alone won't sign; need the secret half.
+   Decision: keep signing ON for Linux (do NOT set signByDefault=false).
+7. Once green: `chsh -s $(which zsh)` if zsh isn't the login shell, commit the diff.
+
+### Progress (2026-06-30 — activation + tool parity)
+- ✅ First `home-manager switch` activated (gen 2). Fixed the one Linux activation
+  breaker: `home/claude/default.nix` used BSD `/usr/bin/stat -f %Su` (7 sites) →
+  now portable `stat -c %U … || /usr/bin/stat -f %Su` (mac falls through to BSD).
+- ✅ Verified macOS UNHARMED: `nix eval .#darwinConfigurations.Darth...toplevel.drvPath`
+  still evaluates; flake.lock untouched; nothing committed (HEAD still 7fafad7).
+- ✅ Configs deployed (zsh 1010-line .zshrc, starship, ssh, git, tmux at
+  ~/.config/tmux/, nvim, gpg) — all real /nix/store symlinks.
+- ⚠️ GAP FOUND: the ~150 Homebrew formulae in modules/homebrew.nix are mac-only;
+  Linux had almost none of the CLI utils (fd, rg, gh, htop/btop, helm, tofu…).
+  fd missing breaks the fzf widgets.
+  → Created **home/linux-cli/default.nix** (`lib.mkIf pkgs.stdenv.isLinux`,
+  imported in home/default.nix) porting the curated CLI subset to Nix packages.
+  Skipped mac-only / heavy-ML / GUI / mise-or-rustup-provided tools (documented
+  in the module header). Name fixes applied: du-dust→dust, poppler_utils→
+  poppler-utils, no-more-secrets→nms. Eval is green; switch building now.
+
+### Remaining follow-ups
+- [ ] Login shell still /bin/bash → `chsh -s ~/.nix-profile/bin/zsh`.
+- [ ] zsh `switch` helper (home/zsh ~line 568) hardcodes `sudo darwin-rebuild
+      switch` → make it `home-manager switch --flake …#james` on Linux.
+- [ ] Nothing committed. When ready, commit the WSL port on a BRANCH (not main,
+      per repo norm) so Macs are unaffected until they pull.
+- [ ] `~/key` (exported GPG secret) still on disk — `shred -u ~/key` once happy.
+- [ ] Optional: add psql client / more brew tools to home/linux-cli as wanted.
+
+### Notes / decisions
+- Chose **unified flake** (one `flake.nix`, shared `flake.lock`) over a separate
+  `flake-linux.nix` — the repo's `flake-linux.nix.example`/`LINUX.md` describe the
+  older separate-flake idea; we superseded it. Can delete those docs later.
+- git-crypt binary isn't installed on WSL but the working tree is already
+  decrypted (ai/ssh configs read as plaintext), so `home.file` sources are real.
+
+---
+
+**Last Updated (prior):** 2026-05-26 (evening)
 
 ## Current Status
 

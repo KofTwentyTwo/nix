@@ -54,7 +54,13 @@ in
       #   /usr/bin /bin     - system tools (awk, grep) the idempotency check uses
       export PATH="/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin:$PATH"
 
-      if command -v ollama >/dev/null 2>&1; then
+      if ! command -v ollama >/dev/null 2>&1; then
+        echo "pi: ollama not on PATH; skipping model pulls" >&2
+      elif ! curl -fsS -m 2 http://127.0.0.1:11434/ >/dev/null 2>&1; then
+        # Daemon down: skip fast instead of blocking on ollama's long per-model
+        # dial timeout (painful on WSL, or a Mac without the app running).
+        echo "pi: ollama daemon not reachable on :11434; skipping model pulls" >&2
+      else
         for m in qwen3-coder:30b qwen2.5-coder:7b llama3.3:70b-instruct-q4_K_M; do
           # Exact-name match on the NAME column to avoid prefix false-positives
           # between similar tags (e.g. q6_k vs q8_0).
@@ -64,8 +70,6 @@ in
               echo "pi: WARN pull of ''${m} failed; continuing" >&2
           fi
         done
-      else
-        echo "pi: WARN ollama not on PATH; skipping model pulls" >&2
       fi
     )
   '';
