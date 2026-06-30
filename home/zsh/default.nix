@@ -68,10 +68,22 @@ in
              precmd_functions+=(_wezterm_osc7)
            fi
            
+           ${lib.optionalString pkgs.stdenv.isLinux ''
+           # Linux/WSL only: the task/velero completion scripts below call
+           # `compdef`, which only exists after compinit has run. With oh-my-zsh
+           # enabled, oh-my-zsh runs compinit — but Home Manager sources oh-my-zsh
+           # near the END of .zshrc (after all initContent), so compdef is not yet
+           # defined here. Initialize the completion system first to avoid
+           # "command not found: compdef". On macOS compdef is already defined at
+           # this point (system /etc/zshrc), so this guard is unnecessary there.
+           if ! (( $+functions[compdef] )); then
+             autoload -Uz compinit && compinit
+           fi
+           ''}
            # Load completions
            eval "$(task --completion zsh)"
            source <(velero completion zsh)
-           
+
            # AWS CLI completion (native zsh completion)
            # Ensure Homebrew's zsh site-functions are in fpath for automatic completion loading
            if [[ -d /opt/homebrew/share/zsh/site-functions ]]; then
