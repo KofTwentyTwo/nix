@@ -150,6 +150,17 @@ in
              export CODEX_GITHUB_PERSONAL_ACCESS_TOKEN="$(< "$HOME/.config/secrets/github-codex-pat")"
            fi
 
+           # Stop oh-my-zsh (lib/theme-and-appearance.zsh) from defining an
+           # `ls` alias: on GNU/Linux it sets `alias ls='ls --color=tty'`, on
+           # BSD/macOS `alias ls='ls -G'`. That alias expands BEFORE the ls()
+           # function below, so the flag is fed straight into eza — which
+           # rejects `--color=tty` ("Option --color has no \"tty\" setting").
+           # eza owns its colors, so disable omz's ls-color alias outright.
+           # This runs before oh-my-zsh sources (HM sources omz after all
+           # initContent), so omz honors it. Visually a no-op on macOS (eza
+           # grids by default); fixes the hard error on Linux/WSL.
+           DISABLE_LS_COLORS="true"
+
            # ls wrapper - translates standard ls flags to eza equivalents
            # Handles: -t (sort by time), -S (sort by size), -s (show size), -h (skip, eza default)
            # All other flags pass through directly to eza
