@@ -584,6 +584,14 @@ let
     terminalBellOnPrompt = true;
     effortLevel = "high";
 
+    # Second-brain vault path (see home/secondbrain + docs/PLAN-secondbrain.md).
+    # settings.json `env` reaches every session regardless of launch context
+    # (Dock/IDE launches don't source the login shell).
+    env.SECOND_BRAIN_VAULT =
+      if pkgs.stdenv.isDarwin
+      then "${homeDir}/Git.Local/KofTwentyTwo/second-brain"
+      else "/mnt/r/Git.Local/KofTwentyTwo/second-brain";
+
     # Plugins from anthropics/claude-plugins-official marketplace.
     #
     # Grouped by purpose for sanity. LSPs are silent until a relevant file is
@@ -618,9 +626,12 @@ let
       "jdtls-lsp@claude-plugins-official"              = true;   # Java for QQQ
       "kotlin-lsp@claude-plugins-official"             = true;   # Android
       "pyright-lsp@claude-plugins-official"            = true;   # Python
+      "csharp-lsp@claude-plugins-official"             = true;   # C#/.NET
       "rust-analyzer-lsp@claude-plugins-official"      = true;   # Rust
       "swift-lsp@claude-plugins-official"              = true;   # iOS
       "typescript-lsp@claude-plugins-official"         = true;   # TS/JS
+      # No HCL/Terraform LSP exists in the official marketplace (2026-07);
+      # the `terraform` plugin below covers IaC via an MCP server instead.
 
       # --- Integrations (issue trackers, design, browser, source-of-truth) ---
       "agent-sdk-dev@claude-plugins-official"          = true;
@@ -629,6 +640,10 @@ let
       "frontend-design@claude-plugins-official"        = true;
       "github@claude-plugins-official"                 = true;
       "playwright@claude-plugins-official"             = true;
+      # Swap-in, off by default: HashiCorp's Terraform MCP server. Flip to
+      # true (or /plugin enable) for IaC-heavy work — it counts against the
+      # ~3/5 always-on MCP context budget (docs/PLAN-secondbrain.md).
+      "terraform@claude-plugins-official"              = false;
 
       # --- Product management (anthropics/knowledge-work-plugins marketplace) ---
       # Full plugin parity for `claude plugin install product-management@
@@ -659,6 +674,17 @@ let
   mcpServersJson = pkgs.writeText "mcp-servers.json" (builtins.toJSON mcpServers);
   permissionsJson = pkgs.writeText "permissions.json" (builtins.toJSON permissions);
   userPrefsJson = pkgs.writeText "user-prefs.json" (builtins.toJSON userPrefs);
+
+  # Second-brain hook registration (scripts/skills live in home/secondbrain;
+  # the settings.json entries live here because this module owns the settings
+  # merge). Merged by MARKER in syncClaudeUserSettings — existing hook entries
+  # whose JSON mentions "secondbrain" are replaced, everything else (notably
+  # GSD's self-installed hooks on the Macs) is preserved untouched.
+  secondBrainHooks = {
+    SessionStart = [ { hooks = [ { type = "command"; command = "${homeDir}/.claude/hooks/secondbrain-session-start.sh"; } ]; } ];
+    SessionEnd   = [ { hooks = [ { type = "command"; command = "${homeDir}/.claude/hooks/secondbrain-session-end.sh"; } ]; } ];
+  };
+  secondBrainHooksJson = pkgs.writeText "secondbrain-hooks.json" (builtins.toJSON secondBrainHooks);
 in
 {
   imports = [ ./skills.nix ];
@@ -695,6 +721,13 @@ in
     # mv/create here lands root-owned and breaks Claude's own writes. Restore
     # user ownership unconditionally.
     /usr/sbin/chown "$hm_user" "$claude_json" 2>/dev/null || true
+
+    # MCP context-budget assert (docs/PLAN-secondbrain.md): always-on
+    # user-scope servers should stay ≤ 5. Warn-only — never fails the switch.
+    sb_mcp_count=$(${pkgs.jq}/bin/jq '.mcpServers | length' "$claude_json" 2>/dev/null || echo 0)
+    if [ "''${sb_mcp_count:-0}" -gt 5 ]; then
+      echo "[claude] WARN: $sb_mcp_count user-scope MCP servers configured; budget is 5 (see docs/PLAN-secondbrain.md). Demote extras to swap-ins." >&2
+    fi
   '';
 
   # ~/.claude/settings.local.json - merge permissions, preserve user data
@@ -729,13 +762,19 @@ in
     mkdir -p "${homeDir}/.claude"
 
     if [ ! -f "$user_settings" ] || [ ! -s "$user_settings" ]; then
-      ${pkgs.jq}/bin/jq -n --slurpfile prefs "${userPrefsJson}" '$prefs[0]' > "$user_settings"
+      ${pkgs.jq}/bin/jq -n --slurpfile prefs "${userPrefsJson}" --slurpfile sb "${secondBrainHooksJson}" \
+        '$prefs[0] | .hooks = $sb[0]' > "$user_settings"
       chmod 600 "$user_settings"
     else
-      if ${pkgs.jq}/bin/jq --slurpfile prefs "${userPrefsJson}" '
+      if ${pkgs.jq}/bin/jq --slurpfile prefs "${userPrefsJson}" --slurpfile sb "${secondBrainHooksJson}" '
         # Deep merge enabledPlugins to preserve manually-added plugins
         .enabledPlugins = ((.enabledPlugins // {}) * ($prefs[0].enabledPlugins // {}))
         | . * ($prefs[0] | del(.enabledPlugins))
+        # Second-brain hooks: marker-based merge. Drop any prior entry that
+        # mentions "secondbrain", append the managed ones. All other hook
+        # entries (e.g. GSD-installed) pass through untouched.
+        | .hooks.SessionStart = (((.hooks.SessionStart // []) | map(select((tojson | contains("secondbrain")) | not))) + $sb[0].SessionStart)
+        | .hooks.SessionEnd   = (((.hooks.SessionEnd   // []) | map(select((tojson | contains("secondbrain")) | not))) + $sb[0].SessionEnd)
       ' "$user_settings" > "$user_settings.tmp" \
         && [ -s "$user_settings.tmp" ]; then
         mv "$user_settings.tmp" "$user_settings"
@@ -786,10 +825,9 @@ in
       if ! /usr/bin/grep -q '^web_dashboard_open_on_launch:' "$cfg"; then
         echo "[serena] WARN: web_dashboard_open_on_launch key not found in $cfg — upstream may have renamed it" >&2
       else
-        # BSD sed needs an empty backup-suffix arg for in-place edit; in
-        # Nix multiline strings, two single quotes is the close delimiter,
-        # so we emit the empty arg via three single quotes below.
-        /usr/bin/sed -i ''' \
+        # Nixpkgs GNU sed on both platforms — /usr/bin/sed is BSD on macOS
+        # and GNU on Linux, and their -i syntaxes are incompatible.
+        ${pkgs.gnused}/bin/sed -i \
           's/^web_dashboard_open_on_launch:.*/web_dashboard_open_on_launch: false/' \
           "$cfg"
       fi

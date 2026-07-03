@@ -35,6 +35,7 @@ in
     ./gemini
     ./gpg
     ./hermes
+    ./java
     ./k9s
     ./linux-cli
     ./npm-globals
@@ -46,6 +47,7 @@ in
     ./python
     ./rust
     ./scripts
+    ./secondbrain
     ./sops
     ./ssh
     ./starship

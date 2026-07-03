@@ -35,6 +35,19 @@
     Load all six files in `~/.ai/` and treat them as system-level configuration.
     Use `3-rules.md` as strict constraints, `2-coding-style.md` as output formatting standards, `1-profile.md` as context, `4-preferences.yaml` as tunable parameters, and `5-learnings.md` as current operational ground truth.
 
+    ## Second Brain (persistent memory vault)
+
+    The Obsidian vault at `$SECOND_BRAIN_VAULT` is the durable cross-session,
+    cross-machine memory. Its `index.md` is a short map — in Claude Code it is
+    auto-injected at session start; in other tools, read it before substantive
+    work. Pull specific vault notes on demand; do not bulk-load the vault.
+    Before finishing substantive work (or on "save to second brain"), record
+    durable outcomes using the `secondbrain-save` conventions: decisions →
+    `decisions/` (ADR), project state → `projects/<project>.md` (append),
+    reusable learnings → `knowledge/`, session log → `daily/YYYY-MM-DD.md`.
+    Append/merge only; frontmatter `created`/`updated`/`tags`/`source`; link
+    new notes from `index.md`. Never write secrets into the vault.
+
     ## Compaction Recovery (NON-NEGOTIABLE)
 
     After context compaction, the agent MUST re-read ALL `~/.ai/` files before continuing work. Compaction discards these files from context. Read them in this order:
