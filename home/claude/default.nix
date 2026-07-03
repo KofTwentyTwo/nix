@@ -640,10 +640,10 @@ let
       "frontend-design@claude-plugins-official"        = true;
       "github@claude-plugins-official"                 = true;
       "playwright@claude-plugins-official"             = true;
-      # Swap-in, off by default: HashiCorp's Terraform MCP server. Flip to
-      # true (or /plugin enable) for IaC-heavy work — it counts against the
-      # ~3/5 always-on MCP context budget (docs/PLAN-secondbrain.md).
-      "terraform@claude-plugins-official"              = false;
+      # HashiCorp's Terraform MCP server — ON per James (devops is core
+      # stack, 2026-07-03). Counts against the MCP context budget
+      # (docs/PLAN-secondbrain.md); demote to false if context gets tight.
+      "terraform@claude-plugins-official"              = true;
 
       # --- Product management (anthropics/knowledge-work-plugins marketplace) ---
       # Full plugin parity for `claude plugin install product-management@
@@ -822,6 +822,19 @@ in
             || echo "[claude-win] WARN: could not register marketplace $mp (register manually: claude plugin marketplace add $mp)" >&2
         fi
       done
+      # Install every enabled-but-missing plugin so a fresh Windows shell has
+      # the full set immediately (enablement alone defers install to first
+      # session start). Warn-only per plugin; converges on later rebuilds.
+      installed="$win/plugins/installed_plugins.json"
+      [ -f "$installed" ] || echo '{}' > "$installed"
+      ${pkgs.jq}/bin/jq -r '.enabledPlugins | to_entries[] | select(.value) | .key' "${userPrefsJson}" \
+        | while IFS= read -r plugin; do
+            if ! ${pkgs.jq}/bin/jq -e --arg p "$plugin" 'tostring | contains($p)' "$installed" >/dev/null 2>&1; then
+              /mnt/c/Users/james/.local/bin/claude.exe plugin install "$plugin" >/dev/null 2>&1 \
+                && echo "[claude-win] installed $plugin" \
+                || echo "[claude-win] WARN: install failed for $plugin" >&2
+            fi
+          done
     fi
   '');
 
