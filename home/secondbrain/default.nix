@@ -217,8 +217,8 @@ PS1
         [ -f "$ws" ] || echo '{}' > "$ws"
         if ${pkgs.jq}/bin/jq \
           --arg vault '${winVaultPath}' \
-          --arg start 'powershell -NoProfile -ExecutionPolicy Bypass -File C:\Users\james\.claude\hooks\secondbrain-session-start.ps1' \
-          --arg end   'powershell -NoProfile -ExecutionPolicy Bypass -File C:\Users\james\.claude\hooks\secondbrain-session-end.ps1' \
+          --arg start 'powershell -NoProfile -ExecutionPolicy Bypass -File C:/Users/james/.claude/hooks/secondbrain-session-start.ps1' \
+          --arg end   'powershell -NoProfile -ExecutionPolicy Bypass -File C:/Users/james/.claude/hooks/secondbrain-session-end.ps1' \
           '
           .env.SECOND_BRAIN_VAULT = $vault
           | .hooks.SessionStart = (((.hooks.SessionStart // []) | map(select((tojson | contains("secondbrain")) | not))) + [{hooks: [{type: "command", command: $start}]}])
