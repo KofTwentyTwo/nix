@@ -787,6 +787,44 @@ in
     /usr/sbin/chown "$hm_user" "$user_settings" 2>/dev/null || true
   '';
 
+  # LORE: Windows-native Claude Code parity — plugins + skills.
+  # The secondbrain bridge (home/secondbrain) owns hooks/env/CLAUDE.md for the
+  # Windows side; THIS activation owns enabledPlugins, the skills tree, and
+  # marketplace registration, because this module defines them. Linux-only,
+  # guarded on the /mnt/c mount. Windows keeps its own model/theme prefs —
+  # only enabledPlugins is merged.
+  home.activation.syncWindowsClaudePlugins = lib.mkIf pkgs.stdenv.isLinux (lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    win="/mnt/c/Users/james/.claude"
+    if [ -d "$win" ]; then
+      ws="$win/settings.json"
+      [ -f "$ws" ] || echo '{}' > "$ws"
+      if ${pkgs.jq}/bin/jq --slurpfile prefs "${userPrefsJson}" \
+        '.enabledPlugins = ((.enabledPlugins // {}) * ($prefs[0].enabledPlugins // {}))' \
+        "$ws" > "$ws.tmp" && [ -s "$ws.tmp" ]; then
+        mv "$ws.tmp" "$ws"
+        echo "[claude-win] enabledPlugins merged into Windows settings.json"
+      else
+        rm -f "$ws.tmp"
+        echo "[claude-win] WARN: enabledPlugins merge failed; Windows plugins unchanged" >&2
+      fi
+      # Skills: copy the resolved WSL skills tree (cp -L dereferences the
+      # nix-store symlinks — Windows cannot follow them).
+      if [ -d "${homeDir}/.claude/skills" ]; then
+        cp -rLf "${homeDir}/.claude/skills/." "$win/skills/" 2>/dev/null \
+          || echo "[claude-win] WARN: skills copy failed" >&2
+      fi
+      # Marketplaces Windows lacks (network fetch — warn-only, never fatal).
+      for mp in anthropics/claude-plugins-official anthropics/knowledge-work-plugins; do
+        name="''${mp#*/}"
+        if [ ! -d "$win/plugins/marketplaces/$name" ]; then
+          /mnt/c/Users/james/.local/bin/claude.exe plugin marketplace add "$mp" >/dev/null 2>&1 \
+            && echo "[claude-win] registered marketplace $mp" \
+            || echo "[claude-win] WARN: could not register marketplace $mp (register manually: claude plugin marketplace add $mp)" >&2
+        fi
+      done
+    fi
+  '');
+
   # QQQ project-level CLAUDE.md bootstrap — drop the extracted QQQ rules
   # template into ~/Git.Local/QRun-IO/qqq/CLAUDE.md if the QQQ checkout exists
   # and doesn't already have one. Copy-if-missing only; once the file lands
