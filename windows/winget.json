@@ -1,0 +1,26 @@
+{
+  "$comment": "Winget-managed GUI/heavy apps for Windows machines. Applied by windows/apply.ps1 (the Windows analog of `switch`). Keep IDs exact (`winget search <name>` to find them). visualStudio is handled specially: edition is a machine/licensing decision, workloads live in vs2026.vsconfig.",
+  "packages": [
+    {
+      "id": "JetBrains.Toolbox",
+      "note": "Owns the JetBrains IDE fleet (IDEA, GoLand, CLion, DataGrip, ...). IDE installs/updates happen inside Toolbox, not winget."
+    },
+    {
+      "id": "OpenJS.NodeJS.LTS",
+      "note": "Node LTS on the Windows side for JetBrains/VS tooling (WSL gets node via nix/homebrew equivalents)."
+    },
+    {
+      "id": "Microsoft.PowerShell",
+      "note": "PowerShell 7.x (pwsh). apply.ps1 -Upgrade keeps it on latest stable."
+    },
+    {
+      "id": "Obsidian.Obsidian",
+      "note": "Second-brain vault UI. Vault: R:\\Git.Local\\KofTwentyTwo\\second-brain (see docs/PLAN-secondbrain.md)."
+    }
+  ],
+  "visualStudio": {
+    "edition": "Community",
+    "$commentEdition": "Community | Professional | Enterprise -> winget id Microsoft.VisualStudio.<edition>. Override per-run with apply.ps1 -VSEdition.",
+    "vsconfig": "vs2026.vsconfig"
+  }
+}

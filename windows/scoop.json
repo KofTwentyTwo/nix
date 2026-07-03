@@ -1,0 +1,28 @@
+{
+  "$comment": "Scoop-managed CLI tools for Windows machines. Applied by windows/apply.ps1. Mirrors the curated CLI subset from modules/homebrew.nix / home/linux-cli. Apps from non-main buckets use bucket/name form. Nerd fonts are installed ad hoc from the nerd-fonts bucket and deliberately not pinned here.",
+  "buckets": {
+    "main": null,
+    "extras": "https://github.com/ScoopInstaller/Extras",
+    "java": "https://github.com/ScoopInstaller/Java",
+    "nerd-fonts": "https://github.com/matthewjberger/scoop-nerd-fonts"
+  },
+  "apps": [
+    "7zip",
+    "bat",
+    "bottom",
+    "delta",
+    "dust",
+    "eza",
+    "fd",
+    "fzf",
+    "gh",
+    "ghorg",
+    "git-crypt",
+    "gsudo",
+    "jq",
+    "ripgrep",
+    "yq",
+    "zoxide",
+    "java/temurin21-jdk"
+  ]
+}
