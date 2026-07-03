@@ -10,7 +10,9 @@
 # Deliberately NOT ported (with rationale):
 #   - macOS-only:        pinentry-mac, mas, colima, imsg, peekaboo, remindctl,
 #                        xcodegen, qctl/notion-sql/memo (private taps)
-#   - already provided:  node@24/go/python@3.13 (mise), rustup (rustup),
+#   - already provided:  go/python@3.13 (mise), rustup (rustup),
+#                        (node@24 WAS in this list; now shipped via nixpkgs
+#                        below — mise never ended up managing it on WSL)
 #                        coreutils/gnu-sed/curl/wget/watch (native GNU on Linux),
 #                        git/gnupg/fzf/tmux/k9s/bat/eza/zoxide/delta (programs.*)
 #   - heavy / niche:     pytorch, openai-whisper, julia, llvm, sdl2, pandoc-heavy
@@ -48,6 +50,9 @@
       hyperfine
       pv
       pwgen
+
+      # --- runtimes ---
+      nodejs_24        # node + npm + corepack (parity with brew node@24 / winget Node LTS)
 
       # --- git ---
       gh
