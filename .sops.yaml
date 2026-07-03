@@ -14,6 +14,12 @@ keys:
   - &grogu age1vt8rn4ndve3qhjejv8zqadv9q5lt0hur0ql50xpeguggau4vr37srmluug
   # Linux/WSL standalone Home Manager host (hostname: lore)
   - &lore age1fghe7s6auqfgya2w895eyyhr36rzj3yksw3d6qa0nqpn9rr8defqhsg3hm
+  # FLEET key — shared identity for all of James's machines; master copy in
+  # 1Password ("age fleet key (sops)"). New-machine bootstrap = paste this
+  # identity into ~/.config/sops/age/keys.txt. No per-machine updatekeys
+  # ceremony needed anymore. Revoking a machine = rotate this key + one
+  # updatekeys pass. Per-machine keys above remain as extra recipients.
+  - &fleet age1zd7vug4j3ffm4psyuh98vfftp60cuwmdfj5tchs55hh0fwjzvg2qh953mg
 
 creation_rules:
   # Tailscale reusable auth key — decryptable by the Linux/WSL host(s) that
@@ -26,6 +32,7 @@ creation_rules:
           - *dark_horse
           - *grogu
           - *lore
+          - *fleet
   - path_regex: secrets/aws-credentials\.enc$
     key_groups:
       - age:
@@ -38,21 +45,29 @@ creation_rules:
           - *darth
           - *dark_horse
           - *grogu
+          - *lore
+          - *fleet
   - path_regex: secrets/github-sandbox-pat\.enc$
     key_groups:
       - age:
           - *darth
           - *dark_horse
           - *grogu
+          - *lore
+          - *fleet
   - path_regex: secrets/circleci-token\.enc$
     key_groups:
       - age:
           - *darth
           - *dark_horse
           - *grogu
+          - *lore
+          - *fleet
   - path_regex: secrets/.*\.yaml$
     key_groups:
       - age:
           - *darth
           - *dark_horse
           - *grogu
+          - *lore
+          - *fleet
