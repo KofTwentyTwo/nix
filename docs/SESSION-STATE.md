@@ -1,8 +1,110 @@
 # Session State
 
-**Last Updated:** 2026-06-30 (WSL Linux port)
+**Last Updated:** 2026-07-03 (LORE: second brain + canonical checkout + Windows tooling)
 
-## 🟢 ACTIVE TASK — Get this config running on WSL Ubuntu (2026-06-30)
+## 🟢 DONE — Recovered uncommitted 2026-07-02 session from the old WSL clone (2026-07-03)
+
+Before deleting the deprecated `/home/james/Git.Local/kof22/nix` clone, found
+an entire uncommitted session (2026-07-02): `docs/WINDOWS-DEV.md` +
+`docs/INTELLIJ-WSL.md` (Windows dev-env + IntelliJ/WSL architecture docs),
+`home/java/default.nix` (Linux JDK 21 with materialized `~/.jdk` for
+Windows-side IntelliJ over 9p), platform-conditional `JAVA_HOME` /
+darwin-only `GRAALVM_HOME` in zsh, `core.autocrlf=input` in flake git config,
+and the gnused serena fix (adopted — supersedes today's temp-file variant;
+that session had independently found the same serena/mktemp bugs but never
+committed). All ported into the canonical checkout; old clone deleted after.
+NB the 2026-07-02 architecture note: Java WORK repos live ALL-WINDOWS on R:
+(Temurin/scoop); WSL-ext4 + `~/.jdk` remains for WSL-side Java. The nix repo
+itself is the sanctioned exception to "WSL must not operate on Windows-side
+repos" (canonical checkout on R:, per James 2026-07-03).
+
+## 🟢 DONE — sops fleet key: machine onboarding loop broken (2026-07-03)
+
+- New shared `&fleet` age recipient added to all `.sops.yaml` rules except
+  `aws-credentials.enc`; secrets re-encrypted via Dark-Horse (James approved).
+  LORE now decrypts everything: `switch` is exit-0 with ZERO sops warnings;
+  circleci-token + github-security-pat deployed (0600).
+- **Fleet key ROTATED same day** (James approved): the first fleet private key
+  leaked into a Claude session transcript via a sloppy readback check. New
+  fleet key is `age1zd7vug4...h953mg`; rotation ran entirely ON LORE (machine
+  key authorized `sops updatekeys` — no Mac needed, validating the model).
+  Old key verified removed from all recipients. Lesson: verify op/secret
+  readbacks with `Select-String -Quiet`, never `-like` on multi-line output.
+- New-machine bootstrap is now: paste the fleet identity from 1Password into
+  `~/.config/sops/age/keys.txt`. No updatekeys ceremony. Revocation = rotate
+  fleet key + one updatekeys pass. Per-machine keys kept as extra recipients.
+- ✅ Fleet identity stored in 1Password: Secure Note **"age fleet key (sops)"**
+  (Private vault, id `3zxwe5pw64xwkj4ogvutuhld5e` — holds the ROTATED key; the
+  first item was deleted with the burned key). NB for agents: `op item create`
+  hangs on a piped stdin unless you feed it a JSON template on stdin.
+
+## 🟢 DONE — Obsidian second brain wired into Claude Code (2026-07-03)
+
+Implemented James's `claude-code-secondbrain-requirements.md` spec (see
+`docs/PLAN-secondbrain.md` for gap analysis + decisions taken while AFK):
+
+- **Vault:** `R:\Git.Local\KofTwentyTwo\second-brain` (= `/mnt/r/...` in WSL;
+  Macs will use `~/Git.Local/KofTwentyTwo/second-brain`). Git-backed with a
+  private remote: `github.com/KofTwentyTwo/second-brain` (created + pushed
+  2026-07-03 with James's approval); consolidation pushes weekly.
+- **New module `home/secondbrain/`**: SECOND_BRAIN_VAULT env, SessionStart
+  (inject index.md + project note) / SessionEnd (daily-log stub) hook scripts,
+  secondbrain-save + secondbrain-consolidate skills, vault bootstrap
+  (clone-or-scaffold), weekly consolidation (systemd user timer Sun 18:00 on
+  Linux, launchd on mac), and a LORE-only bridge that mirrors hooks (PowerShell
+  ports), skills, CLAUDE.md, and settings fragments into Windows-native Claude
+  Code at `C:\Users\james\.claude`.
+- **home/claude/default.nix**: hooks registered via marker-based jq merge
+  (drops entries containing "secondbrain", appends managed ones — GSD's Mac
+  hooks untouched); `env.SECOND_BRAIN_VAULT` in userPrefs; MCP-budget warn
+  (>5) in syncClaudeJson; `csharp-lsp` enabled; `terraform` plugin declared
+  false (swap-in). `home/lib/agent-context.nix` gained the Second Brain
+  directive (flows to Claude/Codex/Gemini bootstrap docs).
+- **Acceptance (spec §9)**: fresh headless session from empty dir sees the
+  injected index ✓; WSL settings hooks+env ✓; Windows bridge merge + PS1 hook
+  run ✓; daily log stub written ✓; timer scheduled ✓; MCP count 2 (≤5) ✓;
+  vault secret scan clean ✓; Darth darwin eval still green ✓. Live LLM
+  decision-write test + consolidation idempotency pass: consolidation run
+  started, verify journal. Obsidian added to windows/winget.json (not yet
+  installed — run windows/apply.ps1).
+
+## 🟢 DONE — LORE: R:\ checkout is now the working nix (2026-07-03)
+
+## 🟢 DONE — LORE: R:\ checkout is now the working nix (2026-07-03)
+
+**Machine:** LORE (Windows 11 + WSL Ubuntu). The canonical repo checkout is now
+`R:\Git.Local\KofTwentyTwo\nix` on the Dev Drive (ReFS VHDX), shared with WSL:
+
+- **WSL mount:** `R:` was not automounted (Dev Drive VHDX attaches after WSL's
+  automount pass) → mounted at `/mnt/r` via drvfs and persisted in `/etc/fstab`
+  (`R: /mnt/r drvfs rw,noatime,uid=1000,gid=1000,symlinkroot=/mnt/ 0 0`).
+- **Flake path:** `~/.config/nix` in WSL is a symlink →
+  `/mnt/r/Git.Local/KofTwentyTwo/nix`. This makes the Linux side match the macOS
+  layout, so all `~/.config/nix` docs/scripts are correct everywhere. The zsh
+  `switch` helper (home/zsh/default.nix) now uses `$HOME/.config/nix#james` on
+  Linux; verified with a green `home-manager switch` (gen advanced) from the new
+  path.
+- **Line endings:** the Windows clone had `core.autocrlf=true` → 162 files CRLF
+  in the working tree. Fixed: repo-local `core.autocrlf=false`, stripped `\r`,
+  restaged (index sizes were stale — git flags size mismatch as modified without
+  re-hashing). Invariant: keep this checkout all-LF.
+- **git-crypt:** unlocked via symmetric key exported from the old WSL clone.
+  Windows side got git-crypt 0.7.0 via scoop; `.git/config` filter entries were
+  rewritten PATH-relative (`"git-crypt" smudge/clean`) so Windows git and WSL
+  git each resolve their own binary. Both sides verified clean.
+- **Old WSL clone** at `/home/james/Git.Local/kof22/nix` is now DEPRECATED —
+  nothing references it; delete once comfortable.
+- **Windows dev tooling:** new `windows/` module (`apply.ps1` + `winget.json` +
+  `scoop.json` + `vs2026.vsconfig` + README) — the Windows analog of `switch`.
+  winget = GUI/heavy apps (JetBrains Toolbox, Node LTS — installed 24.18.0),
+  scoop = CLI tools (adopted the existing set), JetBrains IDEs stay managed by
+  Toolbox (already installed with full fleet). Visual Studio 2026 install is
+  wired up (edition in winget.json, workloads in vs2026.vsconfig, re-applied on
+  existing installs via `setup.exe modify`) — NOT yet run; awaiting edition
+  choice (Community/Professional/Enterprise → `Microsoft.VisualStudio.<edition>`).
+- All of the above is uncommitted on `main` (working tree diff).
+
+## Previous — Get this config running on WSL Ubuntu (2026-06-30)
 
 **Goal:** Run the shared `./home` Home Manager modules on WSL Ubuntu 26.04
 (x86_64) via standalone Home Manager. nix-darwin is untouched and mac-only.

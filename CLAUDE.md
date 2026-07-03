@@ -31,8 +31,11 @@ Goal: faster, better future sessions — not a wall of guidance text. If integra
 ## Commands
 
 ```bash
-# Build and activate (requires sudo)
+# Build and activate (requires sudo) — macOS
 sudo darwin-rebuild switch --flake ~/.config/nix
+
+# Build and activate — Linux / WSL (standalone Home Manager)
+home-manager switch -b backup --flake ~/.config/nix#james
 
 # Dry-run / check
 darwin-rebuild check --flake ~/.config/nix
@@ -43,6 +46,23 @@ nix flake update
 # Unlock encrypted files (after fresh clone)
 git-crypt unlock
 ```
+
+## Windows / WSL machines (LORE)
+
+On Windows boxes the canonical checkout lives on the Windows side
+(`R:\Git.Local\KofTwentyTwo\nix` on LORE's Dev Drive) and is shared with WSL:
+
+- WSL mounts `R:` at `/mnt/r` via `/etc/fstab` (Dev Drive VHDXs attach after
+  WSL's automount pass, so the fstab entry is required).
+- `~/.config/nix` in WSL is a **symlink** to `/mnt/r/Git.Local/KofTwentyTwo/nix`
+  — same flake path as macOS; the zsh `switch` helper works unchanged.
+- **Invariants for this shared checkout:** repo-local `core.autocrlf=false` with
+  an all-LF working tree (HM deploys these files as shell scripts in WSL), and
+  git-crypt installed on BOTH sides (WSL: nix profile; Windows: scoop) with
+  PATH-relative filter entries in `.git/config` (`"git-crypt" smudge/clean`).
+- Native Windows dev tooling (Visual Studio 2026, JetBrains Toolbox, Node, CLI
+  tools) is managed by `windows/apply.ps1` + manifests — see `windows/README.md`.
+  JetBrains IDEs are managed by Toolbox itself, not winget.
 
 ## Architecture
 
@@ -66,6 +86,7 @@ git-crypt unlock
 | `nvim/` | Neovim + LazyVim (config in `nvim/config/`) |
 | `wez/` | WezTerm with status bar |
 | `zsh/` | Shell config, ls wrapper, shelp, aliases, SSH tracking |
+| `secondbrain/` | Obsidian vault wiring: Claude hooks, save/consolidate skills, weekly consolidation, Windows bridge (see `docs/PLAN-secondbrain.md`) |
 | `scripts/` | Custom git commands (`ghelp`, `gclo`, etc.) |
 | `ohmyzsh/` | Oh-My-Zsh plugins (git, sudo, docker, kubectl, aws, helm, terraform, fzf, aliases) |
 
@@ -99,7 +120,7 @@ The `ls()` wrapper function in zsh initContent translates standard ls flags to e
 - **Aliases**: Add to `shellAliases` in `home/zsh/default.nix`
 - **Secrets**:
   - Sensitive config (SSH topology, AI prefs, etc.) → git-crypt (see `.gitattributes`)
-  - Credentials / tokens → sops-nix (`secrets/*.enc`). Age key at `~/.config/sops/age/keys.txt`; per-machine pubkeys + creation rules in `.sops.yaml`. Declarations live in `home/sops/default.nix`. Add a new secret: encrypt with `sops -e --filename-override secrets/foo.enc --input-type binary --output-type binary <plaintext> > secrets/foo.enc`, declare it in `home/sops/default.nix`, `git add` (flakes only see tracked files), rebuild. Add a new machine: `age-keygen -y` its pubkey, append to `.sops.yaml`, `sops updatekeys secrets/*.enc` on any host that can already decrypt.
+  - Credentials / tokens → sops-nix (`secrets/*.enc`). Age keys at `~/.config/sops/age/keys.txt`; recipients + creation rules in `.sops.yaml`. Declarations live in `home/sops/default.nix`. Add a new secret: encrypt with `sops -e --filename-override secrets/foo.enc --input-type binary --output-type binary <plaintext> > secrets/foo.enc`, declare it in `home/sops/default.nix`, `git add` (flakes only see tracked files), rebuild. **Add a new machine (fleet-key model, since 2026-07-03):** paste the `&fleet` age identity from 1Password ("age fleet key (sops)") into the machine's `~/.config/sops/age/keys.txt` — done, no `.sops.yaml` edit or `updatekeys` ceremony. Revoking a machine = rotate the fleet key + one `updatekeys` pass on all `secrets/*.enc`. Legacy per-machine keys remain as extra recipients.
   - **Sandboxed-consumer exception** (e.g. Claude Cowork scheduled tasks): the sandbox only mounts specific paths (the project folder + `~/Git.Local/dmd`); sops-nix's default symlink-into-`~/.config/sops-nix/` dangles inside the sandbox. For these, bypass sops-nix's `secrets.*` block and use the `mkPatDeployer { name, encFile, destinations }` helper in `home/sops/default.nix` — it emits a `home.activation` entry that `sops --decrypt`s to regular files at every path in `destinations` (mode 0600, atomic mv via mktemp). Both `github-security-pat` and `github-sandbox-pat` use this; see those activation entries as examples. To add a new sandboxed consumer for an existing PAT, just append its `.github-pat`/`.github-deploy-pat` path to the `destinations` list — missing folders are skipped per-destination.
 
 ## AI Rules (`home/ai/3-rules.md`)
@@ -143,7 +164,7 @@ Operational notes:
 
 **Codex + security-guidance Stop hook**: Codex 0.135.0's Claude-plugin compat layer maps `security-guidance@claude-plugins-official`'s `Stop` hook into a Codex stop hook. The hook's `emit_metrics()` always prints Claude's `{"metrics":…}` (`SyncHookJSONOutput`) — even on the disabled path — which Codex rejects: *"hook returned invalid stop hook JSON output."* `ENABLE_STOP_REVIEW=0` / `SECURITY_GUIDANCE_DISABLE=1` don't fix it. Fix: `home/codex/default.nix` has a `disableCodexSgStopHook` activation that idempotently sets `enabled = false` on the `[hooks.state."security-guidance@…:stop:*"]` entry in `~/.codex/config.toml` (per-hook disable; edit-time pattern warnings stay on). Caveat: `config.toml` is Codex-owned — if Codex rewrites `hooks.state` on a trust event it may drop the flag until the next `darwin-rebuild switch` re-applies it. The plugin enablement itself is Codex/user drift, not Nix-seeded.
 
-**sops deferred machines**: `.sops.yaml` lists Darth + Dark-Horse + Grogu age recipients. Renova is not yet added (no key collected); the `&darth` pubkey is also unconfirmed against the actual Darth host. Add them by collecting `age-keygen -y ~/.config/sops/age/keys.txt` output on each, appending to `.sops.yaml`, and running `sops updatekeys` on each `secrets/*.enc` from a host that can already decrypt.
+**sops machine onboarding (solved via fleet key, 2026-07-03)**: `.sops.yaml` has a shared `&fleet` recipient on all secrets except `aws-credentials.enc`; new machines (e.g. Renova when it wakes) just need the fleet identity from 1Password pasted into `~/.config/sops/age/keys.txt` — no updatekeys ceremony. Remaining caveat: the `&darth` pubkey is still unconfirmed against the actual Darth host, and `aws-credentials.enc` stays darth-only (see the sops `aws-credentials` note above).
 
 ## Docs Directory
 
