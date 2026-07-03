@@ -461,7 +461,7 @@ CONFIG - Key Paths
   ~/.local/bin/           custom scripts
 
 CONFIG - Key Environment Variables
-  JAVA_HOME       /opt/homebrew/opt/openjdk@21/...
+  JAVA_HOME       /opt/homebrew/opt/openjdk@21/... (macOS) · ~/.jdk (Linux/WSL)
   KUBECONFIG      auto-merged from ~/.kube/configs/*
   EDITOR/VISUAL   vi (aliases to nvim)
   PAGER           less -FR
@@ -596,11 +596,14 @@ TIP: shelp KEYWORD   filter output (e.g., shelp kubectl, shelp replace, shelp gi
                rc=''${pipestatus[1]}
              else
                # Linux / WSL: standalone Home Manager (no nix-darwin, no sudo).
-               # Repo lives in Git.Local; the config is the #james flake output.
+               # ~/.config/nix is a symlink to the canonical checkout (on WSL
+               # boxes that is the Windows Dev Drive, e.g. /mnt/r/Git.Local/
+               # KofTwentyTwo/nix) so mac and Linux share one flake path.
                # -b backup so a clashing dotfile never aborts the activation.
                cmd_label="home-manager switch"
-               log=$(mktemp -t hm-switch)
-               home-manager switch -b backup --flake "$HOME/Git.Local/kof22/nix#james" 2>&1 | tee "$log"
+               # GNU mktemp requires XXXXXX in the template (BSD/mac does not)
+               log=$(mktemp -t hm-switch.XXXXXX)
+               home-manager switch -b backup --flake "$HOME/.config/nix#james" 2>&1 | tee "$log"
                rc=''${pipestatus[1]}
              fi
 
@@ -1075,10 +1078,13 @@ EOF
             # GPG configuration
             GPG_TTY = "$(tty)";  # Required for GPG to work in terminal
             
-            # Java/GraalVM configuration
-            # Note: Uses Homebrew's stable symlink to avoid breakage on version upgrades
-            GRAALVM_HOME = "/opt/homebrew/opt/graalvm-jdk@21/Contents/Home";
-            JAVA_HOME = "/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home";
+            # Java configuration — stable per-platform paths that survive
+            # version upgrades: Homebrew's opt symlink on macOS, the
+            # Home-Manager-materialized ~/.jdk (home/java) on Linux/WSL.
+            JAVA_HOME =
+               if pkgs.stdenv.isDarwin
+               then "/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home"
+               else "${homeDir}/.jdk";
             
             # Kubernetes configuration
             KUBECONFIG = "$(find ~/.kube/configs -type f 2>/dev/null | tr '\n' ':' || echo '')";
@@ -1098,6 +1104,9 @@ EOF
 
             # Secrets are loaded via op-load-secrets function (see 1password module)
             # See: op-load-secrets --help or ~/.config/nix/SECRETS.md
+         } // lib.optionalAttrs pkgs.stdenv.isDarwin {
+            # GraalVM ships via Homebrew cask — macOS only
+            GRAALVM_HOME = "/opt/homebrew/opt/graalvm-jdk@21/Contents/Home";
          };
       };
    };

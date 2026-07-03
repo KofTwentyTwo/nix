@@ -409,6 +409,9 @@
             user.name = userConfig.git.userName;
             user.email = userConfig.git.userEmail;
             core.editor = "vi";
+            # Repos are canonical LF; strip any CRLF a Windows-side editor
+            # sneaks into a WSL working tree. No-op for LF-only files (mac).
+            core.autocrlf = "input";
             alias.cz = "!cz";
             fetch.prune = true;
             gpg.program = "gpg";
@@ -475,8 +478,10 @@
    # standalone. The shared ./home modules are reused as-is; the few
    # mac-only pieces self-guard with `pkgs.stdenv.isDarwin`. The git
    # identity comes from the closure `userConfig` (same as macOS); only the
-   # filesystem paths differ (/Users -> /home). Build/activate with:
-   #   home-manager switch --flake ~/Git.Local/kof22/nix#james
+   # filesystem paths differ (/Users -> /home). On WSL, ~/.config/nix is a
+   # symlink to the canonical checkout on the Windows Dev Drive
+   # (/mnt/r/Git.Local/KofTwentyTwo/nix). Build/activate with:
+   #   home-manager switch --flake ~/.config/nix#james
    linuxUsername = "james";
    linuxUserConfig = userConfig // {
       username = linuxUsername;
