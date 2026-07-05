@@ -8,6 +8,7 @@
   },
   "apps": [
     "7zip",
+    "aws",
     "bat",
     "bottom",
     "delta",
