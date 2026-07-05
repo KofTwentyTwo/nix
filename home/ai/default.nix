@@ -21,4 +21,18 @@
   home.file.".ai/3-rules.md".source = ./3-rules.md;
   home.file.".ai/4-preferences.yaml".source = ./4-preferences.yaml;
   home.file.".ai/5-learnings.md".source = ./5-learnings.md;
+
+  # LORE bridge: every agent bootstrap doc (CLAUDE.md / AGENTS.md / GEMINI.md)
+  # tells the agent to load ~/.ai/* — mirror the set into the Windows profile
+  # so Windows-native agents (Claude Code, opencode, ...) can actually resolve
+  # those references. Same-machine copy; 4-preferences.yaml is git-crypt
+  # sensitive-config, not credentials.
+  home.activation.syncWindowsAiFiles = lib.mkIf pkgs.stdenv.isLinux (lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    if [ -d "/mnt/c/Users/james" ] && [ -d "${config.home.homeDirectory}/.ai" ]; then
+      mkdir -p /mnt/c/Users/james/.ai
+      cp -rLf "${config.home.homeDirectory}/.ai/." /mnt/c/Users/james/.ai/ 2>/dev/null \
+        && echo "[ai-win] ~/.ai mirrored to Windows profile" \
+        || echo "[ai-win] WARN: could not mirror ~/.ai to Windows" >&2
+    fi
+  '');
 }

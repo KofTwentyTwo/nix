@@ -21,6 +21,7 @@
     "git-crypt",
     "gsudo",
     "jq",
+    "opencode",
     "ripgrep",
     "yq",
     "zoxide",
