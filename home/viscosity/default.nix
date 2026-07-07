@@ -101,6 +101,10 @@ in
         vdir="/mnt/c/Users/james/AppData/Roaming/Viscosity/OpenVPN"
         ${winCopyScript}
         echo "[viscosity-win] ${toString (builtins.length (builtins.attrNames connections))} connection bundles deployed to Windows Viscosity"
+        # Viscosity-Windows only scans OpenVPN/ at app startup (verified
+        # 2026-07-07): bundles deployed while it runs stay invisible until
+        # relaunch. Don't kill it here — it may hold a live VPN session.
+        echo "[viscosity-win] NB: restart Viscosity to pick up new/changed connections"
       fi
     '';
   })
