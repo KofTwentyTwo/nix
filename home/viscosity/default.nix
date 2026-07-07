@@ -82,14 +82,64 @@ let
   # ---- LORE bridge: Viscosity for Windows uses the identical per-slot
   # layout under %APPDATA%\Viscosity\OpenVPN. Deploy the same bundles there
   # (cp, not symlink — Windows can't traverse Linux symlinks over 9p).
-  # Sidebar folder structure is macOS-plist-only; on Windows the connections
-  # carry their names via the #viscosity directives and are organized by hand.
   mkWinCopy = slot: conn: ''
     mkdir -p "$vdir/${slot}"
     ${lib.concatStringsSep "\n" (map (f: ''
       cp -f ${configDir + "/${conn.name}/${f}"} "$vdir/${slot}/${f}"'') (baseFiles ++ conn.extras))}
   '';
   winCopyScript = lib.concatStringsSep "\n" (lib.mapAttrsToList mkWinCopy connections);
+
+  # Windows sidebar folders: Settings.xml is an Apple plist even on Windows,
+  # with the same ConnectionOrder schema — except the app writes sharedAuth/
+  # sharedReconnect as STRING "false" (mac wants real booleans) and adds six
+  # empty per-folder script keys (captured from a live 1.12.1 install,
+  # 2026-07-07). Reuses the same `folders` declaration as macOS.
+  mkWinOpenvpnEntry = slot: {
+    options = {};
+    name = slot;
+    type = "openvpn";
+    children = [];
+  };
+  mkWinFolderEntry = folder: {
+    options = {
+      sharedAuth = "false";
+      sharedReconnect = "false";
+      preconnectscript = "";
+      preconnectscriptname = "";
+      connectedscript = "";
+      connectedscriptname = "";
+      disconnectedscript = "";
+      disconnectedscriptname = "";
+    };
+    type = "folder";
+    name = folder.name;
+    children = map mkWinOpenvpnEntry folder.slots;
+  };
+  winConnectionOrderPlist = pkgs.writeText "viscosity-win-connectionorder.plist"
+    (lib.generators.toPlist {} (map mkWinFolderEntry folders));
+
+  # plistlib splicer: --check exits 1 when Settings.xml's ConnectionOrder
+  # differs from the desired plist; without --check it writes the update.
+  winPlistSplicer = pkgs.writeText "viscosity-win-splice.py" ''
+    import plistlib, sys
+    args = sys.argv[1:]
+    check = args and args[0] == "--check"
+    if check:
+        args = args[1:]
+    settings_path, desired_path = args
+    with open(desired_path, "rb") as f:
+        desired = plistlib.load(f)
+    with open(settings_path, "rb") as f:
+        doc = plistlib.load(f)
+    same = doc.get("ConnectionOrder") == desired
+    if check:
+        sys.exit(0 if same else 1)
+    if not same:
+        doc["ConnectionOrder"] = desired
+        with open(settings_path, "wb") as f:
+            plistlib.dump(doc, f, sort_keys=False)
+    print("OK")
+  '';
 in
 {
   config = lib.mkMerge [
@@ -105,6 +155,35 @@ in
         # 2026-07-07): bundles deployed while it runs stay invisible until
         # relaunch. Don't kill it here — it may hold a live VPN session.
         echo "[viscosity-win] NB: restart Viscosity to pick up new/changed connections"
+
+        # Sidebar folders: splice the nix-declared ConnectionOrder into
+        # Settings.xml. Skips before first launch (no Settings.xml yet).
+        # Only when the structure differs: stop the app first (it rewrites
+        # Settings.xml from memory on exit, clobbering external edits),
+        # splice, then relaunch if it was running — mirrors the macOS
+        # activation's quit/write/reopen dance.
+        sxml="/mnt/c/Users/james/AppData/Roaming/Viscosity/Settings.xml"
+        if [ -f "$sxml" ]; then
+          if ! ${pkgs.python3}/bin/python3 ${winPlistSplicer} --check "$sxml" ${winConnectionOrderPlist}; then
+            # Exit-code-based process check: parsing tasklist text through
+            # interop is encoding-fragile (verified failing 2026-07-07).
+            winps="/mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe"
+            visc_was_running=false
+            if "$winps" -NoProfile -Command "if (Get-Process Viscosity -ErrorAction SilentlyContinue) { exit 0 } else { exit 1 }" >/dev/null 2>&1; then
+              visc_was_running=true
+              "$winps" -NoProfile -Command "Stop-Process -Name Viscosity -Force -ErrorAction SilentlyContinue" >/dev/null 2>&1 || true
+              sleep 2
+            fi
+            if ${pkgs.python3}/bin/python3 ${winPlistSplicer} "$sxml" ${winConnectionOrderPlist} >/dev/null; then
+              echo "[viscosity-win] ConnectionOrder (sidebar folders) updated from nix declaration"
+            else
+              echo "[viscosity-win] WARN: ConnectionOrder splice failed; folders unchanged" >&2
+            fi
+            if [ "$visc_was_running" = true ]; then
+              /mnt/c/Windows/System32/cmd.exe /c start "" "C:\Program Files\Viscosity\Viscosity.exe" >/dev/null 2>&1 || true
+            fi
+          fi
+        fi
       fi
     '';
   })
