@@ -82,10 +82,13 @@ let
   # ---- LORE bridge: Viscosity for Windows uses the identical per-slot
   # layout under %APPDATA%\Viscosity\OpenVPN. Deploy the same bundles there
   # (cp, not symlink — Windows can't traverse Linux symlinks over 9p).
+  # --no-preserve=mode is load-bearing: plain cp keeps the nix store's 0444,
+  # which drvfs maps to the Windows READ-ONLY attribute — Viscosity then dies
+  # with "Access Denied" because it rewrites config.conf on connect/edit.
   mkWinCopy = slot: conn: ''
     mkdir -p "$vdir/${slot}"
     ${lib.concatStringsSep "\n" (map (f: ''
-      cp -f ${configDir + "/${conn.name}/${f}"} "$vdir/${slot}/${f}"'') (baseFiles ++ conn.extras))}
+      cp -f --no-preserve=mode,ownership ${configDir + "/${conn.name}/${f}"} "$vdir/${slot}/${f}"'') (baseFiles ++ conn.extras))}
   '';
   winCopyScript = lib.concatStringsSep "\n" (lib.mapAttrsToList mkWinCopy connections);
 

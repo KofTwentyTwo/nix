@@ -30,7 +30,9 @@
     win="/mnt/c/Users/james/.aws"
     if [ -d "/mnt/c/Users/james" ]; then
       mkdir -p "$win"
-      if cp -f ${./config/config} "$win/config" 2>/dev/null; then
+      # --no-preserve=mode: plain cp keeps the store's 0444, which drvfs maps
+      # to the Windows READ-ONLY attribute and breaks `aws configure` writes.
+      if cp -f --no-preserve=mode,ownership ${./config/config} "$win/config" 2>/dev/null; then
         echo "[aws-win] config mirrored to Windows .aws"
       else
         echo "[aws-win] WARN: could not mirror config to $win" >&2
