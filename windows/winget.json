@@ -16,6 +16,10 @@
     {
       "id": "Obsidian.Obsidian",
       "note": "Second-brain vault UI. Vault: R:\\Git.Local\\KofTwentyTwo\\second-brain (see docs/PLAN-secondbrain.md)."
+    },
+    {
+      "id": "SparkLabs.Viscosity",
+      "note": "OpenVPN client - same product/license as the Macs. Connection bundles are deployed from home/viscosity by the LORE bridge on every switch."
     }
   ],
   "visualStudio": {

@@ -78,11 +78,35 @@ let
 
   connectionOrderPlist = pkgs.writeText "viscosity-connectionorder.plist"
     (lib.generators.toPlist {} connectionOrderValue);
+
+  # ---- LORE bridge: Viscosity for Windows uses the identical per-slot
+  # layout under %APPDATA%\Viscosity\OpenVPN. Deploy the same bundles there
+  # (cp, not symlink — Windows can't traverse Linux symlinks over 9p).
+  # Sidebar folder structure is macOS-plist-only; on Windows the connections
+  # carry their names via the #viscosity directives and are organized by hand.
+  mkWinCopy = slot: conn: ''
+    mkdir -p "$vdir/${slot}"
+    ${lib.concatStringsSep "\n" (map (f: ''
+      cp -f ${configDir + "/${conn.name}/${f}"} "$vdir/${slot}/${f}"'') (baseFiles ++ conn.extras))}
+  '';
+  winCopyScript = lib.concatStringsSep "\n" (lib.mapAttrsToList mkWinCopy connections);
 in
 {
-  # Viscosity is a macOS-only VPN client. Guard the whole module so Linux
-  # (WSL) does not deploy dead ~/Library symlinks or run the plutil activation.
-  config = lib.mkIf pkgs.stdenv.isDarwin {
+  config = lib.mkMerge [
+
+  # Viscosity for Windows gets the same connections via the LORE bridge.
+  (lib.mkIf pkgs.stdenv.isLinux {
+    home.activation.syncWindowsViscosity = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+      if [ -d "/mnt/c/Users/james" ]; then
+        vdir="/mnt/c/Users/james/AppData/Roaming/Viscosity/OpenVPN"
+        ${winCopyScript}
+        echo "[viscosity-win] ${toString (builtins.length (builtins.attrNames connections))} connection bundles deployed to Windows Viscosity"
+      fi
+    '';
+  })
+
+  # Viscosity on macOS: symlinked bundles + plist-managed sidebar folders.
+  (lib.mkIf pkgs.stdenv.isDarwin {
   home.file = lib.mkMerge (lib.mapAttrsToList mkConnection connections);
 
   # Reproduce Viscosity's :ConnectionOrder (folders + connections) from the nix
@@ -128,5 +152,7 @@ in
       fi
     fi
   '';
-  };
+  })
+
+  ];
 }
