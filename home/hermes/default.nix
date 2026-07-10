@@ -89,4 +89,26 @@ in
         || echo "hermes: WARN install failed (offline?); rerun darwin-rebuild switch when network is available" >&2
     fi
   '';
+
+  # LORE bridge: keep the Windows-native hermes (%LOCALAPPDATA%\hermes,
+  # installed once via upstream install.ps1 -SkipSetup) fed with the current
+  # OpenRouter key from sops. Hermes-Windows reads keys from its .env; syncing
+  # here means a key rotation (re-encrypt + switch) reaches both sides.
+  home.activation.syncWindowsHermesEnv = lib.mkIf pkgs.stdenv.isLinux (lib.hm.dag.entryAfter [ "deployOpenrouterApiKey" ] ''
+    henv="/mnt/c/Users/james/AppData/Local/hermes/.env"
+    key_file="${homeDir}/.config/secrets/openrouter-api-key"
+    if [ -f "$henv" ] && [ -r "$key_file" ]; then
+      key=$(cat "$key_file")
+      if grep -q "^OPENROUTER_API_KEY=$key\$" "$henv"; then
+        : # already current
+      else
+        if grep -qE "^#? ?OPENROUTER_API_KEY=" "$henv"; then
+          ${pkgs.gnused}/bin/sed -i "s|^#\{0,1\} \{0,1\}OPENROUTER_API_KEY=.*|OPENROUTER_API_KEY=$key|" "$henv"
+        else
+          printf 'OPENROUTER_API_KEY=%s\n' "$key" >> "$henv"
+        fi
+        echo "[hermes-win] OPENROUTER_API_KEY synced into Windows hermes .env"
+      fi
+    fi
+  '');
 }
