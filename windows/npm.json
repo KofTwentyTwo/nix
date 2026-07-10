@@ -1,0 +1,6 @@
+{
+  "$comment": "npm-global CLI tools for Windows machines - for tools in neither winget nor scoop. Applied by windows/apply.ps1 (checks `npm ls -g`, installs missing; -Upgrade reinstalls latest). Node itself comes from winget (OpenJS.NodeJS.LTS).",
+  "packages": [
+    "@google/gemini-cli"
+  ]
+}

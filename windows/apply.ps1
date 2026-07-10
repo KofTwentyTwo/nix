@@ -101,6 +101,20 @@ if ($Upgrade) {
     scoop update *
 }
 
+# ------------------------------------------------------------------ npm globals
+$npmManifest = Get-Content (Join-Path $repoWin 'npm.json') -Raw | ConvertFrom-Json
+Info "npm globals"
+$npmHave = (npm ls -g --depth=0 --json 2>$null | ConvertFrom-Json).dependencies.PSObject.Properties.Name
+foreach ($pkg in $npmManifest.packages) {
+    if ($npmHave -contains $pkg -and -not $Upgrade) {
+        Ok "${pkg}: already installed"
+    } else {
+        Warn2 "${pkg}: installing/updating"
+        npm install -g "$pkg@latest" | Out-Null
+        if ($LASTEXITCODE -ne 0) { Warn2 "${pkg}: npm install exited $LASTEXITCODE" }
+    }
+}
+
 # ---------------------------------------------------------- Visual Studio 2026
 if (-not $SkipVS) {
     $edition  = if ($VSEdition) { $VSEdition } else { $wingetManifest.visualStudio.edition }

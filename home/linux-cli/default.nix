@@ -56,6 +56,7 @@
 
       # --- AI agents ---
       codex            # OpenAI Codex CLI — home/codex config/skills were dead on WSL without the binary (Macs get it from brew)
+      gemini-cli       # Google Gemini CLI — same story: home/gemini config was dead on WSL (Macs: brew gemini-cli)
 
       # --- git ---
       gh

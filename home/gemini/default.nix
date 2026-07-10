@@ -55,4 +55,31 @@ in
       fi
     fi
   '';
+
+  # LORE bridge: mirror GEMINI.md + the same settings merge into Windows-native
+  # %USERPROFILE%\.gemini (gemini-cli is Node, resolves ~ to the Windows
+  # profile; installed via windows/npm.json). --no-preserve strips store modes
+  # (drvfs maps 0444 to the Windows READ-ONLY attribute).
+  home.activation.syncWindowsGemini = lib.mkIf pkgs.stdenv.isLinux (lib.hm.dag.entryAfter [ "syncGeminiSettings" ] ''
+    win="/mnt/c/Users/james/.gemini"
+    if [ -d "/mnt/c/Users/james" ]; then
+      mkdir -p "$win"
+      cp -Lf --no-preserve=mode,ownership "${homeDir}/.gemini/GEMINI.md" "$win/GEMINI.md" 2>/dev/null \
+        || echo "[gemini-win] WARN: GEMINI.md mirror failed" >&2
+      wgj="$win/settings.json"
+      if [ ! -f "$wgj" ] || [ ! -s "$wgj" ]; then
+        ${pkgs.jq}/bin/jq -n --slurpfile settings "${geminiSettingsJson}" '$settings[0]' > "$wgj"
+      else
+        if ${pkgs.jq}/bin/jq --slurpfile settings "${geminiSettingsJson}" '
+          .ui = ((.ui // {}) * ($settings[0].ui // {}))
+          | .mcpServers = $settings[0].mcpServers
+        ' "$wgj" > "$wgj.tmp" && [ -s "$wgj.tmp" ]; then
+          mv "$wgj.tmp" "$wgj"
+        else
+          rm -f "$wgj.tmp"
+        fi
+      fi
+      echo "[gemini-win] GEMINI.md + settings mirrored"
+    fi
+  '');
 }
