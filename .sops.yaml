@@ -63,6 +63,16 @@ creation_rules:
           - *grogu
           - *lore
           - *fleet
+  # OpenRouter API key (1Password "OpenRouter" in the greatergoods account is
+  # the master copy). Consumed as OPENROUTER_API_KEY by zsh for hermes et al.
+  - path_regex: secrets/openrouter-api-key\.enc$
+    key_groups:
+      - age:
+          - *darth
+          - *dark_horse
+          - *grogu
+          - *lore
+          - *fleet
   - path_regex: secrets/.*\.yaml$
     key_groups:
       - age:

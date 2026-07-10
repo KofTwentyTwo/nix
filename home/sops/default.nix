@@ -151,7 +151,7 @@ in
     # mkPatDeployer skips destinations whose parent dir is missing, so both the
     # CircleCI token and the github-codex-pat destination depend on this.
     home.activation.ensureSecretsDir =
-      lib.hm.dag.entryBefore [ "deployCircleciToken" "deployGithubSecurityPat" "deployTailscaleAuthkey" ] ''
+      lib.hm.dag.entryBefore [ "deployCircleciToken" "deployGithubSecurityPat" "deployTailscaleAuthkey" "deployOpenrouterApiKey" ] ''
         mkdir -p "${homeDir}/.config/secrets"
         chmod 0700 "${homeDir}/.config/secrets"
       '';
@@ -160,6 +160,19 @@ in
       encFile = ../../secrets/circleci-token.enc;
       destinations = [
         "${homeDir}/.config/secrets/circleci-token"
+      ];
+    };
+
+    # OpenRouter API key. Decrypted to ~/.config/secrets/openrouter-api-key
+    # (mode 0600); sourced by zsh initContent into OPENROUTER_API_KEY for every
+    # interactive shell (hermes-agent and anything else OpenRouter-backed).
+    # Master copy: 1Password "OpenRouter" (greatergoods account). Rotate there,
+    # re-encrypt with `sops secrets/openrouter-api-key.enc`, rebuild.
+    home.activation.deployOpenrouterApiKey = mkPatDeployer {
+      name = "openrouter-api-key";
+      encFile = ../../secrets/openrouter-api-key.enc;
+      destinations = [
+        "${homeDir}/.config/secrets/openrouter-api-key"
       ];
     };
 

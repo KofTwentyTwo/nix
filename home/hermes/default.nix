@@ -72,7 +72,9 @@ in
   # writes ~/.claude.json) silently never executes. Use if/elif/else with a
   # no-op (`:`) branch for the skip cases instead.
   home.activation.installHermesAgent = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    export PATH="${brewBin}:$PATH"
+    # brewBin covers macOS; the nix-profile bin covers Linux/WSL (uv comes
+    # from home/linux-cli there — HM's activation PATH does not include it).
+    export PATH="${brewBin}:${homeDir}/.nix-profile/bin:$PATH"
 
     if [ -d "${installDir}/.git" ]; then
       : # already installed; nothing to do

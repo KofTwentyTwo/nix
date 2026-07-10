@@ -149,6 +149,10 @@ in
            if [[ -r "$HOME/.config/secrets/github-codex-pat" ]]; then
              export CODEX_GITHUB_PERSONAL_ACCESS_TOKEN="$(< "$HOME/.config/secrets/github-codex-pat")"
            fi
+           # OpenRouter (hermes-agent and anything else OpenRouter-backed).
+           if [[ -r "$HOME/.config/secrets/openrouter-api-key" ]]; then
+             export OPENROUTER_API_KEY="$(< "$HOME/.config/secrets/openrouter-api-key")"
+           fi
 
            # Stop oh-my-zsh (lib/theme-and-appearance.zsh) from defining an
            # `ls` alias: on GNU/Linux it sets `alias ls='ls --color=tty'`, on
