@@ -54,6 +54,9 @@
       # --- runtimes ---
       nodejs_24        # node + npm + corepack (parity with brew node@24 / winget Node LTS)
 
+      # --- AI agents ---
+      codex            # OpenAI Codex CLI — home/codex config/skills were dead on WSL without the binary (Macs get it from brew)
+
       # --- git ---
       gh
       git-crypt

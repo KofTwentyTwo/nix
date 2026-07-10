@@ -364,6 +364,49 @@ let
     [mcp_servers.circleci.env]
     CIRCLECI_TOKEN = "$CIRCLECI_TOKEN"
   '';
+
+  # Windows-native Codex config seed (LORE bridge). Differences from the Unix
+  # seed above: Windows-profile writable_roots, and circleci spawned via
+  # `cmd /c npx` — Rust's CreateProcess cannot launch .cmd shims directly
+  # (same class as the vault's Java-ProcessBuilder gotcha). The github/figma
+  # tables are seeded directly (the fixMcpServers patcher must NOT run against
+  # this file: its fix #1 would force command="npx", breaking Windows).
+  winCodexConfigToml = pkgs.writeText "codex-config-windows.toml" ''
+    model = "gpt-5.5"
+    approval_policy = "on-failure"
+    sandbox_mode = "workspace-write"
+    model_reasoning_effort = "xhigh"
+
+    [sandbox_workspace_write]
+    network_access = true
+    exclude_tmpdir_env_var = false
+    exclude_slash_tmp = false
+    writable_roots = [
+      "C:/Users/james/.cache",
+      "C:/Users/james/.npm",
+      "C:/Users/james/.cargo",
+      "C:/Users/james/.rustup",
+      "C:/Users/james/.gradle",
+      "C:/Users/james/.m2",
+      "C:/Users/james/AppData/Local",
+      "C:/Users/james/scoop",
+    ]
+
+    [mcp_servers.circleci]
+    command = "cmd"
+    args = ["/c", "npx", "-y", "@circleci/mcp-server-circleci@latest"]
+
+    [mcp_servers.circleci.env]
+    CIRCLECI_TOKEN = "$CIRCLECI_TOKEN"
+
+    [mcp_servers.github]
+    url = "https://api.githubcopilot.com/mcp/"
+    bearer_token_env_var = "CODEX_GITHUB_PERSONAL_ACCESS_TOKEN"
+
+    [mcp_servers.figma]
+    url = "https://mcp.figma.com/mcp"
+    enabled = false
+  '';
 in
 {
   # mattpocock/aihero skills are read-only symlinks into the nix store at
@@ -406,4 +449,42 @@ in
       ${pkgs.python3}/bin/python3 "${fixMcpServers}" "$codex_toml" || true
     fi
   '';
+
+  # LORE bridge: Windows-native Codex (scoop) gets the same AGENTS.md + skills
+  # + a Windows-specific config seed. The SG-stop-hook patcher runs against the
+  # Windows toml too (platform-neutral); fixMcpServers deliberately does NOT
+  # (see winCodexConfigToml). CODEX_GITHUB_PERSONAL_ACCESS_TOKEN is persisted
+  # as a user env var from the sops-deployed PAT so the github MCP works from
+  # any Windows shell (zsh sources the same file on the WSL side).
+  home.activation.syncWindowsCodex = lib.mkIf pkgs.stdenv.isLinux (lib.hm.dag.entryAfter [ "fixCodexMcpServers" ] ''
+    win="/mnt/c/Users/james/.codex"
+    if [ -d "/mnt/c/Users/james" ]; then
+      mkdir -p "$win/skills"
+
+      # Config: write-once seed (Codex owns the live file), then the
+      # stop-hook patcher keeps the compat-layer hook disabled.
+      if [ ! -f "$win/config.toml" ] || [ ! -s "$win/config.toml" ]; then
+        cp --no-preserve=mode,ownership "${winCodexConfigToml}" "$win/config.toml"
+        echo "[codex-win] config.toml seeded"
+      fi
+      ${pkgs.python3}/bin/python3 "${disableSgStopHook}" "$win/config.toml" >/dev/null 2>&1 || true
+
+      # AGENTS.md + the full skills set (dereference store symlinks; strip
+      # store modes or drvfs sets the Windows READ-ONLY attribute).
+      cp -Lf --no-preserve=mode,ownership "${homeDir}/.codex/AGENTS.md" "$win/AGENTS.md" 2>/dev/null \
+        || echo "[codex-win] WARN: AGENTS.md mirror failed" >&2
+      cp -rLf --no-preserve=mode,ownership "${homeDir}/.codex/skills/." "$win/skills/" 2>/dev/null \
+        || echo "[codex-win] WARN: skills copy failed" >&2
+      echo "[codex-win] AGENTS.md + skills mirrored"
+
+      # GitHub MCP bearer token as a persistent user env var (no value echoed).
+      pat_file="${homeDir}/.config/secrets/github-codex-pat"
+      if [ -f "$pat_file" ]; then
+        pat=$(cat "$pat_file")
+        /mnt/c/Windows/System32/cmd.exe /c "setx CODEX_GITHUB_PERSONAL_ACCESS_TOKEN $pat" >/dev/null 2>&1 \
+          && echo "[codex-win] CODEX_GITHUB_PERSONAL_ACCESS_TOKEN user env var set" \
+          || echo "[codex-win] WARN: setx of github PAT failed" >&2
+      fi
+    fi
+  '');
 }
