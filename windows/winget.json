@@ -20,6 +20,10 @@
     {
       "id": "SparkLabs.Viscosity",
       "note": "OpenVPN client - same product/license as the Macs. Connection bundles are deployed from home/viscosity by the LORE bridge on every switch."
+    },
+    {
+      "id": "Google.Chrome",
+      "note": "For LLM browser automation + local testing (playwright plugin drives it)."
     }
   ],
   "visualStudio": {

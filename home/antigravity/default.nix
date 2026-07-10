@@ -68,6 +68,33 @@ let
   };
 
   antigravitySettingsJson = pkgs.writeText "antigravity-settings.json" (builtins.toJSON antigravitySettings);
+
+  # Windows variant (LORE bridge): same policy, Windows paths. agy comes from
+  # scoop (windows/scoop.json); config dir is %USERPROFILE%\.gemini\antigravity-cli.
+  winAntigravitySettings = antigravitySettings // {
+    permissions = {
+      allow = [
+        "command(agy)"
+        "command(cat)"
+        "command(env)"
+        "command(git add)"
+        "command(git commit)"
+        "command(git diff)"
+        "command(git status)"
+        "command(head)"
+        "command(jq)"
+        "command(ls)"
+        "command(mv)"
+        "command(pwd)"
+        "read_file(C:/Users/james/.ai)"
+        "read_file(C:/Users/james/.gemini/GEMINI.md)"
+      ];
+    };
+    trustedWorkspaces = [
+      "R:/Git.Local/KofTwentyTwo/nix"
+    ];
+  };
+  winAntigravitySettingsJson = pkgs.writeText "antigravity-settings-windows.json" (builtins.toJSON winAntigravitySettings);
 in
 {
   # Manual updater. Forces a clean reinstall of the latest published binary.
@@ -157,4 +184,29 @@ in
       fi
     fi
   '';
+
+  # LORE bridge: same settings merge against the Windows profile copy.
+  home.activation.syncWindowsAntigravity = lib.mkIf pkgs.stdenv.isLinux (lib.hm.dag.entryAfter [ "syncAntigravitySettings" ] ''
+    win="/mnt/c/Users/james/.gemini/antigravity-cli"
+    if [ -d "/mnt/c/Users/james" ]; then
+      mkdir -p "$win"
+      waj="$win/settings.json"
+      if [ ! -f "$waj" ] || [ ! -s "$waj" ]; then
+        ${pkgs.jq}/bin/jq -n --slurpfile settings "${winAntigravitySettingsJson}" '$settings[0]' > "$waj"
+      else
+        if ${pkgs.jq}/bin/jq --slurpfile settings "${winAntigravitySettingsJson}" '
+          .allowNonWorkspaceAccess = $settings[0].allowNonWorkspaceAccess
+          | .colorScheme = $settings[0].colorScheme
+          | .enableTelemetry = $settings[0].enableTelemetry
+          | .permissions.allow = ((.permissions.allow // []) + $settings[0].permissions.allow | unique)
+          | .trustedWorkspaces = ((.trustedWorkspaces // []) + $settings[0].trustedWorkspaces | unique)
+        ' "$waj" > "$waj.tmp" && [ -s "$waj.tmp" ]; then
+          mv "$waj.tmp" "$waj"
+        else
+          rm -f "$waj.tmp"
+        fi
+      fi
+      echo "[antigravity-win] settings mirrored"
+    fi
+  '');
 }

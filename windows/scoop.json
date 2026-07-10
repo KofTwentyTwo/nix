@@ -8,6 +8,7 @@
   },
   "apps": [
     "7zip",
+    "antigravity-cli",
     "aws",
     "bat",
     "bottom",
@@ -24,6 +25,7 @@
     "jq",
     "opencode",
     "ripgrep",
+    "uv",
     "yq",
     "zoxide",
     "java/temurin21-jdk"
