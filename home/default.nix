@@ -30,6 +30,7 @@ in
     ./antigravity
     ./aws
     ./ca-certs
+    ./circleci
     ./claude
     ./codex
     ./gemini
