@@ -142,6 +142,15 @@ in
            if [[ -r "$HOME/.config/secrets/circleci-token" ]]; then
              export CIRCLECI_TOKEN="$(< "$HOME/.config/secrets/circleci-token")"
            fi
+           # Personal GitHub PAT (classic, no expiration). gh reads
+           # GITHUB_TOKEN ahead of its keychain login, and git-over-HTTPS
+           # reaches it through the gh credential helper (programs.git in
+           # flake.nix) — so both always work, no `gh auth login` needed.
+           # Same token `secure` loads from 1Password; this makes it
+           # unconditional. Master copy: 1Password "GITHUB_TOKEN".
+           if [[ -r "$HOME/.config/secrets/github-token" ]]; then
+             export GITHUB_TOKEN="$(< "$HOME/.config/secrets/github-token")"
+           fi
            # GitHub PAT for Codex's remote GitHub MCP (api.githubcopilot.com).
            # config.toml's [mcp_servers.github].bearer_token_env_var points here
            # (wired by home/codex fixMcpServers). Terminal `codex` only — the

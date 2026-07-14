@@ -282,3 +282,16 @@ the macOS `userConfig` (same name/email/signing key); only paths differ.
 - [ ] On Darth: verify `age-keygen -y ~/.config/sops/age/keys.txt` matches the `&darth` pubkey; pull + rebuild to pick up new generalized variables.
 - [ ] On Renova: generate age key, add `&renova` to `.sops.yaml`, run `sops updatekeys` across secrets, and rebuild.
 - [ ] (Long-term) Migrate shared CLI tools from `modules/homebrew.nix` into standalone Home Manager package sets to enable 1-click Linux bootstrap.
+
+## Session 2026-07-14 — Always-on GitHub auth (gh + git, no logins)
+
+**Goal:** `gh` and `git` work on every machine forever without `gh auth login` or running `secure`.
+
+- git-over-SSH was already declarative (1Password agent, `home/ssh`); the gaps were imperative `gh` keychain auth and no HTTPS credential helper at all.
+- Encrypted the 1Password `GITHUB_TOKEN` item (classic `ghp_` PAT, **no expiration**, broad scopes) to `secrets/github-token.enc` (fleet + all machine recipients). Piped `op item get` → `sops` directly; no plaintext ever touched disk.
+- `home/sops/default.nix`: new `deployGithubToken` via `mkPatDeployer` → `~/.config/secrets/github-token` (mode 0600).
+- `home/zsh/default.nix`: exports `GITHUB_TOKEN` in every interactive shell (same env var `secure` loads from 1Password; now unconditional and 1Password-independent).
+- `flake.nix` `programs.git`: `credential."https://github.com".helper = "!gh auth git-credential"` (+ gist) — headless HTTPS git auth through gh.
+- Verified on Dark-Horse after `darwin-rebuild switch`: `gh auth status` shows `(GITHUB_TOKEN)`; `GIT_TERMINAL_PROMPT=0 git ls-remote https://github.com/KofTwentyTwo/nix.git` succeeds. Old keychain login remains as an inert fallback.
+- Follow-up (optional): the PAT has very broad scopes (`admin:org`, `delete_repo`, …). To narrow, mint a lesser no-expiry classic PAT and re-encrypt the same file.
+- Unrelated: brew cask `ecamm-live` 4.5.8→4.5.9 upgrade failed mid-switch and cleanly self-reverted to 4.5.8; retries on a future switch.

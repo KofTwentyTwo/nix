@@ -63,6 +63,17 @@ creation_rules:
           - *grogu
           - *lore
           - *fleet
+  # Personal GitHub classic PAT (1Password "GITHUB_TOKEN" in
+  # NixEnvironmentVariables is the master copy; no expiration). Consumed as
+  # GITHUB_TOKEN by zsh so gh + git-over-HTTPS work without gh auth login.
+  - path_regex: secrets/github-token\.enc$
+    key_groups:
+      - age:
+          - *darth
+          - *dark_horse
+          - *grogu
+          - *lore
+          - *fleet
   # OpenRouter API key (1Password "OpenRouter" in the greatergoods account is
   # the master copy). Consumed as OPENROUTER_API_KEY by zsh for hermes et al.
   - path_regex: secrets/openrouter-api-key\.enc$

@@ -413,6 +413,11 @@
             # sneaks into a WSL working tree. No-op for LF-only files (mac).
             core.autocrlf = "input";
             alias.cz = "!cz";
+            # HTTPS remotes auth through gh, which honors the sops-deployed
+            # GITHUB_TOKEN env var (home/zsh) — headless, no gh auth login.
+            # SSH remotes are unaffected (1Password agent, home/ssh).
+            credential."https://github.com".helper = "!gh auth git-credential";
+            credential."https://gist.github.com".helper = "!gh auth git-credential";
             fetch.prune = true;
             gpg.program = "gpg";
             http.postBuffer = "157286400";

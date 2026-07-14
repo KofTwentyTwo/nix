@@ -23,6 +23,7 @@ Active tasks and future improvements for the Nix configuration.
 
 ## Recently Completed
 
+- [x] Always-on GitHub auth: `secrets/github-token.enc` (no-expiry classic PAT from 1Password `GITHUB_TOKEN`) → `~/.config/secrets/github-token` → `GITHUB_TOKEN` exported in every shell; `gh` authenticated without `gh auth login`, HTTPS git via `!gh auth git-credential` helper in `flake.nix`; verified end-to-end on Dark-Horse (2026-07-14)
 - [x] Claude install-channel drift triaged: restored `a93b80f` eviction (had been removed mid-session under wrong interpretation), reinstalled native `~/.local/bin/claude`, applied via `darwin-rebuild switch`, captured diagnosis + recovery in `docs/PLAN-claude-install-drift.md`, committed both as `1016007` (2026-05-26)
 - [x] Repo hardening pass: fixed review findings, added `scripts/check-repo.sh`, promoted pending learnings, removed tracked `result`, and verified with the full repo gate (2026-05-26)
 - [x] Resolved tmux pane border redraw latency by querying Git repo and branch asynchronously via `git-pane-info.sh` (2026-05-21)

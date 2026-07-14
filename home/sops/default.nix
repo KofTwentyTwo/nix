@@ -151,7 +151,7 @@ in
     # mkPatDeployer skips destinations whose parent dir is missing, so both the
     # CircleCI token and the github-codex-pat destination depend on this.
     home.activation.ensureSecretsDir =
-      lib.hm.dag.entryBefore [ "deployCircleciToken" "deployGithubSecurityPat" "deployTailscaleAuthkey" "deployOpenrouterApiKey" ] ''
+      lib.hm.dag.entryBefore [ "deployCircleciToken" "deployGithubSecurityPat" "deployGithubToken" "deployTailscaleAuthkey" "deployOpenrouterApiKey" ] ''
         mkdir -p "${homeDir}/.config/secrets"
         chmod 0700 "${homeDir}/.config/secrets"
       '';
@@ -160,6 +160,21 @@ in
       encFile = ../../secrets/circleci-token.enc;
       destinations = [
         "${homeDir}/.config/secrets/circleci-token"
+      ];
+    };
+
+    # Personal GitHub classic PAT (no expiration). Decrypted to
+    # ~/.config/secrets/github-token (mode 0600); sourced by zsh initContent
+    # into GITHUB_TOKEN for every interactive shell, so `gh` and git-over-HTTPS
+    # (via the gh credential helper in flake.nix's programs.git) work on every
+    # fleet machine without a `gh auth login`. Master copy: 1Password
+    # "GITHUB_TOKEN" (NixEnvironmentVariables vault). Rotate there, then
+    # re-encrypt with `sops secrets/github-token.enc` and rebuild.
+    home.activation.deployGithubToken = mkPatDeployer {
+      name = "github-token";
+      encFile = ../../secrets/github-token.enc;
+      destinations = [
+        "${homeDir}/.config/secrets/github-token"
       ];
     };
 
