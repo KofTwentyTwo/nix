@@ -84,6 +84,32 @@ creation_rules:
           - *grogu
           - *lore
           - *fleet
+  # Shared Firecrawl subscription key. The stdio MCP server reads this only
+  # from process environment on Hermes, Claude Code, and Codex.
+  - path_regex: secrets/firecrawl-api-key\.enc$
+    key_groups:
+      - age:
+          - *darth
+          - *dark_horse
+          - *grogu
+          - *lore
+          - *fleet
+  # Grogu alone owns the continuous Slack gateway, so its bot and app tokens
+  # are decryptable only there. Google OAuth refresh tokens remain
+  # machine-local, while the Desktop OAuth client definition bootstraps each
+  # machine.
+  - path_regex: secrets/hermes-slack-(bot|app)-token\.enc$
+    key_groups:
+      - age:
+          - *grogu
+  - path_regex: secrets/hermes-google-client-secret\.enc$
+    key_groups:
+      - age:
+          - *darth
+          - *dark_horse
+          - *grogu
+          - *lore
+          - *fleet
   - path_regex: secrets/.*\.yaml$
     key_groups:
       - age:

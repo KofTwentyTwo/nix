@@ -56,6 +56,11 @@ Every Confluence page or blog post we create or edit MUST be full-width. The `co
 
 ## CircleCI / Faber Orb
 
+### CI must be verified against live state
+- Terraform and repository code describe intent, not necessarily deployed reality. For consequential CI or infrastructure diagnosis, verify the live CircleCI, AWS, or Kubernetes API before concluding.
+- A fresh pipeline is required to consume a republished mutable development orb; rerunning failed jobs reuses the pipeline's already-resolved configuration.
+- Persistent Docker Layer Caching can retain a BuildKit cache record whose snapshot is gone. On the exact missing-parent-snapshot signature, prune the builder cache and rebuild with a refreshed base image instead of treating the failure as flaky.
+
 ### cimg/base executor
 - **No python/pip installed.** Use `apt-get install` for Python tools (e.g., `yamllint`), not `pip3 install`.
 - Has curl, tar, git, sudo, and standard Unix tools.
@@ -248,9 +253,9 @@ SealedSecrets controller mutates `/status` after apply. AppProject status fields
 - The portal will log `akadmin` in via OAuth2 but show empty data everywhere (security filters reject all queries).
 - Fix: add `akadmin` to the `internal-admin` group in Authentik. That group has `mhAllAccess: true`, which bypasses company security filters.
 
-### Dev Environment Credentials
-- Authentik admin: `auth-dev.me.health` — username `akadmin`, password `MeHealth-Dev-2026`
-- Portal: `portal-dev.me.health` — requires Authentik user with Me Health group membership
+### Dev Environment Access
+- Authentik admin credentials belong in the approved password manager, never in this repository.
+- Portal: `portal-dev.me.health` — requires an Authentik user with Me Health group membership.
 
 ## Nix + Claude Code Configuration
 
@@ -446,6 +451,12 @@ Immediately after a deploy commit, the contents API directory listing can miss a
 GitHub can continue returning HTTP 200 for old repository names after a rename. Useful for link migration, risky for Terraform and audit code because stale canonical names can compile and drift. Update canonical repo references at rename time.
 
 ## Obsidian Plugin Development (verified 2026-04-27)
+
+## Generated-file CI gates
+
+- When the exact pinned generator is unavailable locally, a failing CI regeneration gate is the byte-exact oracle. Compare the CI-produced diff with the local diff line for line before claiming version-skew safety.
+- Do not hand-edit generated `.strings` mirrors. Change the source localization calls or accept the generator's output.
+- Forked macOS release builds must not inherit an unavailable upstream Developer ID. Keep repository defaults upstream-compatible and apply fork-local signing through the last-included local configuration; CI may use explicit ad-hoc signing when release credentials are absent.
 
 ### Vitest and Obsidian runtime builds are separate
 `vitest` can pass through in-memory TypeScript transforms while the `main.js` bundle that Obsidian loads remains stale. Keep `npm run dev` running during plugin iteration; use `npm run check` for CI-style verification, not as proof the runtime bundle changed.

@@ -30,6 +30,22 @@ Idempotent — installed packages are skipped; edit a manifest and re-run.
 | VS workloads | VS Installer | `vs2026.vsconfig` | ManagedDesktop, NetWeb, NativeDesktop |
 | Nerd fonts | scoop `nerd-fonts` bucket | ad hoc | deliberately not pinned (the full set is installed on LORE) |
 | WSL user env | Home Manager | `../flake.nix#james` | zsh, nvim, git, tmux, CLI parity via `home/linux-cli` |
+| Hermes Agent | Home Manager + `apply.ps1` | `../home/hermes/` | Shared OpenRouter policy, AI context, Second Brain skills, native Windows install |
+
+Hermes uses the same tracked `home/hermes/managed-config.yaml` and `SOUL.md` on
+macOS, WSL, and native Windows. `apply.ps1` installs native Hermes when missing,
+deploys those files, and sets the user-level vault and managed-policy paths.
+Home Manager deploys the OpenRouter, CircleCI, Firecrawl, and Google user-client
+material without placing plaintext secrets in Git or the Nix store. Native policy lives
+in `%LOCALAPPDATA%\hermes\managed`; OAuth tokens and identity remain in the
+normal Hermes home. `apply.ps1` also mirrors `home/ai/` and applies current-user
+ACLs to secret-bearing files. It removes any native messaging service because
+the continuous Slack gateway belongs to Grogu. See `../docs/HERMES.md` for
+authorization and validation.
+
+For a fresh machine, run `apply.ps1`, activate the WSL Home Manager target so
+the SOPS bridge can deploy credentials, then rerun `apply.ps1` to apply Windows
+ACLs and verify the native runtime.
 
 ## Visual Studio 2026
 

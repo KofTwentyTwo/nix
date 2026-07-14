@@ -15,11 +15,12 @@
 # To edit a secret:
 #   sops secrets/<name>.enc
 
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib, machineConfig ? {}, ... }:
 
 let
   homeDir = config.home.homeDirectory;
   ageKey = "${homeDir}/.config/sops/age/keys.txt";
+  gatewayEnabled = machineConfig.hermesGateway or false;
 
   # Decrypt a sops-encrypted secret directly to one or more regular files,
   # bypassing sops-nix's default symlink-into-~/.config/sops-nix/ layout.
@@ -151,7 +152,7 @@ in
     # mkPatDeployer skips destinations whose parent dir is missing, so both the
     # CircleCI token and the github-codex-pat destination depend on this.
     home.activation.ensureSecretsDir =
-      lib.hm.dag.entryBefore [ "deployCircleciToken" "deployGithubSecurityPat" "deployGithubToken" "deployTailscaleAuthkey" "deployOpenrouterApiKey" ] ''
+      lib.hm.dag.entryBefore [ "deployCircleciToken" "deployGithubSecurityPat" "deployGithubToken" "deployTailscaleAuthkey" "deployOpenrouterApiKey" "deployFirecrawlApiKey" "deployHermesSlackBotToken" "deployHermesSlackAppToken" "deployHermesGoogleClientSecret" ] ''
         mkdir -p "${homeDir}/.config/secrets"
         chmod 0700 "${homeDir}/.config/secrets"
       '';
@@ -190,6 +191,50 @@ in
         "${homeDir}/.config/secrets/openrouter-api-key"
       ];
     };
+
+    home.activation.deployFirecrawlApiKey = lib.mkIf
+      (builtins.pathExists ../../secrets/firecrawl-api-key.enc)
+      (mkPatDeployer {
+        name = "firecrawl-api-key";
+        encFile = ../../secrets/firecrawl-api-key.enc;
+        destinations = [
+          "${homeDir}/.config/secrets/firecrawl-api-key"
+        ];
+      });
+
+    # Hermes communications credentials are optional until their operator
+    # setup is complete. The path guards keep fresh clones evaluable; once the
+    # encrypted files exist, every host receives identical Slack app tokens
+    # and the Google Desktop OAuth client definition.
+    home.activation.deployHermesSlackBotToken = lib.mkIf
+      (gatewayEnabled && builtins.pathExists ../../secrets/hermes-slack-bot-token.enc)
+      (mkPatDeployer {
+        name = "hermes-slack-bot-token";
+        encFile = ../../secrets/hermes-slack-bot-token.enc;
+        destinations = [
+          "${homeDir}/.config/secrets/hermes-slack-bot-token"
+        ];
+      });
+
+    home.activation.deployHermesSlackAppToken = lib.mkIf
+      (gatewayEnabled && builtins.pathExists ../../secrets/hermes-slack-app-token.enc)
+      (mkPatDeployer {
+        name = "hermes-slack-app-token";
+        encFile = ../../secrets/hermes-slack-app-token.enc;
+        destinations = [
+          "${homeDir}/.config/secrets/hermes-slack-app-token"
+        ];
+      });
+
+    home.activation.deployHermesGoogleClientSecret = lib.mkIf
+      (builtins.pathExists ../../secrets/hermes-google-client-secret.enc)
+      (mkPatDeployer {
+        name = "hermes-google-client-secret";
+        encFile = ../../secrets/hermes-google-client-secret.enc;
+        destinations = [
+          "${homeDir}/.config/secrets/hermes-google-client-secret.json"
+        ];
+      });
 
     # Tailscale reusable auth key (Linux/WSL only; macOS logs in via the GUI
     # app). Decrypted to a regular file that the tailscale-autoconnect systemd

@@ -7,7 +7,7 @@
 #   LORE  : R:\Git.Local\KofTwentyTwo\second-brain  == /mnt/r/... in WSL
 #
 # This module owns: the SECOND_BRAIN_VAULT env var, the SessionStart/SessionEnd
-# hook SCRIPTS (fail-safe, always exit 0), the secondbrain-save /
+# hook SCRIPTS (fail-safe, always exit 0), shared secondbrain-save /
 # secondbrain-consolidate skills, vault bootstrap, the weekly consolidation
 # job (systemd user timer / launchd), and the LORE-only bridge that mirrors
 # the same behavior into Windows-native Claude Code.
@@ -15,17 +15,19 @@
 # The hook REGISTRATION (settings.json `hooks` + `env`) lives in
 # home/claude/default.nix (syncClaudeUserSettings) because that activation
 # owns settings.json merging — see the marker-based hook merge there.
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib, machineConfig ? {}, ... }:
 let
   homeDir  = config.home.homeDirectory;
   isDarwin = pkgs.stdenv.isDarwin;
+  isWsl    = machineConfig.isWsl or false;
 
-  # Per-OS canonical vault path. Non-LORE Linux hosts would need their own
-  # branch here; today the only Linux target is LORE's WSL. Keep in sync with
+  # Per-platform canonical vault path. Keep this in sync with
   # env.SECOND_BRAIN_VAULT in home/claude/default.nix userPrefs.
   vaultPath = if isDarwin
     then "${homeDir}/Git.Local/KofTwentyTwo/second-brain"
-    else "/mnt/r/Git.Local/KofTwentyTwo/second-brain";
+    else if isWsl
+    then "/mnt/r/Git.Local/KofTwentyTwo/second-brain"
+    else "${homeDir}/Git.Local/KofTwentyTwo/second-brain";
 
   # Private remote. Created lazily — bootstrap clones if reachable, otherwise
   # scaffolds a fresh local-only vault; consolidation pushes only when a
@@ -92,7 +94,7 @@ let
       --permission-mode acceptEdits --max-turns 40 || echo "[second-brain] claude consolidation pass failed; continuing to git step"
     git add -A
     if ! git diff --cached --quiet; then
-      git commit -q -m "consolidate: scheduled vault tidy $(date +%F)" || true
+      git -c commit.gpgsign=false commit -q -m "consolidate: scheduled vault tidy $(date +%F)" || true
     fi
     if git remote get-url origin >/dev/null 2>&1; then
       git push -q origin HEAD || echo "[second-brain] push failed (offline?); will retry next run"
@@ -121,22 +123,44 @@ lib.mkMerge [
     # House-convention skills. Directory-based per Claude Code skill layout.
     home.file.".claude/skills/secondbrain-save/SKILL.md".source = ./skills/secondbrain-save/SKILL.md;
     home.file.".claude/skills/secondbrain-consolidate/SKILL.md".source = ./skills/secondbrain-consolidate/SKILL.md;
+    home.file.".hermes/skills/secondbrain/secondbrain-save/SKILL.md".source = ./skills/secondbrain-save/SKILL.md;
+    home.file.".hermes/skills/secondbrain/secondbrain-consolidate/SKILL.md".source = ./skills/secondbrain-consolidate/SKILL.md;
 
     # Vault bootstrap: clone the private remote if the vault is missing;
-    # scaffold a minimal local vault if the clone fails (offline / repo not
-    # yet created). Never touches an existing vault.
+    # scaffold a minimal unversioned vault if the clone fails. A later
+    # activation replaces an untouched scaffold with the remote clone, while
+    # preserving any offline-authored content for an explicit merge.
     home.activation.secondbrainBootstrap = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
       sb_vault="${vaultPath}"
-      if [ ! -d "$sb_vault" ]; then
+      sb_pending="$sb_vault/.secondbrain-bootstrap-pending"
+
+      if [ -f "$sb_pending" ]; then
+        remote_clone="$sb_vault.remote-$(date +%Y%m%dT%H%M%S)"
+        echo "[second-brain] retrying private remote clone"
+        if ${pkgs.git}/bin/git clone -q "${vaultRemote}" "$remote_clone" 2>/dev/null; then
+          authored_count=$(find "$sb_vault" -type f ! -name '.secondbrain-bootstrap-pending' ! -name 'index.md' | wc -l | tr -d ' ')
+          if [ "$authored_count" = "0" ] && grep -q 'See the secondbrain-save skill for conventions' "$sb_vault/index.md" 2>/dev/null; then
+            backup="$sb_vault.offline-$(date +%Y%m%dT%H%M%S)"
+            mv "$sb_vault" "$backup"
+            mv "$remote_clone" "$sb_vault"
+            echo "[second-brain] remote clone restored; untouched offline scaffold retained at $backup"
+          else
+            rm -f "$sb_pending"
+            echo "[second-brain] remote available, but offline content exists; merge $remote_clone into $sb_vault manually" >&2
+          fi
+        else
+          echo "[second-brain] private remote still unavailable; keeping offline scaffold" >&2
+        fi
+      elif [ ! -d "$sb_vault" ]; then
         echo "[second-brain] vault missing; attempting clone of ${vaultRemote}"
         if ! ${pkgs.git}/bin/git clone -q "${vaultRemote}" "$sb_vault" 2>/dev/null; then
-          echo "[second-brain] clone failed; scaffolding fresh local vault at $sb_vault"
+          echo "[second-brain] clone failed; scaffolding recoverable offline vault at $sb_vault"
           mkdir -p "$sb_vault"/daily "$sb_vault"/projects "$sb_vault"/decisions "$sb_vault"/knowledge "$sb_vault"/people
+          touch "$sb_pending"
           if [ ! -f "$sb_vault/index.md" ]; then
             d=$(date +%F)
             printf -- '---\ncreated: %s\nupdated: %s\ntags: [index]\nsource: claude-session\n---\n\n# Second Brain - Index\n\nSee the secondbrain-save skill for conventions.\n' "$d" "$d" > "$sb_vault/index.md"
           fi
-          ( cd "$sb_vault" && ${pkgs.git}/bin/git init -q -b main && ${pkgs.git}/bin/git add -A && ${pkgs.git}/bin/git -c user.email=james@kof22.com -c user.name="James Maes" -c commit.gpgsign=false commit -q -m "vault: scaffold" ) || true
         fi
       fi
     '';
@@ -163,7 +187,9 @@ lib.mkMerge [
       };
       Install.WantedBy = [ "timers.target" ];
     };
+  })
 
+  (lib.mkIf isWsl {
     # LORE bridge: mirror hooks/skills/CLAUDE.md + settings fragments into
     # Windows-native Claude Code (%USERPROFILE%\.claude). Guarded on the
     # mount existing; jq merge is marker-based and non-destructive.

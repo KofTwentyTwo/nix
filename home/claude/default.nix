@@ -12,10 +12,11 @@
 #   - ~/.claude/settings.local.json: Permissions (activation script, writable)
 #   - ~/.claude/CLAUDE.md: User-level memory (symlink, read-only)
 
-{ config, pkgs, lib, inputs ? {}, ... }:
+{ config, pkgs, lib, inputs ? {}, machineConfig ? {}, ... }:
 
 let
   homeDir = config.home.homeDirectory;
+  isWsl = machineConfig.isWsl or false;
 
   # MCP Servers - only non-plugin servers belong here
   # GitHub and Atlassian removed: plugin:github:github and plugin:atlassian:atlassian
@@ -24,9 +25,17 @@ let
     circleci-mcp-server = {
       type = "stdio";
       command = "npx";
-      args = [ "-y" "@circleci/mcp-server-circleci@latest" ];
+      args = [ "-y" "@circleci/mcp-server-circleci@0.17.0" ];
       env = {
         CIRCLECI_TOKEN = "$" + "{CIRCLECI_TOKEN}";
+      };
+    };
+    firecrawl = {
+      type = "stdio";
+      command = "npx";
+      args = [ "-y" "firecrawl-mcp@3.22.3" ];
+      env = {
+        FIRECRAWL_API_KEY = "$" + "{FIRECRAWL_API_KEY}";
       };
     };
     # ruflo's multi-agent orchestration backbone. Uses the global CLI
@@ -518,6 +527,7 @@ let
       "mcp__circleci-mcp-server__config_helper"
       "mcp__circleci-mcp-server__list_followed_projects"
       "mcp__circleci-mcp-server__list_component_versions"
+      "mcp__firecrawl__*"
 
       # MCP - GitHub plugin (read operations)
       "mcp__plugin_github_github__get_file_contents"
@@ -590,7 +600,9 @@ let
     env.SECOND_BRAIN_VAULT =
       if pkgs.stdenv.isDarwin
       then "${homeDir}/Git.Local/KofTwentyTwo/second-brain"
-      else "/mnt/r/Git.Local/KofTwentyTwo/second-brain";
+      else if isWsl
+      then "/mnt/r/Git.Local/KofTwentyTwo/second-brain"
+      else "${homeDir}/Git.Local/KofTwentyTwo/second-brain";
 
     # Plugins from anthropics/claude-plugins-official marketplace.
     #
@@ -672,6 +684,14 @@ let
   };
 
   mcpServersJson = pkgs.writeText "mcp-servers.json" (builtins.toJSON mcpServers);
+  windowsFirecrawlMcpJson = pkgs.writeText "windows-firecrawl-mcp.json" (builtins.toJSON {
+    firecrawl = {
+      type = "stdio";
+      command = "cmd";
+      args = [ "/c" "npx" "-y" "firecrawl-mcp@3.22.3" ];
+      env.FIRECRAWL_API_KEY = "$" + "{FIRECRAWL_API_KEY}";
+    };
+  });
   permissionsJson = pkgs.writeText "permissions.json" (builtins.toJSON permissions);
   userPrefsJson = pkgs.writeText "user-prefs.json" (builtins.toJSON userPrefs);
 
@@ -806,6 +826,17 @@ in
       else
         rm -f "$ws.tmp"
         echo "[claude-win] WARN: enabledPlugins merge failed; Windows plugins unchanged" >&2
+      fi
+      cj="/mnt/c/Users/james/.claude.json"
+      [ -f "$cj" ] || echo '{}' > "$cj"
+      if ${pkgs.jq}/bin/jq --slurpfile mcp "${windowsFirecrawlMcpJson}" \
+        '.mcpServers = ((.mcpServers // {}) * $mcp[0])' \
+        "$cj" > "$cj.tmp" && [ -s "$cj.tmp" ]; then
+        mv "$cj.tmp" "$cj"
+        echo "[claude-win] Firecrawl MCP merged into Windows .claude.json"
+      else
+        rm -f "$cj.tmp"
+        echo "[claude-win] WARN: Firecrawl MCP merge failed" >&2
       fi
       # Skills: copy the resolved WSL skills tree (cp -L dereferences the
       # nix-store symlinks — Windows cannot follow them).

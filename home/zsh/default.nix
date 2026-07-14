@@ -141,6 +141,7 @@ in
            # silent no-ops (hosts without the age key skip deployment).
            if [[ -r "$HOME/.config/secrets/circleci-token" ]]; then
              export CIRCLECI_TOKEN="$(< "$HOME/.config/secrets/circleci-token")"
+             export CIRCLECI_CLI_TOKEN="$CIRCLECI_TOKEN"
            fi
            # Personal GitHub PAT (classic, no expiration). gh reads
            # GITHUB_TOKEN ahead of its keychain login, and git-over-HTTPS
@@ -161,6 +162,9 @@ in
            # OpenRouter (hermes-agent and anything else OpenRouter-backed).
            if [[ -r "$HOME/.config/secrets/openrouter-api-key" ]]; then
              export OPENROUTER_API_KEY="$(< "$HOME/.config/secrets/openrouter-api-key")"
+           fi
+           if [[ -r "$HOME/.config/secrets/firecrawl-api-key" ]]; then
+             export FIRECRAWL_API_KEY="$(< "$HOME/.config/secrets/firecrawl-api-key")"
            fi
 
            # Stop oh-my-zsh (lib/theme-and-appearance.zsh) from defining an

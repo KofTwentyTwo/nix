@@ -1,6 +1,6 @@
 # Ultimate AI Developer Terminal
 
-Declarative macOS developer environment powered by **nix-darwin + Home Manager**. One flake manages system configuration, 160+ packages, terminal aesthetics, AI agent tooling, and custom scripts across multiple Apple Silicon machines.
+Declarative macOS, WSL, and Windows developer environment powered by **nix-darwin + Home Manager** plus tracked Windows manifests. One repository manages system configuration, 160+ packages, terminal aesthetics, AI agent tooling, and custom scripts across the fleet.
 
 > Single command to deploy: `darwin-rebuild switch --flake ~/.config/nix`
 
@@ -59,6 +59,8 @@ modules/
 home/
   default.nix                Hub: imports all modules, env vars, PATH, programs
   ai/                        AI agent rules, profile, coding style, preferences
+  hermes/                    Primary coding agent policy, identity, integrations
+  secondbrain/               Obsidian memory hooks, skills, and consolidation
   claude/                    Claude Code: MCP servers, 100+ skills, permissions
   nvim/                      Neovim + LazyVim (60+ plugins, 13 LSP servers)
   tmux/                      Tmux: lock screen, session naming, nested SSH
@@ -81,6 +83,7 @@ home/
   gemini/                    Google Gemini agent config
   opencode/                  OpenCode agent config
 scripts/                     Script source files (installed by home/scripts/)
+windows/                     Native Windows winget, Scoop, VS, and Hermes setup
 docs/                        Session state, TODOs, plans, audit reports
 ```
 
@@ -195,9 +198,13 @@ LazyVim-based configuration with 60+ plugins.
 
 ## AI Integration
 
-### Claude Code (Primary)
+### Hermes Agent (Primary)
 
-Deep integration as the primary AI coding assistant.
+Hermes is the primary coding agent on macOS, WSL, and native Windows. It reads the shared `~/.ai/` rules, uses the Git-backed Second Brain for durable memory, routes coding work through OpenRouter, and has declarative access paths for GitHub, CircleCI, Atlassian, Firecrawl, Greater Goods Slack, Gmail and Google Workspace, local commands, browser automation, and computer use. Grogu alone owns the continuous Slack gateway. See [`docs/HERMES.md`](docs/HERMES.md) for the verified capability matrix and account-authorization steps that remain.
+
+### Claude Code
+
+Deep integration as an additional AI coding assistant.
 
 **MCP Servers:**
 | Server | Purpose |
@@ -230,6 +237,7 @@ AI rules and preferences are managed as Nix-generated files in `~/.ai/`:
 | `4-preferences.yaml` | Machine-readable tuning knobs |
 
 These files are loaded by Claude Code and mirrored to other agents:
+- **Hermes** (`~/.hermes/SOUL.md` plus the managed overlay)
 - **Gemini** (`~/.gemini/GEMINI.md`)
 - **Codex** (`~/.codex/AGENTS.md`)
 - **OpenCode** (`~/.config/opencode/opencode.json`)
@@ -341,6 +349,7 @@ Fonts (all Nerd Fonts, cozette, scientifica, monocraft) and utilities like `comm
 | `docs/TODO.md` | Active tasks and backlog |
 | `docs/TMUX-ISSUES.md` | Tmux performance investigation |
 | `docs/FUTURE-IDEAS.md` | Enhancement ideas |
+| `docs/HERMES.md` | Hermes architecture, status, validation, and onboarding |
 | `docs/AUDIT-2026-04-07.md` | Configuration audit (23 findings) |
 | `PORTABILITY.md` | Multi-machine deployment guide |
 | `SECRETS.md` | 1Password secret management |

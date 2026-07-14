@@ -1,6 +1,12 @@
 # Session State
 
-**Last Updated:** 2026-07-03 (LORE: second brain + canonical checkout + Windows tooling)
+**Last Updated:** 2026-07-14 (Hermes primary-agent rollout)
+
+## Hermes primary-agent rollout
+
+Hermes is declaratively configured across macOS, WSL, and native Windows with shared AI context, Second Brain skills, OpenRouter `pareto-code` routing, smart approvals, checkpoints, GitHub/CircleCI/Atlassian tooling, pinned Firecrawl MCP, computer use, Gmail and Google Workspace, and Greater Goods Slack. Live checks passed for OpenRouter, AI context, local tools, GitHub APIs, CircleCI diagnostics, Atlassian MCP, and full-desktop computer use. Grogu alone owns the continuous Slack gateway plus its service credentials; Windows and other Macs remain interactive clients.
+
+The rollout files are staged, the final repository gate passes, and Dark-Horse is activated. Gmail is the primary Google integration; Calendar, Drive, Docs, Sheets, People, and Contacts use the same helper. Human account work remains: rotate CircleCI, populate the empty Firecrawl 1Password item, create and install the Greater Goods Slack app, create the Google Desktop OAuth client and complete per-runtime consent, and validate native Windows when LORE is online. The removed development credential also needs rotation because history may retain it. James authorized the validated rollout commit, push, and activation on every reachable machine.
 
 ## 🟢 DONE — Recovered uncommitted 2026-07-02 session from the old WSL clone (2026-07-03)
 
@@ -70,8 +76,6 @@ Implemented James's `claude-code-secondbrain-requirements.md` spec (see
 
 ## 🟢 DONE — LORE: R:\ checkout is now the working nix (2026-07-03)
 
-## 🟢 DONE — LORE: R:\ checkout is now the working nix (2026-07-03)
-
 **Machine:** LORE (Windows 11 + WSL Ubuntu). The canonical repo checkout is now
 `R:\Git.Local\KofTwentyTwo\nix` on the Dev Drive (ReFS VHDX), shared with WSL:
 
@@ -114,6 +118,7 @@ Implemented James's `claude-code-secondbrain-requirements.md` spec (see
 the macOS `userConfig` (same name/email/signing key); only paths differ.
 
 ### Done so far (code is ready, uncommitted — `git status` shows the diff)
+
 - Enabled systemd in `/etc/wsl.conf` (`[boot] systemd=true`). **Needs a WSL
   restart to take effect** — that is why this session was paused.
 - `flake.nix`: added a Linux `homeConfigurations."james"` output (additive;
@@ -126,6 +131,7 @@ the macOS `userConfig` (same name/email/signing key); only paths differ.
   - `home/default.nix` — `/opt/homebrew/*` `sessionPath` entries.
 
 ### Progress (2026-06-30 cont.)
+
 - ✅ systemd live after restart; ✅ Determinate Nix 3.21 installed, daemon active.
 - ✅ flake parses; `nix eval .#homeConfigurations.james...` got past the flake and
   into module eval.
@@ -139,6 +145,7 @@ the macOS `userConfig` (same name/email/signing key); only paths differ.
   System gpg is `/usr/bin/gpg`, keyring currently EMPTY.
 
 ### ▶️ RESUME HERE
+
 1. **Import the GPG secret key** (from 1Password). `gpg --import <file.asc>`. The
    private half is required — unlock + signing both need it. May be passphrase-
    protected → `git-crypt unlock` will trigger a pinentry prompt; if running non-
@@ -150,10 +157,10 @@ the macOS `userConfig` (same name/email/signing key); only paths differ.
    `. /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh`
    `nix run home-manager/master -- switch -b backup --flake /home/james/Git.Local/kof22/nix#james`
    (NB: full build pulls the entire nerd-fonts set — large/slow first time.)
-5. **Iterate** on eval/build errors. Expected remaining issues are *runtime* not
+4. **Iterate** on eval/build errors. Expected remaining issues are *runtime* not
    build: zsh `switch`/help text still says `darwin-rebuild`; some activation
    scripts reference mac paths but self-guard.
-6. **Import the GPG signing key** (so `git commit` works — `signByDefault=true`,
+5. **Import the GPG signing key** (so `git commit` works — `signByDefault=true`,
    format openpgp, fingerprint `62859E8ABE1FC2B7FCCB89080021767055740E6D`).
    James keeps the **secret key in 1Password**. After `op` CLI is installed +
    signed in (note WSL `op` usually integrates with the Windows 1Password app),
@@ -161,9 +168,10 @@ the macOS `userConfig` (same name/email/signing key); only paths differ.
    `op document get "<item>" | gpg --import` (item name TBD — ask James / search
    `op item list`). The public key alone won't sign; need the secret half.
    Decision: keep signing ON for Linux (do NOT set signByDefault=false).
-7. Once green: `chsh -s $(which zsh)` if zsh isn't the login shell, commit the diff.
+6. Once green: `chsh -s $(which zsh)` if zsh isn't the login shell, commit the diff.
 
 ### Progress (2026-06-30 — activation + tool parity)
+
 - ✅ First `home-manager switch` activated (gen 2). Fixed the one Linux activation
   breaker: `home/claude/default.nix` used BSD `/usr/bin/stat -f %Su` (7 sites) →
   now portable `stat -c %U … || /usr/bin/stat -f %Su` (mac falls through to BSD).
@@ -181,6 +189,7 @@ the macOS `userConfig` (same name/email/signing key); only paths differ.
   poppler-utils, no-more-secrets→nms. Eval is green; switch building now.
 
 ### Remaining follow-ups
+
 - [ ] Login shell still /bin/bash → `chsh -s ~/.nix-profile/bin/zsh`.
 - [ ] zsh `switch` helper (home/zsh ~line 568) hardcodes `sudo darwin-rebuild
       switch` → make it `home-manager switch --flake …#james` on Linux.
@@ -190,6 +199,7 @@ the macOS `userConfig` (same name/email/signing key); only paths differ.
 - [ ] Optional: add psql client / more brew tools to home/linux-cli as wanted.
 
 ### Notes / decisions
+
 - Chose **unified flake** (one `flake.nix`, shared `flake.lock`) over a separate
   `flake-linux.nix` — the repo's `flake-linux.nix.example`/`LINUX.md` describe the
   older separate-flake idea; we superseded it. Can delete those docs later.

@@ -39,12 +39,19 @@ function Test-WingetInstalled([string]$Id) {
     return ($LASTEXITCODE -eq 0)
 }
 
+function Refresh-ProcessPath {
+    $machinePath = [Environment]::GetEnvironmentVariable('Path', 'Machine')
+    $userPath = [Environment]::GetEnvironmentVariable('Path', 'User')
+    $env:Path = "$machinePath;$userPath"
+}
+
 # ----------------------------------------------------- PowerShell profile hook
 # Ensure $PROFILE dot-sources windows/profile.ps1 (gives `sw` = WSL switch,
 # `swin` = this script). Marker-based and idempotent.
 $profilePath = $PROFILE.CurrentUserAllHosts
 $sourceLine = ". '$(Join-Path $repoWin 'profile.ps1')'  # nix-repo helpers"
 if (-not (Test-Path $profilePath)) {
+    New-Item -ItemType Directory -Force (Split-Path -Parent $profilePath) | Out-Null
     New-Item -ItemType File -Force $profilePath | Out-Null
 }
 if (-not (Select-String -Path $profilePath -SimpleMatch 'nix-repo helpers' -Quiet)) {
@@ -70,9 +77,17 @@ foreach ($pkg in $wingetManifest.packages) {
         if ($LASTEXITCODE -ne 0) { Warn2 "$($pkg.id): install exited $LASTEXITCODE" }
     }
 }
+Refresh-ProcessPath
 
 # ---------------------------------------------------------------- scoop apps
 $scoopManifest = Get-Content (Join-Path $repoWin 'scoop.json') -Raw | ConvertFrom-Json
+
+if (-not (Get-Command scoop -ErrorAction SilentlyContinue)) {
+    Info "Scoop"
+    Warn2 "bootstrapping Scoop for the current user"
+    Invoke-RestMethod 'https://get.scoop.sh' | Invoke-Expression
+    Refresh-ProcessPath
+}
 
 Info "scoop buckets"
 $haveBuckets = @(scoop bucket list 6>$null | ForEach-Object { $_.Name })
@@ -157,6 +172,123 @@ if (-not $SkipVS) {
     }
 } else {
     Info "Visual Studio: skipped (-SkipVS)"
+}
+
+# --------------------------------------------------------------------- Hermes
+# Native Windows and WSL use the same tracked policy, identity, and Second
+# Brain skills. Credentials remain machine-local and arrive through the WSL
+# Home Manager secret bridge.
+$repoRoot = Split-Path -Parent $repoWin
+$hermesSource = Join-Path $repoRoot 'home\hermes'
+$aiSource = Join-Path $repoRoot 'home\ai'
+$secondBrainSource = Join-Path $repoRoot 'home\secondbrain\skills'
+$hermesHome = Join-Path $env:LOCALAPPDATA 'hermes'
+$hermesManaged = Join-Path $hermesHome 'managed'
+$hermesInstall = Join-Path $hermesHome 'hermes-agent'
+$hermesRevision = '46e87b14fd6c943ef0d6671fb0d74c5dde5d4c6b'
+
+Info "Hermes Agent"
+$installedRevision = if (Test-Path (Join-Path $hermesInstall '.git')) {
+    (& git -C $hermesInstall rev-parse HEAD 2>$null | Out-String).Trim()
+} else {
+    ''
+}
+
+if ($installedRevision -ne $hermesRevision) {
+    Warn2 "converging native Hermes Agent to reviewed revision"
+    $installer = Join-Path $env:TEMP 'hermes-install.ps1'
+    Invoke-WebRequest "https://raw.githubusercontent.com/NousResearch/hermes-agent/$hermesRevision/scripts/install.ps1" -OutFile $installer
+    & pwsh -NoProfile -File $installer -SkipSetup -NonInteractive -Commit $hermesRevision
+    if ($LASTEXITCODE -ne 0) { throw "Hermes installer exited $LASTEXITCODE" }
+
+    $installedRevision = (& git -C $hermesInstall rev-parse HEAD 2>$null | Out-String).Trim()
+    if ($installedRevision -ne $hermesRevision) {
+        throw "Hermes checkout is $installedRevision; expected $hermesRevision"
+    }
+} else {
+    Ok "native Hermes Agent: reviewed revision already installed"
+}
+
+New-Item -ItemType Directory -Force $hermesManaged | Out-Null
+Copy-Item (Join-Path $hermesSource 'managed-config.yaml') (Join-Path $hermesManaged 'config.yaml') -Force
+Copy-Item (Join-Path $hermesSource 'SOUL.md') (Join-Path $hermesHome 'SOUL.md') -Force
+
+$managedEnv = Join-Path $hermesManaged '.env'
+if (-not (Test-Path $managedEnv)) { New-Item -ItemType File -Force $managedEnv | Out-Null }
+$managedLines = @(Get-Content $managedEnv | Where-Object { $_ -notmatch '^SLACK_ALLOWED_USERS=' })
+$managedLines += 'SLACK_ALLOWED_USERS=U0A31489THN'
+[System.IO.File]::WriteAllLines($managedEnv, $managedLines, [System.Text.UTF8Encoding]::new($false))
+$identity = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
+& icacls $managedEnv '/inheritance:r' '/grant:r' "${identity}:(F)" | Out-Null
+
+$managedValues = @{}
+foreach ($line in Get-Content $managedEnv) {
+    if ($line -match '^([^#=]+)=(.*)$') { $managedValues[$Matches[1]] = $Matches[2] }
+}
+foreach ($name in @('CIRCLECI_TOKEN', 'CIRCLECI_CLI_TOKEN', 'FIRECRAWL_API_KEY', 'OPENROUTER_API_KEY')) {
+    $value = if ($managedValues.ContainsKey($name)) { $managedValues[$name] } else { $null }
+    [Environment]::SetEnvironmentVariable($name, $value, 'User')
+    Set-Item -Path "Env:$name" -Value $value -ErrorAction SilentlyContinue
+}
+
+$aiTarget = Join-Path $env:USERPROFILE '.ai'
+New-Item -ItemType Directory -Force $aiTarget | Out-Null
+foreach ($file in @('0-init.md', '1-profile.md', '2-coding-style.md', '3-rules.md', '4-preferences.yaml', '5-learnings.md')) {
+    Copy-Item (Join-Path $aiSource $file) (Join-Path $aiTarget $file) -Force
+}
+
+foreach ($file in @('google_client_secret.json', 'google_token.json')) {
+    $path = Join-Path $hermesHome $file
+    if (Test-Path $path) {
+        & icacls $path '/inheritance:r' '/grant:r' "${identity}:(F)" | Out-Null
+    }
+}
+
+foreach ($skill in @('secondbrain-save', 'secondbrain-consolidate')) {
+    $target = Join-Path $hermesHome "skills\secondbrain\$skill"
+    New-Item -ItemType Directory -Force $target | Out-Null
+    Copy-Item (Join-Path $secondBrainSource "$skill\SKILL.md") (Join-Path $target 'SKILL.md') -Force
+}
+
+[Environment]::SetEnvironmentVariable('HERMES_MANAGED_DIR', $hermesManaged, 'User')
+$env:HERMES_MANAGED_DIR = $hermesManaged
+
+$secondBrainVault = Join-Path (Split-Path -Parent $repoRoot) 'second-brain'
+[Environment]::SetEnvironmentVariable('SECOND_BRAIN_VAULT', $secondBrainVault, 'User')
+$env:SECOND_BRAIN_VAULT = $secondBrainVault
+Ok "policy, AI context, and Second Brain skills synced"
+
+$hermesCommand = Get-Command hermes -ErrorAction SilentlyContinue
+if ($hermesCommand) {
+    $computerUseStatus = & hermes computer-use status 2>&1 | Out-String
+    if ($computerUseStatus -notmatch '(?m)^cua-driver: installed') {
+        Warn2 "installing Hermes computer-use platform driver"
+        & hermes computer-use install
+        if ($LASTEXITCODE -ne 0) { Warn2 "computer-use install exited $LASTEXITCODE" }
+    } else {
+        Ok "Hermes computer-use platform driver: already installed"
+    }
+
+    $cuaDriver = Get-Command cua-driver -ErrorAction SilentlyContinue
+    $cuaDriverPath = if ($cuaDriver) { $cuaDriver.Source } else { $null }
+    if (-not $cuaDriverPath) {
+        $candidate = Join-Path $env:USERPROFILE '.local\bin\cua-driver.exe'
+        if (Test-Path $candidate) { $cuaDriverPath = $candidate }
+    }
+    if ($cuaDriverPath) {
+        & $cuaDriverPath config set capture_scope desktop | Out-Null
+        if ($LASTEXITCODE -ne 0) { Warn2 "could not enable cua-driver desktop scope" }
+    }
+
+    & hermes slack manifest --write (Join-Path $hermesManaged 'slack-manifest.json') `
+        --name 'Hermes' --description "James Maes's primary coding agent" | Out-Null
+    if ($LASTEXITCODE -ne 0) { Warn2 "Slack app manifest generation exited $LASTEXITCODE" }
+
+    & hermes gateway stop *> $null
+    & hermes gateway uninstall *> $null
+    Ok "Hermes Slack gateway ownership: Grogu only; native service removed"
+} else {
+    Warn2 "Hermes command is not on this process PATH; open a new shell and re-run apply.ps1"
 }
 
 Info "done"

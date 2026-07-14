@@ -26,7 +26,7 @@ op-load-secrets() {
 
   # Colors ($'..' works in bash and zsh; plain echo renders them in both)
   local RED=$'\033[0;31m' GREEN=$'\033[0;32m' YELLOW=$'\033[1;33m'
-  local CYAN=$'\033[0;36m' BLUE=$'\033[0;34m' MAGENTA=$'\033[0;35m'
+  local CYAN=$'\033[0;36m' MAGENTA=$'\033[0;35m'
   local BOLD=$'\033[1m' NC=$'\033[0m'
 
   # Parse arguments
@@ -129,7 +129,7 @@ EOF
   local -a export_pairs failed_titles skipped_titles
   local i=0 item_json env_name credential
   for id in "${item_ids[@]}"; do
-    title="${item_titles[@]:$i:1}"
+    title="${item_titles[*]:$i:1}"
     i=$((i + 1))
 
     item_json=$(_op item get "$id" --format json 2>/dev/null)
@@ -158,7 +158,7 @@ EOF
   # Export phase — only after every fetch has completed.
   local pair loaded=0 sa_note=0
   for pair in "${export_pairs[@]}"; do
-    export "$pair"
+    export "${pair?}"
     loaded=$((loaded + 1))
     [[ "${pair%%=*}" == "OP_SERVICE_ACCOUNT_TOKEN" ]] && sa_note=1
   done

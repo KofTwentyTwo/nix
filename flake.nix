@@ -152,10 +152,10 @@
       # via an activation script. See that module for behavior and caveats.
       # Admin-console approvals (subnet routes, exit node) remain manual.
       machineConfigs = {
-        "Darth"      = { tailscale = { advertiseRoutes = [];                  advertiseExitNode = false; acceptDns = true; acceptRoutes = true; }; };
-        "Grogu"      = { tailscale = { advertiseRoutes = [ "10.100.0.0/16" ]; advertiseExitNode = true;  acceptDns = true; acceptRoutes = true; }; };
-        "Renova"     = { tailscale = { advertiseRoutes = [];                  advertiseExitNode = false; acceptDns = true; acceptRoutes = true; }; };
-        "Dark-Horse" = { tailscale = { advertiseRoutes = [];                  advertiseExitNode = false; acceptDns = true; acceptRoutes = true; }; };
+        "Darth"      = { hermesGateway = false; tailscale = { advertiseRoutes = [];                  advertiseExitNode = false; acceptDns = true; acceptRoutes = true; }; };
+        "Grogu"      = { hermesGateway = true;  tailscale = { advertiseRoutes = [ "10.100.0.0/16" ]; advertiseExitNode = true;  acceptDns = true; acceptRoutes = true; }; };
+        "Renova"     = { hermesGateway = false; tailscale = { advertiseRoutes = [];                  advertiseExitNode = false; acceptDns = true; acceptRoutes = true; }; };
+        "Dark-Horse" = { hermesGateway = false; tailscale = { advertiseRoutes = [];                  advertiseExitNode = false; acceptDns = true; acceptRoutes = true; }; };
       };
 
    configuration = {pkgs, config, lib, ... }: {
@@ -470,7 +470,10 @@
             # Timestamped backup of any file HM would overwrite. See
             # `hmBackupScript` above for the contract.
             home-manager.backupCommand = "${hmBackupScript}";
-            home-manager.extraSpecialArgs = { inherit inputs userConfig; };
+            home-manager.extraSpecialArgs = {
+               inherit inputs userConfig;
+               machineConfig = machineConfigs.${hostName};
+            };
             home-manager.users."${username}" = homeconfig;
          }
       ];
@@ -528,7 +531,14 @@
             config.allowUnfree = true;
             config.allowBroken = true;
          };
-         extraSpecialArgs = { inherit inputs; userConfig = linuxUserConfig; };
+         extraSpecialArgs = {
+            inherit inputs;
+            userConfig = linuxUserConfig;
+            machineConfig = {
+               hermesGateway = false;
+               isWsl = true;
+            };
+         };
          modules = [
             homeconfig
             {

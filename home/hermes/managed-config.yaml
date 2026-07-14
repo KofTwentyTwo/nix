@@ -1,0 +1,61 @@
+model:
+  default: openrouter/pareto-code
+  provider: openrouter
+  base_url: https://openrouter.ai/api/v1
+  api_mode: chat_completions
+openrouter:
+  min_coding_score: 0.66
+provider_routing:
+  require_parameters: true
+  data_collection: deny
+terminal:
+  backend: local
+  cwd: .
+  timeout: 180
+approvals:
+  mode: smart
+  timeout: 60
+  cron_mode: deny
+  mcp_reload_confirm: false
+  destructive_slash_confirm: true
+  deny:
+    - "git push --force*"
+    - "git push -f*"
+    - "git reset --hard*"
+    - "git clean -f*"
+slack:
+  require_mention: true
+  strict_mention: true
+  allowed_channels: ""
+  unauthorized_dm_behavior: ignore
+checkpoints:
+  enabled: true
+  max_snapshots: 20
+  max_total_size_mb: 500
+  max_file_size_mb: 10
+  auto_prune: true
+  retention_days: 7
+  delete_orphans: true
+  min_interval_hours: 24
+mcp_servers:
+  atlassian:
+    command: npx
+    args:
+      - -y
+      - mcp-remote@0.1.38
+      - https://mcp.atlassian.com/v1/mcp/authv2
+    enabled: true
+    timeout: 300
+    connect_timeout: 60
+    supports_parallel_tool_calls: false
+  firecrawl:
+    command: npx
+    args:
+      - -y
+      - firecrawl-mcp@3.22.3
+    env:
+      FIRECRAWL_API_KEY: "${FIRECRAWL_API_KEY}"
+    enabled: true
+    timeout: 300
+    connect_timeout: 60
+    supports_parallel_tool_calls: true

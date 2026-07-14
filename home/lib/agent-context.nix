@@ -48,6 +48,13 @@
     Append/merge only; frontmatter `created`/`updated`/`tags`/`source`; link
     new notes from `index.md`. Never write secrets into the vault.
 
+    ## Shared Tooling
+
+    When Firecrawl MCP is available, prefer it for web search, scraping,
+    crawling, mapping, structured extraction, and deep research. Verify
+    consequential claims against primary sources and follow the active
+    repository's rules for external access and sensitive data.
+
     ## Compaction Recovery (NON-NEGOTIABLE)
 
     After context compaction, the agent MUST re-read ALL `~/.ai/` files before continuing work. Compaction discards these files from context. Read them in this order:

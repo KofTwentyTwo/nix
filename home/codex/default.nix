@@ -184,6 +184,7 @@ let
   #      to parse, so the url is set too. Created if no override exists.
   #   3. figma — disable the plugin-provided figma MCP (enabled=false override)
   #      while keeping its skills.
+  #   4. firecrawl — converge the pinned stdio server on every host.
   #
   # Same Codex-ownership limitation as the Stop-hook patcher: if Codex rewrites
   # mcp_servers on its own, the flags hold until the next darwin-rebuild switch.
@@ -290,7 +291,7 @@ let
     if find_block("[mcp_servers.circleci]") is not None:
         set_key("[mcp_servers.circleci]", "command", 'command = "npx"')
         set_key("[mcp_servers.circleci]", "args",
-                'args = ["-y", "@circleci/mcp-server-circleci@latest"]')
+                'args = ["-y", "@circleci/mcp-server-circleci@0.17.0"]')
 
     # 2. github: point the remote MCP at the PAT env var. A [mcp_servers.github]
     #    table in config.toml is validated as a STANDALONE server definition —
@@ -314,6 +315,15 @@ let
             'url = "https://mcp.figma.com/mcp"', only_if_absent=True)
     set_key("[mcp_servers.figma]", "enabled", "enabled = false")
 
+    # 4. firecrawl: shared SOPS-backed subscription via inherited environment.
+    ensure_table("[mcp_servers.firecrawl]")
+    set_key("[mcp_servers.firecrawl]", "command", 'command = "npx"')
+    set_key("[mcp_servers.firecrawl]", "args",
+            'args = ["-y", "firecrawl-mcp@3.22.3"]')
+    ensure_table("[mcp_servers.firecrawl.env]")
+    set_key("[mcp_servers.firecrawl.env]", "FIRECRAWL_API_KEY",
+            'FIRECRAWL_API_KEY = "$FIRECRAWL_API_KEY"')
+
     if changed:
         data = "\n".join(lines)
         fd, tmp = tempfile.mkstemp(dir=os.path.dirname(path))
@@ -321,7 +331,7 @@ let
             fh.write(data)
         os.chmod(tmp, 0o600)
         os.replace(tmp, path)
-        print("codex: patched MCP servers (circleci/ruflo/github)")
+        print("codex: patched MCP servers (circleci/github/firecrawl)")
     else:
         print("codex: MCP servers already patched")
   '';
@@ -359,10 +369,17 @@ let
     # The previous single-string form parsed the whole thing as a binary name.
     [mcp_servers.circleci]
     command = "npx"
-    args = ["-y", "@circleci/mcp-server-circleci@latest"]
+    args = ["-y", "@circleci/mcp-server-circleci@0.17.0"]
 
     [mcp_servers.circleci.env]
     CIRCLECI_TOKEN = "$CIRCLECI_TOKEN"
+
+    [mcp_servers.firecrawl]
+    command = "npx"
+    args = ["-y", "firecrawl-mcp@3.22.3"]
+
+    [mcp_servers.firecrawl.env]
+    FIRECRAWL_API_KEY = "$FIRECRAWL_API_KEY"
   '';
 
   # Windows-native Codex config seed (LORE bridge). Differences from the Unix
@@ -394,10 +411,17 @@ let
 
     [mcp_servers.circleci]
     command = "cmd"
-    args = ["/c", "npx", "-y", "@circleci/mcp-server-circleci@latest"]
+    args = ["/c", "npx", "-y", "@circleci/mcp-server-circleci@0.17.0"]
 
     [mcp_servers.circleci.env]
     CIRCLECI_TOKEN = "$CIRCLECI_TOKEN"
+
+    [mcp_servers.firecrawl]
+    command = "cmd"
+    args = ["/c", "npx", "-y", "firecrawl-mcp@3.22.3"]
+
+    [mcp_servers.firecrawl.env]
+    FIRECRAWL_API_KEY = "$FIRECRAWL_API_KEY"
 
     [mcp_servers.github]
     url = "https://api.githubcopilot.com/mcp/"

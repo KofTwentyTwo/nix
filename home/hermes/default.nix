@@ -20,20 +20,82 @@
 # runs the installer on first setup — re-running it on every rebuild would
 # re-hit the network unnecessarily and risk surprising the user.
 
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib, machineConfig ? {}, ... }:
 
 let
   homeDir = config.home.homeDirectory;
   hermesHome = "${homeDir}/.hermes";
   installDir = "${hermesHome}/hermes-agent";
   hermesBin = "${homeDir}/.local/bin/hermes";
+  managedDir = "${homeDir}/.config/hermes-managed";
+  gatewayEnabled = machineConfig.hermesGateway or false;
+  isWsl = machineConfig.isWsl or false;
+  hermesRevision = "46e87b14fd6c943ef0d6671fb0d74c5dde5d4c6b";
+
+  managedConfig = ./managed-config.yaml;
 
   # Homebrew prefix on Apple Silicon — used to locate uv/git/curl during
   # activation, which runs before login shell init populates PATH.
   brewBin = "/opt/homebrew/bin";
 in
 {
-  # Manual updater. Pulls latest main and re-syncs the venv.
+  home.sessionVariables.HERMES_MANAGED_DIR = managedDir;
+
+  home.file.".config/hermes-managed/config.yaml".source = managedConfig;
+
+  home.file.".hermes/SOUL.md" = {
+    source = ./SOUL.md;
+    force = true;
+  };
+
+  # Full Google Workspace OAuth helper. The upstream skill owns OAuth and API
+  # behavior; this stable wrapper gives every Mac/WSL host the same commands.
+  home.file.".local/bin/hermes-google-workspace" = {
+    executable = true;
+    text = ''
+      #!/usr/bin/env bash
+      set -euo pipefail
+
+      setup="${installDir}/skills/productivity/google-workspace/scripts/setup.py"
+      python="${installDir}/venv/bin/python3"
+      action="''${1:-status}"
+
+      if [ ! -x "$python" ] || [ ! -f "$setup" ]; then
+        echo "Hermes Google Workspace skill is not installed" >&2
+        exit 1
+      fi
+
+      case "$action" in
+        status)
+          exec "$python" "$setup" --check
+          ;;
+        install-deps)
+          exec "$python" "$setup" --install-deps
+          ;;
+        client-secret)
+          [ "$#" -eq 2 ] || { echo "usage: hermes-google-workspace client-secret PATH" >&2; exit 2; }
+          exec "$python" "$setup" --client-secret "$2"
+          ;;
+        auth-url)
+          exec "$python" "$setup" --auth-url
+          ;;
+        auth-code)
+          [ "$#" -eq 2 ] || { echo "usage: hermes-google-workspace auth-code URL_OR_CODE" >&2; exit 2; }
+          exec "$python" "$setup" --auth-code "$2"
+          ;;
+        revoke)
+          exec "$python" "$setup" --revoke
+          ;;
+        *)
+          echo "usage: hermes-google-workspace {status|install-deps|client-secret PATH|auth-url|auth-code URL_OR_CODE|revoke}" >&2
+          exit 2
+          ;;
+      esac
+    '';
+  };
+
+  # Manual reconciler. The reviewed revision changes in this Nix module;
+  # hosts do not silently advance to unreviewed upstream code.
   home.file.".local/bin/hermes-update" = {
     executable = true;
     text = ''
@@ -43,12 +105,13 @@ in
       export PATH="${brewBin}:$PATH"
 
       if [ ! -d "${installDir}/.git" ]; then
-        echo "hermes-update: ${installDir} not found; run darwin-rebuild switch to install" >&2
+        echo "hermes-update: ${installDir} not found; activate this repository configuration to install" >&2
         exit 1
       fi
 
-      echo "==> Pulling latest in ${installDir}"
-      git -C "${installDir}" pull --ff-only
+      echo "==> Converging ${installDir} to ${hermesRevision}"
+      git -C "${installDir}" fetch --depth 1 origin "${hermesRevision}"
+      git -C "${installDir}" checkout --detach "${hermesRevision}"
 
       echo "==> Syncing venv"
       ( cd "${installDir}" && uv sync )
@@ -76,17 +139,140 @@ in
     # from home/linux-cli there — HM's activation PATH does not include it).
     export PATH="${brewBin}:${homeDir}/.nix-profile/bin:$PATH"
 
-    if [ -d "${installDir}/.git" ]; then
-      : # already installed; nothing to do
-    elif ! command -v uv >/dev/null 2>&1; then
-      echo "hermes: uv not found on PATH; install uv via Homebrew first (declared in modules/homebrew.nix)" >&2
+    if ! command -v uv >/dev/null 2>&1; then
+      echo "hermes: uv not found on PATH; activate the platform package configuration first" >&2
     elif ! command -v git >/dev/null 2>&1; then
       echo "hermes: git not found on PATH; skipping install" >&2
     else
-      echo "hermes: installing to ${installDir} via upstream install.sh (--skip-setup)"
-      curl -fsSL https://raw.githubusercontent.com/NousResearch/hermes-agent/main/scripts/install.sh \
-        | bash -s -- --skip-setup \
-        || echo "hermes: WARN install failed (offline?); rerun darwin-rebuild switch when network is available" >&2
+      if [ ! -d "${installDir}/.git" ]; then
+        echo "hermes: installing reviewed revision ${hermesRevision}"
+        curl -fsSL "https://raw.githubusercontent.com/NousResearch/hermes-agent/${hermesRevision}/scripts/install.sh" \
+          | bash -s -- --skip-setup \
+          || echo "hermes: WARN install failed (offline?); reactivate the repository when network is available" >&2
+      fi
+
+      if [ -d "${installDir}/.git" ] && [ "$(git -C "${installDir}" rev-parse HEAD 2>/dev/null)" != "${hermesRevision}" ]; then
+        echo "hermes: converging checkout to reviewed revision ${hermesRevision}"
+        if git -C "${installDir}" fetch --depth 1 origin "${hermesRevision}" \
+           && git -C "${installDir}" checkout --detach "${hermesRevision}"; then
+          ( cd "${installDir}" && uv sync ) \
+            || echo "hermes: WARN dependency sync failed" >&2
+        else
+          echo "hermes: WARN could not check out reviewed revision" >&2
+        fi
+      fi
+    fi
+  '';
+
+  # Computer Use is bundled with Hermes, but its cross-platform cua-driver
+  # binary is installed separately. Converge it without downloading again on
+  # every activation; macOS privacy consent remains an operator-owned step.
+  home.activation.installHermesComputerUse = lib.hm.dag.entryAfter [ "installHermesAgent" ] ''
+    export PATH="${homeDir}/.local/bin:${brewBin}:${homeDir}/.nix-profile/bin:$PATH"
+
+    if ! [ -x "${hermesBin}" ]; then
+      echo "hermes: command unavailable; skipping computer-use dependency" >&2
+    elif "${hermesBin}" computer-use status 2>/dev/null | grep -q "^cua-driver: installed"; then
+      : # already installed
+    else
+      echo "hermes: installing computer-use platform driver"
+      "${hermesBin}" computer-use install \
+        || echo "hermes: WARN computer-use install failed; rerun 'hermes computer-use install' when online" >&2
+    fi
+  '';
+
+  # Full-computer operation is an explicit fleet policy. Keep cua-driver's
+  # mutable runtime config converged while allowing it to preserve unrelated
+  # settings that future driver versions may add.
+  home.activation.syncHermesComputerUseConfig = lib.hm.dag.entryAfter [ "installHermesComputerUse" ] ''
+    export PATH="${homeDir}/.local/bin:${brewBin}:${homeDir}/.nix-profile/bin:$PATH"
+
+    if command -v cua-driver >/dev/null 2>&1; then
+      cua-driver config set capture_scope desktop >/dev/null \
+        || echo "hermes: WARN could not enable cua-driver desktop scope" >&2
+    fi
+  '';
+
+  # Secrets stay out of the Nix store. The managed environment wins over
+  # user-level Hermes values while preserving unrelated entries in this file.
+  home.activation.syncHermesManagedEnv = lib.hm.dag.entryAfter [ "deployCircleciToken" "deployOpenrouterApiKey" "deployFirecrawlApiKey" "deployHermesSlackBotToken" "deployHermesSlackAppToken" "deployHermesGoogleClientSecret" ] ''
+    managed_env="${managedDir}/.env"
+    mkdir -p "${managedDir}"
+    touch "$managed_env"
+    chmod 600 "$managed_env"
+
+    sync_value() {
+      name="$1"
+      value="$2"
+      tmp=$(mktemp "${managedDir}/.env.XXXXXX")
+      ${pkgs.gawk}/bin/awk -v prefix="$name=" 'index($0, prefix) != 1 { print }' "$managed_env" > "$tmp"
+      if [ -n "$value" ]; then
+        printf '%s=%s\n' "$name" "$value" >> "$tmp"
+      fi
+      chmod 600 "$tmp"
+      mv "$tmp" "$managed_env"
+    }
+
+    sync_secret() {
+      name="$1"
+      source_file="$2"
+      value=""
+      if [ -r "$source_file" ]; then
+        value=$(head -n 1 "$source_file")
+      fi
+      sync_value "$name" "$value"
+    }
+
+    sync_secret OPENROUTER_API_KEY "${homeDir}/.config/secrets/openrouter-api-key"
+    sync_secret CIRCLECI_TOKEN "${homeDir}/.config/secrets/circleci-token"
+    sync_secret CIRCLECI_CLI_TOKEN "${homeDir}/.config/secrets/circleci-token"
+    sync_secret FIRECRAWL_API_KEY "${homeDir}/.config/secrets/firecrawl-api-key"
+
+    ${lib.optionalString gatewayEnabled ''
+      sync_secret SLACK_BOT_TOKEN "${homeDir}/.config/secrets/hermes-slack-bot-token"
+      sync_secret SLACK_APP_TOKEN "${homeDir}/.config/secrets/hermes-slack-app-token"
+      sync_value SLACK_ALLOWED_USERS "U0A31489THN"
+    ''}
+
+    ${lib.optionalString (!gatewayEnabled) ''
+      rm -f \
+        "${homeDir}/.config/secrets/hermes-slack-bot-token" \
+        "${homeDir}/.config/secrets/hermes-slack-app-token"
+      for name in SLACK_BOT_TOKEN SLACK_APP_TOKEN SLACK_ALLOWED_USERS; do
+        sync_value "$name" ""
+      done
+    ''}
+
+    google_client="${homeDir}/.config/secrets/hermes-google-client-secret.json"
+    if [ -r "$google_client" ]; then
+      install -m 600 "$google_client" "${hermesHome}/google_client_secret.json"
+    else
+      rm -f "${hermesHome}/google_client_secret.json"
+    fi
+  '';
+
+  # Every host can run Hermes interactively, but only Grogu owns the persistent
+  # messaging service. Remove any legacy user service on non-owner machines.
+  home.activation.removeHermesGatewayFromNonOwner = lib.mkIf (!gatewayEnabled)
+    (lib.hm.dag.entryAfter [ "installHermesAgent" ] ''
+      if [ -x "${hermesBin}" ]; then
+        HERMES_MANAGED_DIR="${managedDir}" "${hermesBin}" gateway stop >/dev/null 2>&1 || true
+        HERMES_MANAGED_DIR="${managedDir}" "${hermesBin}" gateway uninstall >/dev/null 2>&1 || true
+      fi
+    '');
+
+  # Keep the exact Slack app definition beside the managed config so setup is
+  # repeatable and tracks the installed Hermes command registry.
+  home.activation.generateHermesSlackManifest = lib.hm.dag.entryAfter [ "installHermesAgent" ] ''
+    export PATH="${homeDir}/.local/bin:${brewBin}:${homeDir}/.nix-profile/bin:$PATH"
+    export HERMES_MANAGED_DIR="${managedDir}"
+
+    if [ -x "${hermesBin}" ]; then
+      mkdir -p "${managedDir}"
+      "${hermesBin}" slack manifest --write "${managedDir}/slack-manifest.json" \
+        --name "Hermes" --description "James Maes's primary coding agent" \
+        >/dev/null \
+        || echo "hermes: WARN failed to generate Slack app manifest" >&2
     fi
   '';
 
@@ -94,21 +280,92 @@ in
   # installed once via upstream install.ps1 -SkipSetup) fed with the current
   # OpenRouter key from sops. Hermes-Windows reads keys from its .env; syncing
   # here means a key rotation (re-encrypt + switch) reaches both sides.
-  home.activation.syncWindowsHermesEnv = lib.mkIf pkgs.stdenv.isLinux (lib.hm.dag.entryAfter [ "deployOpenrouterApiKey" ] ''
-    henv="/mnt/c/Users/james/AppData/Local/hermes/.env"
-    key_file="${homeDir}/.config/secrets/openrouter-api-key"
-    if [ -f "$henv" ] && [ -r "$key_file" ]; then
-      key=$(cat "$key_file")
-      if grep -q "^OPENROUTER_API_KEY=$key\$" "$henv"; then
-        : # already current
-      else
-        if grep -qE "^#? ?OPENROUTER_API_KEY=" "$henv"; then
-          ${pkgs.gnused}/bin/sed -i "s|^#\{0,1\} \{0,1\}OPENROUTER_API_KEY=.*|OPENROUTER_API_KEY=$key|" "$henv"
-        else
-          printf 'OPENROUTER_API_KEY=%s\n' "$key" >> "$henv"
+  home.activation.syncWindowsHermesEnv = lib.mkIf (pkgs.stdenv.isLinux && isWsl) (lib.hm.dag.entryAfter [ "deployCircleciToken" "deployOpenrouterApiKey" "deployFirecrawlApiKey" "deployHermesSlackBotToken" "deployHermesSlackAppToken" "deployHermesGoogleClientSecret" ] ''
+    hdir="/mnt/c/Users/james/AppData/Local/hermes"
+    hmanaged="$hdir/managed"
+    henv="$hmanaged/.env"
+    hconfig="$hmanaged/config.yaml"
+    if [ -d "$hdir" ]; then
+      mkdir -p "$hmanaged" "$hdir/skills/secondbrain/secondbrain-save" "$hdir/skills/secondbrain/secondbrain-consolidate"
+      touch "$henv"
+
+      sync_windows_secret() {
+        name="$1"
+        source_file="$2"
+        tmp=$(mktemp "$hmanaged/.env.XXXXXX")
+        ${pkgs.gawk}/bin/awk -v prefix="$name=" 'index($0, prefix) != 1 { print }' "$henv" > "$tmp"
+        if [ -r "$source_file" ]; then
+          value=$(head -n 1 "$source_file")
+          if [ -n "$value" ]; then
+            printf '%s=%s\n' "$name" "$value" >> "$tmp"
+          fi
         fi
-        echo "[hermes-win] OPENROUTER_API_KEY synced into Windows hermes .env"
+        mv "$tmp" "$henv"
+      }
+
+      sync_windows_secret OPENROUTER_API_KEY "${homeDir}/.config/secrets/openrouter-api-key"
+      sync_windows_secret CIRCLECI_TOKEN "${homeDir}/.config/secrets/circleci-token"
+      sync_windows_secret CIRCLECI_CLI_TOKEN "${homeDir}/.config/secrets/circleci-token"
+      sync_windows_secret FIRECRAWL_API_KEY "${homeDir}/.config/secrets/firecrawl-api-key"
+      for name in SLACK_BOT_TOKEN SLACK_APP_TOKEN SLACK_ALLOWED_USERS; do
+        sync_windows_secret "$name" "/nonexistent"
+      done
+
+      if [ -r "${homeDir}/.config/secrets/hermes-google-client-secret.json" ]; then
+        cp -f "${homeDir}/.config/secrets/hermes-google-client-secret.json" "$hdir/google_client_secret.json"
+        chmod 600 "$hdir/google_client_secret.json"
+      else
+        rm -f "$hdir/google_client_secret.json"
       fi
+
+      cp -f ${./SOUL.md} "$hdir/SOUL.md"
+      cp -f ${../secondbrain/skills/secondbrain-save/SKILL.md} "$hdir/skills/secondbrain/secondbrain-save/SKILL.md"
+      cp -f ${../secondbrain/skills/secondbrain-consolidate/SKILL.md} "$hdir/skills/secondbrain/secondbrain-consolidate/SKILL.md"
+
+      cp -f ${managedConfig} "$hconfig"
+      echo "[hermes-win] managed config and credentials synced"
     fi
   '');
+
+  launchd.agents.hermes-gateway = lib.mkIf (pkgs.stdenv.isDarwin && gatewayEnabled) {
+    enable = true;
+    config = {
+      ProgramArguments = [ "${homeDir}/.local/bin/hermes-gateway-managed" ];
+      RunAtLoad = true;
+      StartInterval = 300;
+      KeepAlive = { SuccessfulExit = false; };
+      WorkingDirectory = homeDir;
+      StandardOutPath = "${homeDir}/Library/Logs/hermes-gateway.log";
+      StandardErrorPath = "${homeDir}/Library/Logs/hermes-gateway.error.log";
+      EnvironmentVariables = {
+        PATH = "${homeDir}/.local/bin:${brewBin}:${homeDir}/.nix-profile/bin:/usr/local/bin:/usr/bin:/bin";
+        HERMES_HOME = hermesHome;
+        HERMES_MANAGED_DIR = managedDir;
+      };
+    };
+  };
+
+  home.file.".local/bin/hermes-gateway-managed" = lib.mkIf gatewayEnabled {
+    executable = true;
+    text = ''
+      #!/usr/bin/env bash
+      set -euo pipefail
+      export HERMES_HOME="${hermesHome}"
+      export HERMES_MANAGED_DIR="${managedDir}"
+
+      env_file="${managedDir}/.env"
+      if [ ! -x "${hermesBin}" ] || [ ! -r "$env_file" ]; then
+        echo "hermes messaging gateway pending runtime installation"
+        exit 0
+      fi
+
+      if ! grep -q '^SLACK_BOT_TOKEN=.' "$env_file" \
+         || ! grep -q '^SLACK_APP_TOKEN=.' "$env_file"; then
+        echo "hermes messaging gateway pending Slack credentials"
+        exit 0
+      fi
+
+      exec "${hermesBin}" gateway run --replace
+    '';
+  };
 }

@@ -4,6 +4,17 @@ Active tasks and future improvements for the Nix configuration.
 
 ## Active Tasks
 
+- [ ] Complete the Hermes integration and Second Brain coverage plan in `docs/PLAN-hermes-integration.md`: verify OpenRouter model routing, define scoped Git/CircleCI/Slack/email/computer access, implement declarative configuration, and validate the deployed result.
+  - [x] Run the final repository gate and activate Dark-Horse.
+  - [ ] Operator: create and install the Greater Goods Slack app, then SOPS-encrypt its two tokens.
+  - [ ] Operator: create the Gmail and Google Workspace Desktop OAuth client, SOPS-encrypt it, and consent on each runtime.
+  - [ ] Operator: add the Firecrawl subscription key to the empty 1Password item, then create `secrets/firecrawl-api-key.enc`.
+  - [x] Operator: reauthenticate `gh`, then verify GitHub repository and workflow API access.
+  - [ ] Operator: rotate and redeploy the known-exposed CircleCI personal token.
+  - [x] Operator: verify or grant macOS Accessibility and Screen Recording consent.
+  - [ ] Operator: run the native Windows apply, WSL switch, and second apply on LORE, then validate Hermes, Codex, Claude, and secret ACLs.
+  - [ ] Operator: rotate the development credential removed from `home/ai/5-learnings.md` because repository history may retain it.
+  - [x] Operator: remove the unsafe broad Claude permission entries reported by `scripts/check-repo.sh`.
 - [ ] Verify post-claude-install-drift recovery: open a fresh terminal, run `claude`, re-login (OAuth wiped 2026-05-26), confirm plugins/MCP/permissions load. If `/opt/homebrew/bin/claude` reappears, use `docs/PLAN-claude-install-drift.md` (fs_usage recipe) to ID the migrator's parent process and decide whether to extend `a93b80f`'s eviction.
 - [ ] On Darth: verify `age-keygen -y ~/.config/sops/age/keys.txt` matches the `&darth` pubkey in `.sops.yaml`; pull + rebuild; `sops updatekeys secrets/github-sandbox-pat.enc` for both PATs if recipient set changes
 - [ ] On Renova: generate age key, share pubkey, add `&renova` to `.sops.yaml`, `sops updatekeys secrets/github-security-pat.enc secrets/github-sandbox-pat.enc`, pull + rebuild
@@ -25,6 +36,7 @@ Active tasks and future improvements for the Nix configuration.
 
 - [x] Always-on GitHub auth: `secrets/github-token.enc` (no-expiry classic PAT from 1Password `GITHUB_TOKEN`) → `~/.config/secrets/github-token` → `GITHUB_TOKEN` exported in every shell; `gh` authenticated without `gh auth login`, HTTPS git via `!gh auth git-credential` helper in `flake.nix`; verified end-to-end on Dark-Horse (2026-07-14)
 - [x] Claude install-channel drift triaged: restored `a93b80f` eviction (had been removed mid-session under wrong interpretation), reinstalled native `~/.local/bin/claude`, applied via `darwin-rebuild switch`, captured diagnosis + recovery in `docs/PLAN-claude-install-drift.md`, committed both as `1016007` (2026-05-26)
+- [x] GitHub auth recovered: `gh auth status` is valid again on this machine, so repository and workflow access can be verified without reauthentication
 - [x] Repo hardening pass: fixed review findings, added `scripts/check-repo.sh`, promoted pending learnings, removed tracked `result`, and verified with the full repo gate (2026-05-26)
 - [x] Resolved tmux pane border redraw latency by querying Git repo and branch asynchronously via `git-pane-info.sh` (2026-05-21)
 - [x] Resolved Nix-Darwin vs Home Manager LaunchAgent activation race condition by defining native Home Manager `launchd.agents.check-updates` (2026-05-21)
