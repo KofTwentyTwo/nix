@@ -34,6 +34,7 @@ Active tasks and future improvements for the Nix configuration.
 
 ## Recently Completed
 
+- [x] Hermes primary-agent rollout committed and pushed as `57d0be4`; Dark-Horse activated and final repository gate passed (2026-07-14)
 - [x] Always-on GitHub auth: `secrets/github-token.enc` (no-expiry classic PAT from 1Password `GITHUB_TOKEN`) → `~/.config/secrets/github-token` → `GITHUB_TOKEN` exported in every shell; `gh` authenticated without `gh auth login`, HTTPS git via `!gh auth git-credential` helper in `flake.nix`; verified end-to-end on Dark-Horse (2026-07-14)
 - [x] Claude install-channel drift triaged: restored `a93b80f` eviction (had been removed mid-session under wrong interpretation), reinstalled native `~/.local/bin/claude`, applied via `darwin-rebuild switch`, captured diagnosis + recovery in `docs/PLAN-claude-install-drift.md`, committed both as `1016007` (2026-05-26)
 - [x] GitHub auth recovered: `gh auth status` is valid again on this machine, so repository and workflow access can be verified without reauthentication

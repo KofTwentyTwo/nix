@@ -26,7 +26,7 @@ Every host may run interactive Hermes. Grogu alone owns the continuously running
 
 ## Activate and validate
 
-The rollout sources are staged. Validate and activate the current tree with:
+The rollout is committed and pushed to `origin/main`. Validate and activate the current tree with:
 
 ```bash
 sudo darwin-rebuild check --flake path:.
