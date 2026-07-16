@@ -474,3 +474,14 @@ Custom nix-darwin system activation scripts that install user `Library/LaunchAge
 
 ### Home Manager activation under nix-darwin 2025 runs through system activation
 `sudo darwin-rebuild switch --flake .` runs Home Manager activation inside the system activation path. `/run/current-system/activate-user` is only a deprecation shim. If user activation appears missing, look for earlier build or activation failures before blaming the shim.
+
+## Jira (greatergoods.atlassian.net)
+
+### REST API Works Locally — No MCP OAuth Needed
+- `JIRA_API_TOKEN` is set in the local Mac environment; plain REST with basic auth works: `curl -u "jmaes@greatergoods.com:${JIRA_API_TOKEN}" https://greatergoods.atlassian.net/rest/api/3/...`
+- Search endpoint is `/rest/api/3/search/jql` (the old `/search` was removed).
+- The "Jira API is IP-blocked" limitation applied only to cloud/remote agent environments, not local sessions.
+
+### OPS Workflow Needs a 5-Hop Walk to Done
+- The OPS project workflow has no shortcut transitions: Backlog/Triage → Done requires visiting every column (To Do → In Progress → In Review → In QA → Done).
+- Scriptable: fetch `/issue/KEY/transitions`, greedily pick the transition whose target is furthest toward Done, repeat. Match transitions by name, not ID (IDs differ per state). Proven 2026-07-14 closing 10 tickets; don't do it by hand.
