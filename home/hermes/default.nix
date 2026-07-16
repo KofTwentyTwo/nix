@@ -60,6 +60,19 @@ in
       python="${installDir}/venv/bin/python3"
       action="''${1:-status}"
 
+      # The upstream helper writes OAuth credentials with Python's default
+      # process permissions. Secure both existing files and every new file it
+      # creates without modifying the pinned Hermes checkout.
+      umask 077
+      for file in \
+        "${hermesHome}/google_client_secret.json" \
+        "${hermesHome}/google_token.json" \
+        "${hermesHome}/google_oauth_pending.json"; do
+        if [ -e "$file" ]; then
+          chmod 600 "$file"
+        fi
+      done
+
       if [ ! -x "$python" ] || [ ! -f "$setup" ]; then
         echo "Hermes Google Workspace skill is not installed" >&2
         exit 1

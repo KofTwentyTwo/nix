@@ -8,7 +8,7 @@ Active tasks and future improvements for the Nix configuration.
   - [x] Run the final repository gate and activate Dark-Horse.
   - [ ] Operator: create and install the Greater Goods Slack app, then SOPS-encrypt its two tokens.
   - [ ] Operator: create the Gmail and Google Workspace Desktop OAuth client, SOPS-encrypt it, and consent on each runtime.
-  - [ ] Operator: add the Firecrawl subscription key to the empty 1Password item, then create `secrets/firecrawl-api-key.enc`.
+  - [ ] Operator: rotate the Firecrawl credential exposed during setup, store only its replacement in 1Password, then create `secrets/firecrawl-api-key.enc`.
   - [x] Operator: reauthenticate `gh`, then verify GitHub repository and workflow API access.
   - [x] Operator: create, SOPS-encrypt, deploy, and live-verify the replacement CircleCI personal token.
   - [ ] Operator: revoke the exposed predecessor in CircleCI personal-token settings.
@@ -16,6 +16,7 @@ Active tasks and future improvements for the Nix configuration.
   - [ ] Operator: run the native Windows apply, WSL switch, and second apply on LORE, then validate Hermes, Codex, Claude, and secret ACLs.
   - [ ] Operator: rotate the development credential removed from `home/ai/5-learnings.md` because repository history may retain it.
   - [x] Operator: remove the unsafe broad Claude permission entries reported by `scripts/check-repo.sh`.
+  - [x] Harden Google OAuth client, token, and PKCE-state permissions on Unix and native Windows.
 - [ ] Verify post-claude-install-drift recovery: open a fresh terminal, run `claude`, re-login (OAuth wiped 2026-05-26), confirm plugins/MCP/permissions load. If `/opt/homebrew/bin/claude` reappears, use `docs/PLAN-claude-install-drift.md` (fs_usage recipe) to ID the migrator's parent process and decide whether to extend `a93b80f`'s eviction.
 - [ ] On Darth: verify `age-keygen -y ~/.config/sops/age/keys.txt` matches the `&darth` pubkey in `.sops.yaml`; pull + rebuild; `sops updatekeys secrets/github-sandbox-pat.enc` for both PATs if recipient set changes
 - [ ] On Renova: generate age key, share pubkey, add `&renova` to `.sops.yaml`, `sops updatekeys secrets/github-security-pat.enc secrets/github-sandbox-pat.enc`, pull + rebuild

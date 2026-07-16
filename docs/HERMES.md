@@ -12,11 +12,17 @@ Hermes is the primary cross-platform coding agent in this repository. Home Manag
 | Git and GitHub code | SSH, `gh`, and SOPS-managed `GITHUB_TOKEN` | Live repository and workflow API access verified as `KofTwentyTwo` |
 | CircleCI | SOPS token plus managed native CLI config | Replacement token is deployed and live-verified; revoke the exposed predecessor to close the incident |
 | Jira and Confluence | Hermes Atlassian MCP plus `confluence.sh` | MCP connected and tools discovered |
-| Firecrawl | SOPS key plus pinned `firecrawl-mcp` | Declared for Hermes, Claude Code, and Codex; 1Password item exists but its credential is empty |
+| Firecrawl | SOPS key plus pinned `firecrawl-mcp` | Declarative plumbing is complete; exposed setup credential requires rotation before fleet deployment |
 | Local shell and files | Hermes terminal backend | Live verified by a Hermes `pwd` tool invocation |
 | Computer use | Hermes CUA driver | Live desktop capture verified on the current Mac with Accessibility and Screen Recording granted |
 | Greater Goods Slack | SOPS tokens plus generated app manifest | Declarative, awaiting workspace app creation and tokens |
 | Gmail and Google Workspace | Bundled skill plus SOPS Desktop OAuth client | Declarative, awaiting Google Cloud client creation and per-runtime consent |
+
+The production smoke test on 2026-07-16 used the deployed `hermes` command,
+routed through OpenRouter with `openrouter/pareto-code`, invoked the local
+terminal tool, and returned the repository path. GitHub, CircleCI, Atlassian,
+and Firecrawl MCP startup also passed. Firecrawl currently runs in keyless mode
+until the exposed subscription credential is rotated and replaced.
 
 Safe reads and ordinary local development commands do not require repeated confirmation. Commits, pushes, outbound messages, infrastructure changes, secret-bearing actions, destructive actions, and forced Git history changes remain governed by `~/.ai/3-rules.md`. Checkpoints are enabled, and force pushes, hard resets, and forced cleans are denied by managed policy.
 
@@ -41,6 +47,12 @@ hermes computer-use status
 hermes mcp list
 hermes mcp test atlassian
 hermes-google-workspace status
+```
+
+After activation, start the primary coding agent from any repository with:
+
+```bash
+hermes
 ```
 
 Verify GitHub repository and workflow API access with `gh auth status` and a
@@ -73,16 +85,28 @@ hermes-google-workspace auth-code 'REDIRECT_URL_OR_CODE'
 hermes-google-workspace status
 ```
 
-Native Windows uses `windows\hermes-google-workspace.ps1` with `AuthUrl`, `AuthCode`, and `Status`. The helper applies a current-user-only ACL to OAuth files after each successful command.
+Native Windows uses the equivalent PowerShell actions:
+
+```powershell
+.\windows\hermes-google-workspace.ps1 -Action InstallDeps
+.\windows\hermes-google-workspace.ps1 -Action AuthUrl
+.\windows\hermes-google-workspace.ps1 -Action AuthCode -Value 'REDIRECT_URL_OR_CODE'
+.\windows\hermes-google-workspace.ps1 -Action Status
+```
+
+The Unix wrapper uses a private process umask and mode 0600 for the OAuth
+client, token, and temporary PKCE state. The Windows helper applies a
+current-user-only ACL to the same three files after each successful command.
 
 ## Firecrawl onboarding
 
 Firecrawl uses the official stdio MCP server pinned as `firecrawl-mcp@3.22.3`.
 Hermes, Claude Code, Codex, WSL, and native Windows all reference the same
-`FIRECRAWL_API_KEY` without placing it in the Nix store. The Personal-vault
-1Password item named `Firecrawl` currently has an empty credential field. Add
-the subscription key to that item, retrieve it into a temporary mode-0600 file,
-and SOPS-encrypt it as `secrets/firecrawl-api-key.enc`. After activation,
+`FIRECRAWL_API_KEY` without placing it in the Nix store. The current Firecrawl
+CLI credential was exposed during setup and must be rotated before fleet
+deployment. Store only the replacement in 1Password, stream it directly into
+SOPS as `secrets/firecrawl-api-key.enc`, and never write it to a plaintext
+transfer file. After activation,
 verify the Firecrawl MCP in all three agents with a safe search or scrape
 request. The server and environment contract follow the
 [official Firecrawl MCP documentation](https://docs.firecrawl.dev/mcp).

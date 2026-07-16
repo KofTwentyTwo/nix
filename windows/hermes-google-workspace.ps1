@@ -32,7 +32,7 @@ switch ($Action) {
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 $identity = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
-foreach ($file in @('google_client_secret.json', 'google_token.json')) {
+foreach ($file in @('google_client_secret.json', 'google_token.json', 'google_oauth_pending.json')) {
     $path = Join-Path $hermesHome $file
     if (Test-Path $path) {
         & icacls $path '/inheritance:r' '/grant:r' "${identity}:(F)" | Out-Null

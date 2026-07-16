@@ -237,7 +237,7 @@ foreach ($file in @('0-init.md', '1-profile.md', '2-coding-style.md', '3-rules.m
     Copy-Item (Join-Path $aiSource $file) (Join-Path $aiTarget $file) -Force
 }
 
-foreach ($file in @('google_client_secret.json', 'google_token.json')) {
+foreach ($file in @('google_client_secret.json', 'google_token.json', 'google_oauth_pending.json')) {
     $path = Join-Path $hermesHome $file
     if (Test-Path $path) {
         & icacls $path '/inheritance:r' '/grant:r' "${identity}:(F)" | Out-Null
