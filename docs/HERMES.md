@@ -10,7 +10,7 @@ Hermes is the primary cross-platform coding agent in this repository. Home Manag
 | AI context | `home/ai/`, `home/hermes/SOUL.md` | Live on the current Mac and WSL; declared for native Windows pending LORE validation |
 | Second Brain | `home/secondbrain/` | Read and write skills deployed; durable Nix and Hermes notes recorded |
 | Git and GitHub code | SSH, `gh`, and SOPS-managed `GITHUB_TOKEN` | Live repository and workflow API access verified as `KofTwentyTwo` |
-| CircleCI | SOPS token plus `circleci` | Live diagnostic works, but the exposed token must be rotated before trusted use |
+| CircleCI | SOPS token plus managed native CLI config | Replacement token is deployed and live-verified; revoke the exposed predecessor to close the incident |
 | Jira and Confluence | Hermes Atlassian MCP plus `confluence.sh` | MCP connected and tools discovered |
 | Firecrawl | SOPS key plus pinned `firecrawl-mcp` | Declared for Hermes, Claude Code, and Codex; 1Password item exists but its credential is empty |
 | Local shell and files | Hermes terminal backend | Live verified by a Hermes `pwd` tool invocation |
@@ -44,8 +44,11 @@ hermes-google-workspace status
 ```
 
 Verify GitHub repository and workflow API access with `gh auth status` and a
-read-only `gh` API call. Rotate the known-exposed CircleCI personal token
-before treating the live diagnostic as trusted.
+read-only `gh` API call. CircleCI's replacement token is SOPS-deployed to its
+native CLI config and `CIRCLECI_TOKEN` remains available to the MCP server.
+`CIRCLECI_CLI_TOKEN` is intentionally unset because circleci-cli 0.1.38646
+panics when a new-format token is supplied through that override. Revoke the
+exposed predecessor at the CircleCI personal-token settings page.
 
 On native Windows, run `windows\apply.ps1` in PowerShell, run the WSL Home Manager switch so SOPS material crosses the bridge, then rerun `windows\apply.ps1` to apply Windows ACLs and validate the installed runtime. LORE is currently offline, so this remains the only unexecuted platform validation. Unix-only tools are available through WSL when no native executable exists.
 

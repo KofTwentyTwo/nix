@@ -225,7 +225,9 @@ in
 
     sync_secret OPENROUTER_API_KEY "${homeDir}/.config/secrets/openrouter-api-key"
     sync_secret CIRCLECI_TOKEN "${homeDir}/.config/secrets/circleci-token"
-    sync_secret CIRCLECI_CLI_TOKEN "${homeDir}/.config/secrets/circleci-token"
+    # The CLI uses ~/.circleci/cli.yml. Remove its environment override because
+    # circleci-cli 0.1.38646 panics with new-format tokens supplied this way.
+    sync_value CIRCLECI_CLI_TOKEN ""
     sync_secret FIRECRAWL_API_KEY "${homeDir}/.config/secrets/firecrawl-api-key"
 
     ${lib.optionalString gatewayEnabled ''
@@ -305,9 +307,8 @@ in
 
       sync_windows_secret OPENROUTER_API_KEY "${homeDir}/.config/secrets/openrouter-api-key"
       sync_windows_secret CIRCLECI_TOKEN "${homeDir}/.config/secrets/circleci-token"
-      sync_windows_secret CIRCLECI_CLI_TOKEN "${homeDir}/.config/secrets/circleci-token"
       sync_windows_secret FIRECRAWL_API_KEY "${homeDir}/.config/secrets/firecrawl-api-key"
-      for name in SLACK_BOT_TOKEN SLACK_APP_TOKEN SLACK_ALLOWED_USERS; do
+      for name in CIRCLECI_CLI_TOKEN SLACK_BOT_TOKEN SLACK_APP_TOKEN SLACK_ALLOWED_USERS; do
         sync_windows_secret "$name" "/nonexistent"
       done
 

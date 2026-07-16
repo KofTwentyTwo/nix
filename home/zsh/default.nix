@@ -141,7 +141,9 @@ in
            # silent no-ops (hosts without the age key skip deployment).
            if [[ -r "$HOME/.config/secrets/circleci-token" ]]; then
              export CIRCLECI_TOKEN="$(< "$HOME/.config/secrets/circleci-token")"
-             export CIRCLECI_CLI_TOKEN="$CIRCLECI_TOKEN"
+             # The CLI reads ~/.circleci/cli.yml. Its environment override
+             # crashes with new-format tokens in circleci-cli 0.1.38646.
+             unset CIRCLECI_CLI_TOKEN
            fi
            # Personal GitHub PAT (classic, no expiration). gh reads
            # GITHUB_TOKEN ahead of its keychain login, and git-over-HTTPS

@@ -4,10 +4,11 @@
 # config file (~/.circleci/cli.yml) from the sops-deployed token.
 #
 # Distinct from the MCP server: home/zsh exports CIRCLECI_TOKEN (read by the
-# circleci-mcp-server), while the CLI reads ~/.circleci/cli.yml (or the
-# CIRCLECI_CLI_TOKEN env var). Before this module, WSL's cli.yml was an empty
-# 0-byte file and Windows had none — so the CLI was effectively unauthenticated
-# even though the MCP token was present.
+# circleci-mcp-server), while the CLI reads ~/.circleci/cli.yml. Do not export
+# CIRCLECI_CLI_TOKEN: circleci-cli 0.1.38646 can panic during command setup when
+# a new-format token is supplied through that override. Before this module,
+# WSL's cli.yml was an empty 0-byte file and Windows had none — so the CLI was
+# effectively unauthenticated even though the MCP token was present.
 #
 # Token source: ~/.config/secrets/circleci-token, decrypted from
 # secrets/circleci-token.enc by home/sops (deployCircleciToken). This module's

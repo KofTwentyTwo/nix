@@ -1,12 +1,14 @@
 # Session State
 
-**Last Updated:** 2026-07-14 (Hermes primary-agent rollout)
+**Last Updated:** 2026-07-16 (CircleCI replacement deployed)
 
 ## Hermes primary-agent rollout
 
 Hermes is declaratively configured across macOS, WSL, and native Windows with shared AI context, Second Brain skills, OpenRouter `pareto-code` routing, smart approvals, checkpoints, GitHub/CircleCI/Atlassian tooling, pinned Firecrawl MCP, computer use, Gmail and Google Workspace, and Greater Goods Slack. Live checks passed for OpenRouter, AI context, local tools, GitHub APIs, CircleCI diagnostics, Atlassian MCP, and full-desktop computer use. Grogu alone owns the continuous Slack gateway plus its service credentials; Windows and other Macs remain interactive clients.
 
-The rollout is committed and pushed as `57d0be4`, the final repository gate passes, and Dark-Horse is activated. Gmail is the primary Google integration; Calendar, Drive, Docs, Sheets, People, and Contacts use the same helper. Human account work remains: rotate CircleCI, populate the empty Firecrawl 1Password item, create and install the Greater Goods Slack app, create the Google Desktop OAuth client and complete per-runtime consent, and validate native Windows when LORE is online. The removed development credential also needs rotation because history may retain it. Darth, Grogu, LORE, and Renova were offline during fleet activation and must pull and activate when they reconnect.
+The rollout is committed and pushed as `57d0be4`, the final repository gate passes, and Dark-Horse is activated. The replacement CircleCI token is stored in 1Password, SOPS-encrypted for the fleet, deployed mode 0600, synchronized into Hermes, and live-verified through both `/api/v2/me` and the native CLI. `CIRCLECI_CLI_TOKEN` is intentionally removed because circleci-cli 0.1.38646 panics with the new-format token override; the CLI uses its managed `~/.circleci/cli.yml` instead. Revoke the exposed predecessor to close the incident.
+
+Gmail is the primary Google integration; Calendar, Drive, Docs, Sheets, People, and Contacts use the same helper. Human account work remains: revoke the old CircleCI token, populate the empty Firecrawl 1Password item, create and install the Greater Goods Slack app, create the Google Desktop OAuth client and complete per-runtime consent, and validate native Windows when LORE is online. The removed development credential also needs rotation because history may retain it. Darth, Grogu, LORE, and Renova were offline during fleet activation and must pull and activate when they reconnect.
 
 ## 🟢 DONE — Recovered uncommitted 2026-07-02 session from the old WSL clone (2026-07-03)
 
