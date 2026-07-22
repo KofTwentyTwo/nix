@@ -15,6 +15,28 @@ function swin {
     & 'R:\Git.Local\KofTwentyTwo\nix\windows\apply.ps1' @args
 }
 
+function Clear-StaleMcpRemote {
+    <#
+    Reap leftover `mcp-remote` node processes from previous agent sessions.
+    agy/gemini spawn MCP servers as child processes but don't always reap them
+    on exit; the stragglers keep holding mcp-remote's fixed OAuth callback port
+    (atlassian's is 39570), so the NEXT session's atlassian hangs "still
+    connecting" — which makes agy withhold its whole tool list (github etc.
+    then look "not listed"). Targets ONLY node processes whose command line
+    contains mcp-remote, so real dev servers are untouched.
+    #>
+    Get-CimInstance Win32_Process -Filter "Name='node.exe'" -ErrorAction SilentlyContinue |
+        Where-Object { $_.CommandLine -match 'mcp-remote' } |
+        ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
+}
+
+function agy {
+    <# Launch antigravity, first reaping stale mcp-remote so atlassian (and
+       therefore the whole MCP tool list) connects instead of hanging. #>
+    Clear-StaleMcpRemote
+    & "$env:USERPROFILE\scoop\shims\agy.exe" @args
+}
+
 # Muscle-memory shim: a line consisting of exactly `switch` is rewritten to
 # `sw` at Enter, instead of opening the switch-statement continuation prompt.
 # Real switch statements (anything beyond the bare word) are untouched.
