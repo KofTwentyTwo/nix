@@ -63,8 +63,13 @@ let
     # non-secret literals; JIRA_API_TOKEN/CONFLUENCE_API_TOKEN come from the
     # environment (home/zsh on WSL/mac, reg-add on Windows — see home/sops).
     atlassian = {
-      command = "uvx";
-      args = [ "mcp-atlassian" ];
+      # Direct uv-tool entrypoint, NOT `uvx mcp-atlassian`: uvx spawns an extra
+      # resolver process (slower start) and a deeper process tree that gemini's
+      # /mcp reload can't stop within its 100ms-after-SIGKILL window (it drops
+      # atlassian on reload). The installed `mcp-atlassian` shim is a single
+      # entrypoint. Installed by home/gemini (WSL/mac) + windows/apply.ps1.
+      command = "mcp-atlassian";
+      args = [ ];
       env = {
         JIRA_URL = "https://greatergoods.atlassian.net";
         JIRA_USERNAME = "jmaes@greatergoods.com";

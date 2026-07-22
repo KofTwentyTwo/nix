@@ -130,6 +130,21 @@ foreach ($pkg in $npmManifest.packages) {
     }
 }
 
+# ------------------------------------------------------------------ uv tools
+# mcp-atlassian is the atlassian MCP server entrypoint for gemini/agy (a direct
+# single-process shim; see home/lib/mcp-servers.nix for why not uvx). uv comes
+# from scoop.json. Idempotent — uv tool install re-resolves without error.
+Info "uv tools"
+if (Get-Command uv -ErrorAction SilentlyContinue) {
+    foreach ($tool in @('mcp-atlassian')) {
+        Warn2 "${tool}: installing/updating"
+        uv tool install $tool | Out-Null
+        if ($LASTEXITCODE -ne 0) { Warn2 "${tool}: uv tool install exited $LASTEXITCODE" }
+    }
+} else {
+    Warn2 "uv not found; skipping uv tools (scoop install uv)"
+}
+
 # ---------------------------------------------------------- Visual Studio 2026
 if (-not $SkipVS) {
     $edition  = if ($VSEdition) { $VSEdition } else { $wingetManifest.visualStudio.edition }
