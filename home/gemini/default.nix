@@ -11,20 +11,14 @@
 let
   homeDir = config.home.homeDirectory;
 
-  # Gemini settings with MCP servers
+  # Gemini settings. MCP servers are the shared non-Claude-agent set (github,
+  # circleci, atlassian, firecrawl, context7) — see home/lib/mcp-servers.nix
+  # for the auth/env-inheritance model.
   geminiSettings = {
     ui = {
       theme = "dark";
     };
-    mcpServers = {
-      circleci = {
-        command = "npx";
-        args = [ "-y" "@circleci/mcp-server-circleci@latest" ];
-        env = {
-          CIRCLECI_TOKEN = "$" + "{CIRCLECI_TOKEN}";
-        };
-      };
-    };
+    mcpServers = import ../lib/mcp-servers.nix { };
   };
 
   geminiSettingsJson = pkgs.writeText "gemini-settings.json" (builtins.toJSON geminiSettings);

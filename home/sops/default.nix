@@ -252,5 +252,39 @@ in
           "${homeDir}/.config/secrets/tailscale-authkey"
         ];
       });
+
+    # LORE bridge: expose the MCP-relevant tokens as Windows *user* env vars so
+    # Windows-native agents (gemini, agy) — whose stdio MCP servers read the
+    # token from the inherited environment — authenticate the same as the WSL
+    # side (where home/zsh exports them). Sourced from the sops-deployed secret
+    # files; each var is skipped if its file isn't present (e.g. firecrawl until
+    # its secret is created). Only setx when the value differs, to avoid
+    # churning the registry on a no-op switch. See home/lib/mcp-servers.nix.
+    home.activation.syncWindowsMcpTokens = lib.mkIf pkgs.stdenv.isLinux
+      (lib.hm.dag.entryAfter [ "deployGithubToken" "deployCircleciToken" "deployFirecrawlApiKey" ] ''
+        # Convenience bridge — must NEVER fail the switch, so every step is
+        # guarded and the body ends 0 regardless of reg/setx outcomes.
+        if [ -d "/mnt/c/Users/james" ]; then
+          _setx_mcp() {
+            [ -r "$2" ] || return 0
+            want="$(cat "$2")"
+            cur="$(/mnt/c/Windows/System32/reg.exe query "HKCU\\Environment" /v "$1" 2>/dev/null \
+              | ${pkgs.gnugrep}/bin/grep -oE 'REG_SZ.*' \
+              | ${pkgs.gnused}/bin/sed 's/REG_SZ[[:space:]]*//' || true)"
+            if [ "$cur" != "$want" ]; then
+              if /mnt/c/Windows/System32/cmd.exe /c "setx $1 \"$want\"" >/dev/null 2>&1; then
+                echo "[mcp-win] $1 set as Windows user env var"
+              else
+                echo "[mcp-win] WARN: setx $1 failed" >&2
+              fi
+            fi
+            return 0
+          }
+          _setx_mcp GITHUB_TOKEN      "${homeDir}/.config/secrets/github-token"      || true
+          _setx_mcp CIRCLECI_TOKEN    "${homeDir}/.config/secrets/circleci-token"    || true
+          _setx_mcp FIRECRAWL_API_KEY "${homeDir}/.config/secrets/firecrawl-api-key" || true
+        fi
+        :
+      '');
   };
 }

@@ -95,6 +95,14 @@ let
     ];
   };
   winAntigravitySettingsJson = pkgs.writeText "antigravity-settings-windows.json" (builtins.toJSON winAntigravitySettings);
+
+  # MCP servers. Antigravity reads a SEPARATE global file (per its bundled
+  # docs/mcp_servers.md): ~/.gemini/config/mcp_config.json with a `mcpServers`
+  # map. Same shared set gemini uses (home/lib/mcp-servers.nix) — see that file
+  # for the env-inheritance auth model (GITHUB_TOKEN/CIRCLECI_TOKEN/
+  # FIRECRAWL_API_KEY must be in the launching environment).
+  mcpConfigJson = pkgs.writeText "antigravity-mcp-config.json"
+    (builtins.toJSON { mcpServers = import ../lib/mcp-servers.nix { }; });
 in
 {
   # Manual updater. Forces a clean reinstall of the latest published binary.
@@ -209,4 +217,25 @@ in
       echo "[antigravity-win] settings mirrored"
     fi
   '');
+
+  # ~/.gemini/config/mcp_config.json — antigravity's global MCP server config.
+  # Fully declarative (no user-merge): we own this file. Written as a real file
+  # (mode 600), not a symlink, so the Windows bridge can copy it.
+  home.activation.syncAntigravityMcp = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    mkdir -p "${homeDir}/.gemini/config"
+    cp -f "${mcpConfigJson}" "${homeDir}/.gemini/config/mcp_config.json"
+    chmod 600 "${homeDir}/.gemini/config/mcp_config.json"
+  '';
+
+  # LORE bridge: same MCP config for Windows-native agy. --no-preserve strips
+  # the store's read-only mode (drvfs would map 0444 to the Windows RO attr).
+  home.activation.syncWindowsAntigravityMcp = lib.mkIf pkgs.stdenv.isLinux
+    (lib.hm.dag.entryAfter [ "syncAntigravityMcp" ] ''
+      win="/mnt/c/Users/james/.gemini/config"
+      if [ -d "/mnt/c/Users/james" ]; then
+        mkdir -p "$win"
+        cp -f --no-preserve=mode,ownership "${mcpConfigJson}" "$win/mcp_config.json"
+        echo "[antigravity-win] mcp_config.json mirrored"
+      fi
+    '');
 }
