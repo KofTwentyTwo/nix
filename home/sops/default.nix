@@ -272,10 +272,15 @@ in
               | ${pkgs.gnugrep}/bin/grep -oE 'REG_SZ.*' \
               | ${pkgs.gnused}/bin/sed 's/REG_SZ[[:space:]]*//' || true)"
             if [ "$cur" != "$want" ]; then
-              if /mnt/c/Windows/System32/cmd.exe /c "setx $1 \"$want\"" >/dev/null 2>&1; then
+              # reg.exe add — NOT setx: `setx NAME "$v"` stores the surrounding
+              # double quotes literally (they reach mcp-remote as
+              # `Bearer "ghp_…"` → GitHub HTTP 400 "badly formatted"). reg add
+              # /d stores the raw value with no quote wrapping. Both make the
+              # var visible to newly-launched processes (agy/gemini).
+              if /mnt/c/Windows/System32/reg.exe add "HKCU\\Environment" /v "$1" /t REG_SZ /d "$want" /f >/dev/null 2>&1; then
                 echo "[mcp-win] $1 set as Windows user env var"
               else
-                echo "[mcp-win] WARN: setx $1 failed" >&2
+                echo "[mcp-win] WARN: reg add $1 failed" >&2
               fi
             fi
             return 0
