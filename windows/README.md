@@ -20,6 +20,38 @@ R:\Git.Local\KofTwentyTwo\nix\windows\apply.ps1 -VSEdition Professional
 
 Idempotent — installed packages are skipped; edit a manifest and re-run.
 
+## PowerShell aliases (zsh parity)
+
+`profile.ps1` (dot-sourced from `$PROFILE` by `apply.ps1`) also loads
+`ps-aliases.ps1`, which mirrors the zsh alias set as PowerShell functions: the
+full oh-my-zsh `git`/`kubectl`/`docker`/`helm`/`terraform` alias families plus
+`home/zsh` shellAliases. So `gst`, `gco`, `gcb`, `gp`, `gl`, `gcm`, `gpsup`,
+`glo`, `k`, `tf`, etc. work identically in PowerShell and zsh.
+
+Notes:
+- Colliding PowerShell built-in aliases (`gp`=Get-ItemProperty, `gl`=Get-Location,
+  `gc`=Get-Content, `gm`=Get-Member, `gi`=Get-Item, `gcm`=Get-Command, …) are
+  removed so the git functions win — the cmdlets stay available by full name.
+- PowerShell is case-insensitive, so case-only omz variants (`gcB`, `gbD`) are
+  not distinct — use the git flag directly.
+- Branch-helper aliases (`gcm`, `gswm`, `gpsup`, …) use `Get-GitMainBranch` /
+  `Get-GitCurrentBranch` / `Get-GitDevelopBranch` helpers.
+- Multi-repo helper scripts (`gsa`, `gclo`, `gba`, `gi`, …) run the bash script
+  in WSL at the translated current directory.
+- Modern-CLI shortcuts (`cat`→bat, `ll`→eza, `grep`→rg, …) activate only if the
+  tool is on PATH.
+
+**Regenerate** after `nix flake update` bumps oh-my-zsh, or after editing
+`home/ohmyzsh` plugins / `home/zsh` shellAliases:
+
+```powershell
+pwsh -File R:\Git.Local\KofTwentyTwo\nix\windows\gen-ps-aliases.ps1
+```
+
+It copies the enabled plugin files from the WSL nix store, regenerates
+`ps-aliases.ps1`, and refuses to write output that doesn't parse. Commit the
+result.
+
 ## What manages what
 
 | Layer | Tool | Manifest | Examples |
@@ -30,6 +62,7 @@ Idempotent — installed packages are skipped; edit a manifest and re-run.
 | VS workloads | VS Installer | `vs2026.vsconfig` | ManagedDesktop, NetWeb, NativeDesktop |
 | Nerd fonts | scoop `nerd-fonts` bucket | ad hoc | deliberately not pinned (the full set is installed on LORE) |
 | WSL user env | Home Manager | `../flake.nix#james` | zsh, nvim, git, tmux, CLI parity via `home/linux-cli` |
+| PowerShell aliases | generated | `ps-aliases.ps1` | git/kubectl/docker/helm/terraform + shellAliases as PS functions |
 | Hermes Agent | Home Manager + `apply.ps1` | `../home/hermes/` | Shared OpenRouter policy, AI context, Second Brain skills, native Windows install |
 
 Hermes uses the same tracked `home/hermes/managed-config.yaml` and `SOUL.md` on

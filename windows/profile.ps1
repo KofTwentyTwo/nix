@@ -29,3 +29,8 @@ try {
         [Microsoft.PowerShell.PSConsoleReadLine]::AcceptLine()
     }
 } catch { }  # PSReadLine absent (non-interactive host) — shim not needed there
+
+# zsh alias parity: git/kubectl/docker/helm/terraform + shellAliases as
+# PowerShell functions (generated — see windows/ps-aliases.ps1 header).
+$psAliases = Join-Path $PSScriptRoot 'ps-aliases.ps1'
+if (Test-Path $psAliases) { . $psAliases }
