@@ -55,6 +55,22 @@ creation_rules:
           - *grogu
           - *lore
           - *fleet
+  - path_regex: secrets/jira-api-token\.enc$
+    key_groups:
+      - age:
+          - *darth
+          - *dark_horse
+          - *grogu
+          - *lore
+          - *fleet
+  - path_regex: secrets/confluence-api-token\.enc$
+    key_groups:
+      - age:
+          - *darth
+          - *dark_horse
+          - *grogu
+          - *lore
+          - *fleet
   - path_regex: secrets/circleci-token\.enc$
     key_groups:
       - age:

@@ -152,7 +152,7 @@ in
     # mkPatDeployer skips destinations whose parent dir is missing, so both the
     # CircleCI token and the github-codex-pat destination depend on this.
     home.activation.ensureSecretsDir =
-      lib.hm.dag.entryBefore [ "deployCircleciToken" "deployGithubSecurityPat" "deployGithubToken" "deployTailscaleAuthkey" "deployOpenrouterApiKey" "deployFirecrawlApiKey" "deployHermesSlackBotToken" "deployHermesSlackAppToken" "deployHermesGoogleClientSecret" ] ''
+      lib.hm.dag.entryBefore [ "deployCircleciToken" "deployGithubSecurityPat" "deployGithubToken" "deployTailscaleAuthkey" "deployOpenrouterApiKey" "deployFirecrawlApiKey" "deployJiraApiToken" "deployConfluenceApiToken" "deployHermesSlackBotToken" "deployHermesSlackAppToken" "deployHermesGoogleClientSecret" ] ''
         mkdir -p "${homeDir}/.config/secrets"
         chmod 0700 "${homeDir}/.config/secrets"
       '';
@@ -184,6 +184,21 @@ in
     # interactive shell (hermes-agent and anything else OpenRouter-backed).
     # Master copy: 1Password "OpenRouter" (greatergoods account). Rotate there,
     # re-encrypt with `sops secrets/openrouter-api-key.enc`, rebuild.
+    # Atlassian API tokens (Jira + Confluence) for the token-based
+    # mcp-atlassian MCP server (gemini/agy use it instead of the OAuth remote,
+    # which antigravity's MCP client can't handshake — see home/lib/mcp-servers).
+    # Master copies: 1Password JIRA_API_TOKEN / CONFLUENCE_API_TOKEN.
+    home.activation.deployJiraApiToken = mkPatDeployer {
+      name = "jira-api-token";
+      encFile = ../../secrets/jira-api-token.enc;
+      destinations = [ "${homeDir}/.config/secrets/jira-api-token" ];
+    };
+    home.activation.deployConfluenceApiToken = mkPatDeployer {
+      name = "confluence-api-token";
+      encFile = ../../secrets/confluence-api-token.enc;
+      destinations = [ "${homeDir}/.config/secrets/confluence-api-token" ];
+    };
+
     home.activation.deployOpenrouterApiKey = mkPatDeployer {
       name = "openrouter-api-key";
       encFile = ../../secrets/openrouter-api-key.enc;
@@ -261,7 +276,7 @@ in
     # its secret is created). Only setx when the value differs, to avoid
     # churning the registry on a no-op switch. See home/lib/mcp-servers.nix.
     home.activation.syncWindowsMcpTokens = lib.mkIf pkgs.stdenv.isLinux
-      (lib.hm.dag.entryAfter [ "deployGithubToken" "deployCircleciToken" "deployFirecrawlApiKey" ] ''
+      (lib.hm.dag.entryAfter [ "deployGithubToken" "deployCircleciToken" "deployFirecrawlApiKey" "deployJiraApiToken" "deployConfluenceApiToken" ] ''
         # Convenience bridge — must NEVER fail the switch, so every step is
         # guarded and the body ends 0 regardless of reg/setx outcomes.
         if [ -d "/mnt/c/Users/james" ]; then
@@ -285,9 +300,11 @@ in
             fi
             return 0
           }
-          _setx_mcp GITHUB_TOKEN      "${homeDir}/.config/secrets/github-token"      || true
-          _setx_mcp CIRCLECI_TOKEN    "${homeDir}/.config/secrets/circleci-token"    || true
-          _setx_mcp FIRECRAWL_API_KEY "${homeDir}/.config/secrets/firecrawl-api-key" || true
+          _setx_mcp GITHUB_TOKEN         "${homeDir}/.config/secrets/github-token"         || true
+          _setx_mcp CIRCLECI_TOKEN       "${homeDir}/.config/secrets/circleci-token"       || true
+          _setx_mcp FIRECRAWL_API_KEY    "${homeDir}/.config/secrets/firecrawl-api-key"    || true
+          _setx_mcp JIRA_API_TOKEN       "${homeDir}/.config/secrets/jira-api-token"       || true
+          _setx_mcp CONFLUENCE_API_TOKEN "${homeDir}/.config/secrets/confluence-api-token" || true
         fi
         :
       '');

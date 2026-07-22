@@ -165,6 +165,15 @@ in
            if [[ -r "$HOME/.config/secrets/openrouter-api-key" ]]; then
              export OPENROUTER_API_KEY="$(< "$HOME/.config/secrets/openrouter-api-key")"
            fi
+           # Atlassian API tokens for the token-based mcp-atlassian MCP server
+           # (gemini/agy). Non-secret JIRA_URL/JIRA_USERNAME live in the MCP
+           # config; only the tokens come from sops.
+           if [[ -r "$HOME/.config/secrets/jira-api-token" ]]; then
+             export JIRA_API_TOKEN="$(< "$HOME/.config/secrets/jira-api-token")"
+           fi
+           if [[ -r "$HOME/.config/secrets/confluence-api-token" ]]; then
+             export CONFLUENCE_API_TOKEN="$(< "$HOME/.config/secrets/confluence-api-token")"
+           fi
            if [[ -r "$HOME/.config/secrets/firecrawl-api-key" ]]; then
              export FIRECRAWL_API_KEY="$(< "$HOME/.config/secrets/firecrawl-api-key")"
            fi

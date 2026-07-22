@@ -54,10 +54,23 @@ let
       args = [ "-y" "@circleci/mcp-server-circleci@latest" ];
     };
 
-    # Atlassian (Jira/Confluence) — remote OAuth (consent cached, see header).
+    # Atlassian (Jira/Confluence) — LOCAL token server via uvx, NOT the OAuth
+    # remote. The remote (mcp.atlassian.com, Streamable-HTTP) needs an
+    # initialize-first handshake; antigravity's client sends server/discover
+    # first and the endpoint rejects it (HTTP 400) — so agy can't use the
+    # remote at all (gemini can, but we keep one definition). mcp-atlassian
+    # handshakes normally like the other local stdio servers. URL/USERNAME are
+    # non-secret literals; JIRA_API_TOKEN/CONFLUENCE_API_TOKEN come from the
+    # environment (home/zsh on WSL/mac, reg-add on Windows — see home/sops).
     atlassian = {
-      command = "npx";
-      args = [ "-y" "mcp-remote@0.1.37" "https://mcp.atlassian.com/v1/mcp/authv2" ];
+      command = "uvx";
+      args = [ "mcp-atlassian" ];
+      env = {
+        JIRA_URL = "https://greatergoods.atlassian.net";
+        JIRA_USERNAME = "jmaes@greatergoods.com";
+        CONFLUENCE_URL = "https://greatergoods.atlassian.net/wiki";
+        CONFLUENCE_USERNAME = "jmaes@greatergoods.com";
+      };
     };
 
     # Firecrawl — reads FIRECRAWL_API_KEY from the inherited environment.
