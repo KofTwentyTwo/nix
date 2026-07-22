@@ -95,10 +95,20 @@ let
 in
 {
   inherit servers;
+  # Windows: wrap ONLY the `.cmd` shims (npx/npm/uvx) in `cmd /c` — Go
+  # (antigravity) and Node 20+ (gemini) can't spawn `.cmd` directly. Real `.exe`
+  # entrypoints (e.g. the uv-tool `mcp-atlassian` shim) are spawned DIRECTLY:
+  # the `cmd /c` wrapper adds a cmd.exe parent that agy's /mcp reload kills
+  # while the real child survives holding the stdio pipe (100ms-SIGKILL timeout
+  # → "i.CS.Close() did not return", atlassian dropped). Spawning the .exe
+  # directly gives agy a single process it can terminate cleanly.
   winServers = lib.mapAttrs
-    (_: s: (removeAttrs s [ "command" "args" ]) // {
-      command = "cmd";
-      args = [ "/c" s.command ] ++ s.args;
-    })
+    (_: s:
+      if builtins.elem s.command [ "npx" "npm" "uvx" ]
+      then (removeAttrs s [ "command" "args" ]) // {
+        command = "cmd";
+        args = [ "/c" s.command ] ++ s.args;
+      }
+      else s)
     servers;
 }
