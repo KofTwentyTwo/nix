@@ -304,7 +304,9 @@ in
             fi
             return 0
           }
-          _setenv_mcp GITHUB_TOKEN         "${homeDir}/.config/secrets/github-token"         || true
+          _setenv_mcp GITHUB_TOKEN                 "${homeDir}/.config/secrets/github-token" || true
+          # @modelcontextprotocol/server-github reads this name (same value).
+          _setenv_mcp GITHUB_PERSONAL_ACCESS_TOKEN "${homeDir}/.config/secrets/github-token" || true
           _setenv_mcp CIRCLECI_TOKEN       "${homeDir}/.config/secrets/circleci-token"       || true
           _setenv_mcp FIRECRAWL_API_KEY    "${homeDir}/.config/secrets/firecrawl-api-key"    || true
           _setenv_mcp JIRA_API_TOKEN       "${homeDir}/.config/secrets/jira-api-token"       || true

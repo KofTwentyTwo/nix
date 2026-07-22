@@ -153,6 +153,9 @@ in
            # unconditional. Master copy: 1Password "GITHUB_TOKEN".
            if [[ -r "$HOME/.config/secrets/github-token" ]]; then
              export GITHUB_TOKEN="$(< "$HOME/.config/secrets/github-token")"
+             # @modelcontextprotocol/server-github (gemini/agy MCP) reads this
+             # name specifically; same value as GITHUB_TOKEN.
+             export GITHUB_PERSONAL_ACCESS_TOKEN="$GITHUB_TOKEN"
            fi
            # GitHub PAT for Codex's remote GitHub MCP (api.githubcopilot.com).
            # config.toml's [mcp_servers.github].bearer_token_env_var points here

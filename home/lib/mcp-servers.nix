@@ -37,15 +37,15 @@
 { lib }:
 let
   servers = {
-    # GitHub — official remote MCP (maintained; the npm server-github is
-    # archived). mcp-remote substitutes ''${GITHUB_TOKEN} from the environment.
+    # GitHub — LOCAL stdio server (reads GITHUB_PERSONAL_ACCESS_TOKEN from the
+    # environment). NOT the Copilot remote via mcp-remote: against
+    # api.githubcopilot.com, mcp-remote runs an OAuth *discovery* flow
+    # (github.com/login/oauth) that hangs antigravity at "initializing…" even
+    # with a valid static bearer header. The classic npm server is archived but
+    # functional and handshakes normally like the other local stdio servers.
     github = {
       command = "npx";
-      args = [
-        "-y" "mcp-remote@0.1.37"
-        "https://api.githubcopilot.com/mcp/"
-        "--header" "Authorization: Bearer \${GITHUB_TOKEN}"
-      ];
+      args = [ "-y" "@modelcontextprotocol/server-github" ];
     };
 
     # CircleCI — reads CIRCLECI_TOKEN from the inherited environment.
