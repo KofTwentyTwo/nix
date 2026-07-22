@@ -13,15 +13,27 @@ let
 
   # Gemini settings. MCP servers are the shared non-Claude-agent set (github,
   # circleci, atlassian, firecrawl, context7) — see home/lib/mcp-servers.nix
-  # for the auth/env-inheritance model.
+  # for the auth/env-inheritance model and the Windows cmd/c wrapping.
+  mcp = import ../lib/mcp-servers.nix { inherit lib; };
+
   geminiSettings = {
     ui = {
       theme = "dark";
     };
-    mcpServers = import ../lib/mcp-servers.nix { };
+    # gemini ≥0.50 suppresses MCP servers in untrusted folders by default.
+    # Single-operator machines: disable folder-trust gating (parity with the
+    # pre-0.50 behavior the WSL/mac sides had when MCP was verified).
+    security = {
+      folderTrust = {
+        enabled = false;
+      };
+    };
+    mcpServers = mcp.servers;
   };
+  winGeminiSettings = geminiSettings // { mcpServers = mcp.winServers; };
 
   geminiSettingsJson = pkgs.writeText "gemini-settings.json" (builtins.toJSON geminiSettings);
+  winGeminiSettingsJson = pkgs.writeText "gemini-settings-windows.json" (builtins.toJSON winGeminiSettings);
 in
 {
   # GEMINI.md - read-only symlink
@@ -39,6 +51,7 @@ in
     else
       if ${pkgs.jq}/bin/jq --slurpfile settings "${geminiSettingsJson}" '
         .ui = ((.ui // {}) * ($settings[0].ui // {}))
+        | .security = ((.security // {}) * ($settings[0].security // {}))
         | .mcpServers = $settings[0].mcpServers
       ' "$gemini_json" > "$gemini_json.tmp" \
         && [ -s "$gemini_json.tmp" ]; then
@@ -62,10 +75,11 @@ in
         || echo "[gemini-win] WARN: GEMINI.md mirror failed" >&2
       wgj="$win/settings.json"
       if [ ! -f "$wgj" ] || [ ! -s "$wgj" ]; then
-        ${pkgs.jq}/bin/jq -n --slurpfile settings "${geminiSettingsJson}" '$settings[0]' > "$wgj"
+        ${pkgs.jq}/bin/jq -n --slurpfile settings "${winGeminiSettingsJson}" '$settings[0]' > "$wgj"
       else
-        if ${pkgs.jq}/bin/jq --slurpfile settings "${geminiSettingsJson}" '
+        if ${pkgs.jq}/bin/jq --slurpfile settings "${winGeminiSettingsJson}" '
           .ui = ((.ui // {}) * ($settings[0].ui // {}))
+          | .security = ((.security // {}) * ($settings[0].security // {}))
           | .mcpServers = $settings[0].mcpServers
         ' "$wgj" > "$wgj.tmp" && [ -s "$wgj.tmp" ]; then
           mv "$wgj.tmp" "$wgj"

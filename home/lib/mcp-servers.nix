@@ -20,42 +20,67 @@
 #   `mcp-remote` expands ${GITHUB_TOKEN} in the header; the circleci/firecrawl
 #   servers read their env vars directly from the inherited environment.
 #
-# Atlassian is OAuth (authv2) — first use opens a browser consent; no token.
+# Atlassian is OAuth (authv2) — consent already done on LORE; mcp-remote's
+# auth cache (~/.mcp-auth) is NAMESPACED BY mcp-remote VERSION, so the pin
+# below must stay 0.1.37 (where the existing Atlassian tokens live) unless
+# you're prepared to redo the browser consent after bumping.
 # Context7 works keyless (rate-limited); add CONTEXT7_API_KEY to the env later
 # for higher limits.
-{ }:
+#
+# Returns { servers, winServers }:
+#   servers    — plain npx spawns (macOS/WSL; POSIX exec finds `npx` fine).
+#   winServers — identical set wrapped in `cmd /c`: neither Go (antigravity)
+#                nor Node 20+ (gemini) can spawn `.cmd` shims like npx.cmd
+#                directly on Windows (CreateProcess / Node CVE-2024-27980
+#                hardening). Same pattern Claude Code's own Windows config
+#                uses. Use winServers for every Windows-side mirror.
+{ lib }:
+let
+  servers = {
+    # GitHub — official remote MCP (maintained; the npm server-github is
+    # archived). mcp-remote substitutes ''${GITHUB_TOKEN} from the environment.
+    github = {
+      command = "npx";
+      args = [
+        "-y" "mcp-remote@0.1.37"
+        "https://api.githubcopilot.com/mcp/"
+        "--header" "Authorization: Bearer \${GITHUB_TOKEN}"
+      ];
+    };
+
+    # CircleCI — reads CIRCLECI_TOKEN from the inherited environment.
+    circleci = {
+      command = "npx";
+      args = [ "-y" "@circleci/mcp-server-circleci@latest" ];
+    };
+
+    # Atlassian (Jira/Confluence) — remote OAuth (consent cached, see header).
+    atlassian = {
+      command = "npx";
+      args = [ "-y" "mcp-remote@0.1.37" "https://mcp.atlassian.com/v1/mcp/authv2" ];
+    };
+
+    # Firecrawl — reads FIRECRAWL_API_KEY from the inherited environment.
+    # Stays Disconnected until secrets/firecrawl-api-key.enc exists (pending
+    # credential rotation) and deploys.
+    firecrawl = {
+      command = "npx";
+      args = [ "-y" "firecrawl-mcp@3.22.3" ];
+    };
+
+    # Context7 — live library/API docs; keyless (rate-limited).
+    context7 = {
+      command = "npx";
+      args = [ "-y" "@upstash/context7-mcp" ];
+    };
+  };
+in
 {
-  # GitHub — official remote MCP (maintained; the npm server-github is archived).
-  github = {
-    command = "npx";
-    args = [
-      "-y" "mcp-remote@0.1.38"
-      "https://api.githubcopilot.com/mcp/"
-      "--header" "Authorization: Bearer \${GITHUB_TOKEN}"
-    ];
-  };
-
-  # CircleCI — reads CIRCLECI_TOKEN from the inherited environment.
-  circleci = {
-    command = "npx";
-    args = [ "-y" "@circleci/mcp-server-circleci@latest" ];
-  };
-
-  # Atlassian (Jira/Confluence) — remote OAuth; browser consent on first use.
-  atlassian = {
-    command = "npx";
-    args = [ "-y" "mcp-remote@0.1.38" "https://mcp.atlassian.com/v1/mcp/authv2" ];
-  };
-
-  # Firecrawl — reads FIRECRAWL_API_KEY from the inherited environment.
-  firecrawl = {
-    command = "npx";
-    args = [ "-y" "firecrawl-mcp@3.22.3" ];
-  };
-
-  # Context7 — live library/API docs; keyless (rate-limited).
-  context7 = {
-    command = "npx";
-    args = [ "-y" "@upstash/context7-mcp" ];
-  };
+  inherit servers;
+  winServers = lib.mapAttrs
+    (_: s: (removeAttrs s [ "command" "args" ]) // {
+      command = "cmd";
+      args = [ "/c" s.command ] ++ s.args;
+    })
+    servers;
 }
