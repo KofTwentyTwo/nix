@@ -280,31 +280,35 @@ in
         # Convenience bridge — must NEVER fail the switch, so every step is
         # guarded and the body ends 0 regardless of reg/setx outcomes.
         if [ -d "/mnt/c/Users/james" ]; then
-          _setx_mcp() {
+          # Set a Windows *user* env var from a secret file via .NET
+          # SetEnvironmentVariable — NOT setx, NOT reg add. Why:
+          #   - setx "$v": stores surrounding quotes literally (github got
+          #     `Bearer "ghp_…"` → HTTP 400); unquoted setx breaks on the
+          #     192-char Atlassian tokens' special chars.
+          #   - reg add: stores the raw value but does NOT broadcast
+          #     WM_SETTINGCHANGE, so newly-launched apps keep the stale env and
+          #     MCP servers can't see the token (atlassian/circleci/github stuck
+          #     "initializing").
+          #   - [Environment]::SetEnvironmentVariable(...,'User') stores any
+          #     value verbatim AND broadcasts, so fresh agy/gemini launches pick
+          #     it up. Token is piped via stdin (not the command line) so it
+          #     never lands in the process table.
+          winps="/mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe"
+          _setenv_mcp() {
             [ -r "$2" ] || return 0
-            want="$(cat "$2")"
-            cur="$(/mnt/c/Windows/System32/reg.exe query "HKCU\\Environment" /v "$1" 2>/dev/null \
-              | ${pkgs.gnugrep}/bin/grep -oE 'REG_SZ.*' \
-              | ${pkgs.gnused}/bin/sed 's/REG_SZ[[:space:]]*//' || true)"
-            if [ "$cur" != "$want" ]; then
-              # reg.exe add — NOT setx: `setx NAME "$v"` stores the surrounding
-              # double quotes literally (they reach mcp-remote as
-              # `Bearer "ghp_…"` → GitHub HTTP 400 "badly formatted"). reg add
-              # /d stores the raw value with no quote wrapping. Both make the
-              # var visible to newly-launched processes (agy/gemini).
-              if /mnt/c/Windows/System32/reg.exe add "HKCU\\Environment" /v "$1" /t REG_SZ /d "$want" /f >/dev/null 2>&1; then
-                echo "[mcp-win] $1 set as Windows user env var"
-              else
-                echo "[mcp-win] WARN: reg add $1 failed" >&2
-              fi
+            if printf '%s' "$(cat "$2")" | "$winps" -NoProfile -Command \
+                 "[Environment]::SetEnvironmentVariable('$1',([Console]::In.ReadToEnd()),'User')" >/dev/null 2>&1; then
+              echo "[mcp-win] $1 set as Windows user env var"
+            else
+              echo "[mcp-win] WARN: setting $1 failed" >&2
             fi
             return 0
           }
-          _setx_mcp GITHUB_TOKEN         "${homeDir}/.config/secrets/github-token"         || true
-          _setx_mcp CIRCLECI_TOKEN       "${homeDir}/.config/secrets/circleci-token"       || true
-          _setx_mcp FIRECRAWL_API_KEY    "${homeDir}/.config/secrets/firecrawl-api-key"    || true
-          _setx_mcp JIRA_API_TOKEN       "${homeDir}/.config/secrets/jira-api-token"       || true
-          _setx_mcp CONFLUENCE_API_TOKEN "${homeDir}/.config/secrets/confluence-api-token" || true
+          _setenv_mcp GITHUB_TOKEN         "${homeDir}/.config/secrets/github-token"         || true
+          _setenv_mcp CIRCLECI_TOKEN       "${homeDir}/.config/secrets/circleci-token"       || true
+          _setenv_mcp FIRECRAWL_API_KEY    "${homeDir}/.config/secrets/firecrawl-api-key"    || true
+          _setenv_mcp JIRA_API_TOKEN       "${homeDir}/.config/secrets/jira-api-token"       || true
+          _setenv_mcp CONFLUENCE_API_TOKEN "${homeDir}/.config/secrets/confluence-api-token" || true
         fi
         :
       '');
