@@ -54,27 +54,31 @@ let
       args = [ "-y" "@circleci/mcp-server-circleci@latest" ];
     };
 
-    # Atlassian (Jira/Confluence) — LOCAL token server via uvx, NOT the OAuth
-    # remote. The remote (mcp.atlassian.com, Streamable-HTTP) needs an
-    # initialize-first handshake; antigravity's client sends server/discover
-    # first and the endpoint rejects it (HTTP 400) — so agy can't use the
-    # remote at all (gemini can, but we keep one definition). mcp-atlassian
-    # handshakes normally like the other local stdio servers. URL/USERNAME are
-    # non-secret literals; JIRA_API_TOKEN/CONFLUENCE_API_TOKEN come from the
-    # environment (home/zsh on WSL/mac, reg-add on Windows — see home/sops).
-    atlassian = {
-      # Direct uv-tool entrypoint, NOT `uvx mcp-atlassian`: uvx spawns an extra
-      # resolver process (slower start) and a deeper process tree that gemini's
-      # /mcp reload can't stop within its 100ms-after-SIGKILL window (it drops
-      # atlassian on reload). The installed `mcp-atlassian` shim is a single
-      # entrypoint. Installed by home/gemini (WSL/mac) + windows/apply.ps1.
-      command = "mcp-atlassian";
-      args = [ ];
+    # Atlassian (Jira + Confluence) — NODE servers (@aashari), one per product.
+    # History (all reproduced on LORE): the OAuth remote (mcp.atlassian.com)
+    # rejects agy's server/discover-first handshake (HTTP 400); the Python
+    # `mcp-atlassian` connects on fresh start but agy's `/mcp` RELOAD can't
+    # cleanly stop it — first "i.CS.Close() did not return within 100ms after
+    # SIGKILL", then "exit status 1". The OBSERVED pattern across all servers:
+    # Node/npx MCP servers reload cleanly in agy (circleci/github/context7/
+    # firecrawl all do); the Python one never does. So Jira+Confluence now use
+    # the Node @aashari servers — same class as the working four. Auth: account-
+    # wide ATLASSIAN_API_TOKEN from the environment (home/zsh / home/sops);
+    # SITE_NAME + USER_EMAIL are non-secret literals.
+    atlassian-jira = {
+      command = "npx";
+      args = [ "-y" "@aashari/mcp-server-atlassian-jira" ];
       env = {
-        JIRA_URL = "https://greatergoods.atlassian.net";
-        JIRA_USERNAME = "jmaes@greatergoods.com";
-        CONFLUENCE_URL = "https://greatergoods.atlassian.net/wiki";
-        CONFLUENCE_USERNAME = "jmaes@greatergoods.com";
+        ATLASSIAN_SITE_NAME = "greatergoods";
+        ATLASSIAN_USER_EMAIL = "jmaes@greatergoods.com";
+      };
+    };
+    atlassian-confluence = {
+      command = "npx";
+      args = [ "-y" "@aashari/mcp-server-atlassian-confluence" ];
+      env = {
+        ATLASSIAN_SITE_NAME = "greatergoods";
+        ATLASSIAN_USER_EMAIL = "jmaes@greatergoods.com";
       };
     };
 

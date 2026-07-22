@@ -311,6 +311,8 @@ in
           _setenv_mcp FIRECRAWL_API_KEY    "${homeDir}/.config/secrets/firecrawl-api-key"    || true
           _setenv_mcp JIRA_API_TOKEN       "${homeDir}/.config/secrets/jira-api-token"       || true
           _setenv_mcp CONFLUENCE_API_TOKEN "${homeDir}/.config/secrets/confluence-api-token" || true
+          # @aashari atlassian MCP servers read the account-wide token here.
+          _setenv_mcp ATLASSIAN_API_TOKEN  "${homeDir}/.config/secrets/jira-api-token"       || true
         fi
         :
       '');

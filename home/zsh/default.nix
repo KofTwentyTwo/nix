@@ -173,6 +173,9 @@ in
            # config; only the tokens come from sops.
            if [[ -r "$HOME/.config/secrets/jira-api-token" ]]; then
              export JIRA_API_TOKEN="$(< "$HOME/.config/secrets/jira-api-token")"
+             # @aashari atlassian MCP servers (jira+confluence) read this
+             # account-wide token name; same value works for both products.
+             export ATLASSIAN_API_TOKEN="$JIRA_API_TOKEN"
            fi
            if [[ -r "$HOME/.config/secrets/confluence-api-token" ]]; then
              export CONFLUENCE_API_TOKEN="$(< "$HOME/.config/secrets/confluence-api-token")"

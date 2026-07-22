@@ -40,20 +40,6 @@ in
   home.file.".gemini/GEMINI.md".text =
     (import ../lib/agent-context.nix).mkAgentHierarchyDoc { selfRef = "GEMINI.md"; selfName = "GEMINI.md"; };
 
-  # Install the mcp-atlassian uv tool (the atlassian MCP server entrypoint used
-  # by gemini + antigravity). Idempotent — uv tool install re-resolves without
-  # error. WSL/mac only; Windows installs it via windows/apply.ps1. Skips
-  # cleanly if uv isn't on PATH yet.
-  home.activation.installMcpAtlassian = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    if command -v uv >/dev/null 2>&1; then
-      uv tool install mcp-atlassian >/dev/null 2>&1 \
-        && echo "[mcp] mcp-atlassian uv tool installed/current" \
-        || echo "[mcp] WARN: uv tool install mcp-atlassian failed" >&2
-    else
-      echo "[mcp] uv not on PATH; skipping mcp-atlassian install" >&2
-    fi
-  '';
-
   # ~/.gemini/settings.json - merge settings, preserve user data
   home.activation.syncGeminiSettings = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     gemini_json="${homeDir}/.gemini/settings.json"
