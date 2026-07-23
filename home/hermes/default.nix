@@ -16,9 +16,10 @@
 #   - git (Homebrew)
 #   - ~/.local/bin on PATH (home/default.nix sessionPath)
 #
-# Updating: run `hermes-update` (git pull --ff-only + uv sync). Activation only
-# runs the installer on first setup — re-running it on every rebuild would
-# re-hit the network unnecessarily and risk surprising the user.
+# Updating: review upstream, bump `hermesRevision` below, then rebuild (or run
+# `hermes-update`, which converges the checkout to the pinned revision + uv
+# sync). Never `git pull` the checkout directly — activation will fight you
+# and converge it back to the pin on the next switch.
 
 { config, pkgs, lib, machineConfig ? {}, ... }:
 
@@ -30,7 +31,7 @@ let
   managedDir = "${homeDir}/.config/hermes-managed";
   gatewayEnabled = machineConfig.hermesGateway or false;
   isWsl = machineConfig.isWsl or false;
-  hermesRevision = "46e87b14fd6c943ef0d6671fb0d74c5dde5d4c6b";
+  hermesRevision = "bd37ff9138d30b3e27f617320884222f1fc656b8";
 
   managedConfig = ./managed-config.yaml;
 
@@ -151,6 +152,13 @@ in
     # brewBin covers macOS; the nix-profile bin covers Linux/WSL (uv comes
     # from home/linux-cli there — HM's activation PATH does not include it).
     export PATH="${brewBin}:${homeDir}/.nix-profile/bin:$PATH"
+
+    # Activation runs in the keyless sudo context: no ssh on PATH and no
+    # 1Password agent, so the checkout's git@github.com remote can't fetch.
+    # Force HTTPS for GitHub (same pattern as installClaudePluginMarketplaces).
+    export GIT_CONFIG_COUNT=1
+    export GIT_CONFIG_KEY_0="url.https://github.com/.insteadOf"
+    export GIT_CONFIG_VALUE_0="git@github.com:"
 
     if ! command -v uv >/dev/null 2>&1; then
       echo "hermes: uv not found on PATH; activate the platform package configuration first" >&2
