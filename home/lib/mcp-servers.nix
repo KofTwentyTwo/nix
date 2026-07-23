@@ -9,16 +9,24 @@
 # on macOS, WSL, and native Windows. Remote services are reached through
 # `mcp-remote`, which proxies an HTTP/SSE endpoint over stdio.
 #
-# Auth model — env inheritance, NOT config-embedded secrets:
-#   The npx child inherits the launching agent's environment. We deliberately
-#   do NOT write token values into these (Nix-store, world-readable) configs.
-#   Instead the required env vars must be present when the agent runs:
+# Auth model — ${VAR} references in each server's `env` block, NOT embedded
+# secrets and NOT plain inheritance:
+#   IMPORTANT (verified on LORE 2026-07-23): gemini/antigravity do NOT forward
+#   their own inherited process environment to a stdio MCP child — they pass
+#   ONLY that server's config `env` block (expanding ${VAR} from the agent's
+#   environment). Servers that validate their token at STARTUP (e.g. figma)
+#   therefore stay Disconnected under pure inheritance; lazy servers (github,
+#   circleci, firecrawl) merely *appear* Connected while their token never
+#   arrives. So every token server below declares `env = { NAME = "\${NAME}"; }`:
+#   the literal `${NAME}` reaches the config (no secret in the Nix store), and
+#   the agent expands it from its environment at spawn. The required vars must
+#   be present when the agent runs:
 #     - WSL/macOS: exported by home/zsh from ~/.config/secrets/* (sops).
-#     - native Windows: set as user env vars by the LORE bridges (setx from the
-#       same deployed secret files).
-#   Required vars: GITHUB_TOKEN, CIRCLECI_TOKEN, FIRECRAWL_API_KEY.
-#   `mcp-remote` expands ${GITHUB_TOKEN} in the header; the circleci/firecrawl
-#   servers read their env vars directly from the inherited environment.
+#     - native Windows: set as user env vars by the LORE bridge
+#       (SetEnvironmentVariable, see home/sops syncWindowsMcpTokens).
+#   Required vars: GITHUB_PERSONAL_ACCESS_TOKEN, CIRCLECI_TOKEN,
+#   ATLASSIAN_API_TOKEN, FIRECRAWL_API_KEY.
+#   Optional: FIGMA_API_KEY (figma stays Disconnected without it).
 #
 # Atlassian is OAuth (authv2) — consent already done on LORE; mcp-remote's
 # auth cache (~/.mcp-auth) is NAMESPACED BY mcp-remote VERSION, so the pin
@@ -46,12 +54,14 @@ let
     github = {
       command = "npx";
       args = [ "-y" "@modelcontextprotocol/server-github" ];
+      env = { GITHUB_PERSONAL_ACCESS_TOKEN = "\${GITHUB_PERSONAL_ACCESS_TOKEN}"; };
     };
 
-    # CircleCI — reads CIRCLECI_TOKEN from the inherited environment.
+    # CircleCI — CIRCLECI_TOKEN via the ${VAR} reference (see auth note above).
     circleci = {
       command = "npx";
       args = [ "-y" "@circleci/mcp-server-circleci@latest" ];
+      env = { CIRCLECI_TOKEN = "\${CIRCLECI_TOKEN}"; };
     };
 
     # Atlassian (Jira + Confluence) — NODE servers (@aashari), one per product.
@@ -71,6 +81,7 @@ let
       env = {
         ATLASSIAN_SITE_NAME = "greatergoods";
         ATLASSIAN_USER_EMAIL = "jmaes@greatergoods.com";
+        ATLASSIAN_API_TOKEN = "\${ATLASSIAN_API_TOKEN}";
       };
     };
     atlassian-confluence = {
@@ -79,6 +90,7 @@ let
       env = {
         ATLASSIAN_SITE_NAME = "greatergoods";
         ATLASSIAN_USER_EMAIL = "jmaes@greatergoods.com";
+        ATLASSIAN_API_TOKEN = "\${ATLASSIAN_API_TOKEN}";
       };
     };
 
@@ -88,12 +100,68 @@ let
     firecrawl = {
       command = "npx";
       args = [ "-y" "firecrawl-mcp@3.22.3" ];
+      env = { FIRECRAWL_API_KEY = "\${FIRECRAWL_API_KEY}"; };
     };
 
     # Context7 — live library/API docs; keyless (rate-limited).
     context7 = {
       command = "npx";
       args = [ "-y" "@upstash/context7-mcp" ];
+    };
+
+    # ---- Visual / diagramming set (added 2026-07-23) --------------------------
+    # NOTE ON PACKAGE NAMES: the request that prompted this used
+    # `@figma/mcp-server`, `@modelcontextprotocol/server-playwright`, and
+    # `@modelcontextprotocol/server-plantuml` — NONE of which exist on npm
+    # (verified). The real, maintained packages are used below. All four are
+    # Node/npx stdio servers — the class that reloads cleanly in antigravity's
+    # `/mcp` (Python/OAuth-remote servers do not; see the Atlassian note above).
+
+    # Figma (Framelink figma-developer-mcp) — read designs, export images. Reads
+    # a Figma personal access token from FIGMA_API_KEY in the environment (home/
+    # zsh / home/sops), never the config. `--stdio` is REQUIRED — without it the
+    # package starts an HTTP/SSE server instead of stdio. Figma's own Dev Mode
+    # server is an in-app HTTP endpoint agy can't handshake, so this local Node
+    # server is the right fit. Stays Disconnected until secrets/figma-api-token
+    # .enc exists (same pending-token pattern as firecrawl).
+    figma = {
+      command = "npx";
+      args = [ "-y" "figma-developer-mcp" "--stdio" ];
+      env = { FIGMA_API_KEY = "\${FIGMA_API_KEY}"; };
+    };
+
+    # Playwright (Microsoft official @playwright/mcp) — headless browser driving:
+    # render pages, capture screenshots/PNGs, visual diffs of HTML/SVG. No token.
+    # Browsers are fetched on first navigation (`npx playwright install`); LORE
+    # already has Chrome. (Claude Code has its own playwright plugin — separate;
+    # this is the gemini/agy set.)
+    playwright = {
+      command = "npx";
+      args = [ "-y" "@playwright/mcp@latest" ];
+    };
+
+    # Excalidraw (excalidraw-mcp) — create/update/query editable canvas diagram
+    # elements. Works standalone in-memory over stdio (verified: create_element
+    # returns an element with no backend). The package's Docker "canvas server"
+    # is OPTIONAL — only for live-viewing the canvas in a browser. No token.
+    excalidraw = {
+      command = "npx";
+      args = [ "-y" "excalidraw-mcp" ];
+    };
+
+    # PlantUML (plantuml-mcp-server) — UML class/sequence/component diagrams.
+    # Renders via a REMOTE PlantUML server (no local Java): PLANTUML_SERVER_URL
+    # points at the public plantuml.com renderer by default.
+    # PRIVACY: diagram source is POSTed to that public server to render. For
+    # proprietary/architecture diagrams, run a local PlantUML server (e.g.
+    # `docker run -d -p 8080:8080 plantuml/plantuml-server`) and set
+    # PLANTUML_SERVER_URL = "http://localhost:8080" here.
+    plantuml = {
+      command = "npx";
+      args = [ "-y" "plantuml-mcp-server" ];
+      env = {
+        PLANTUML_SERVER_URL = "https://www.plantuml.com/plantuml";
+      };
     };
   };
 in

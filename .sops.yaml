@@ -110,6 +110,14 @@ creation_rules:
           - *grogu
           - *lore
           - *fleet
+  - path_regex: secrets/figma-api-token\.enc$
+    key_groups:
+      - age:
+          - *darth
+          - *dark_horse
+          - *grogu
+          - *lore
+          - *fleet
   # Grogu alone owns the continuous Slack gateway, so its bot and app tokens
   # are decryptable only there. Google OAuth refresh tokens remain
   # machine-local, while the Desktop OAuth client definition bootstraps each

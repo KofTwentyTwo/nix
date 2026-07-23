@@ -183,6 +183,10 @@ in
            if [[ -r "$HOME/.config/secrets/firecrawl-api-key" ]]; then
              export FIRECRAWL_API_KEY="$(< "$HOME/.config/secrets/firecrawl-api-key")"
            fi
+           # figma-developer-mcp (gemini/agy) reads FIGMA_API_KEY.
+           if [[ -r "$HOME/.config/secrets/figma-api-token" ]]; then
+             export FIGMA_API_KEY="$(< "$HOME/.config/secrets/figma-api-token")"
+           fi
 
            # Stop oh-my-zsh (lib/theme-and-appearance.zsh) from defining an
            # `ls` alias: on GNU/Linux it sets `alias ls='ls --color=tty'`, on

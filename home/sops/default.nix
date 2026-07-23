@@ -152,7 +152,7 @@ in
     # mkPatDeployer skips destinations whose parent dir is missing, so both the
     # CircleCI token and the github-codex-pat destination depend on this.
     home.activation.ensureSecretsDir =
-      lib.hm.dag.entryBefore [ "deployCircleciToken" "deployGithubSecurityPat" "deployGithubToken" "deployTailscaleAuthkey" "deployOpenrouterApiKey" "deployFirecrawlApiKey" "deployJiraApiToken" "deployConfluenceApiToken" "deployHermesSlackBotToken" "deployHermesSlackAppToken" "deployHermesGoogleClientSecret" ] ''
+      lib.hm.dag.entryBefore [ "deployCircleciToken" "deployGithubSecurityPat" "deployGithubToken" "deployTailscaleAuthkey" "deployOpenrouterApiKey" "deployFirecrawlApiKey" "deployFigmaApiToken" "deployJiraApiToken" "deployConfluenceApiToken" "deployHermesSlackBotToken" "deployHermesSlackAppToken" "deployHermesGoogleClientSecret" ] ''
         mkdir -p "${homeDir}/.config/secrets"
         chmod 0700 "${homeDir}/.config/secrets"
       '';
@@ -217,6 +217,24 @@ in
         ];
       });
 
+    # Figma personal access token for the figma-developer-mcp server (gemini/agy)
+    # — exported as FIGMA_API_KEY (home/zsh) / set as a Windows user env var
+    # (syncWindowsMcpTokens). Pending-token pattern (like firecrawl): guarded by
+    # pathExists so the flake stays green until the secret is created. To enable:
+    # create a Figma PAT (figma.com → Settings → Security → personal access
+    # tokens), then `sops -e --filename-override secrets/figma-api-token.enc
+    # --input-type binary --output-type binary <(printf %s "$TOKEN") >
+    # secrets/figma-api-token.enc`, `git add` it, and rebuild.
+    home.activation.deployFigmaApiToken = lib.mkIf
+      (builtins.pathExists ../../secrets/figma-api-token.enc)
+      (mkPatDeployer {
+        name = "figma-api-token";
+        encFile = ../../secrets/figma-api-token.enc;
+        destinations = [
+          "${homeDir}/.config/secrets/figma-api-token"
+        ];
+      });
+
     # Hermes communications credentials are optional until their operator
     # setup is complete. The path guards keep fresh clones evaluable; once the
     # encrypted files exist, every host receives identical Slack app tokens
@@ -276,7 +294,7 @@ in
     # its secret is created). Only setx when the value differs, to avoid
     # churning the registry on a no-op switch. See home/lib/mcp-servers.nix.
     home.activation.syncWindowsMcpTokens = lib.mkIf pkgs.stdenv.isLinux
-      (lib.hm.dag.entryAfter [ "deployGithubToken" "deployCircleciToken" "deployFirecrawlApiKey" "deployJiraApiToken" "deployConfluenceApiToken" ] ''
+      (lib.hm.dag.entryAfter [ "deployGithubToken" "deployCircleciToken" "deployFirecrawlApiKey" "deployFigmaApiToken" "deployJiraApiToken" "deployConfluenceApiToken" ] ''
         # Convenience bridge — must NEVER fail the switch, so every step is
         # guarded and the body ends 0 regardless of reg/setx outcomes.
         if [ -d "/mnt/c/Users/james" ]; then
@@ -309,6 +327,8 @@ in
           _setenv_mcp GITHUB_PERSONAL_ACCESS_TOKEN "${homeDir}/.config/secrets/github-token" || true
           _setenv_mcp CIRCLECI_TOKEN       "${homeDir}/.config/secrets/circleci-token"       || true
           _setenv_mcp FIRECRAWL_API_KEY    "${homeDir}/.config/secrets/firecrawl-api-key"    || true
+          # figma-developer-mcp reads FIGMA_API_KEY.
+          _setenv_mcp FIGMA_API_KEY        "${homeDir}/.config/secrets/figma-api-token"     || true
           _setenv_mcp JIRA_API_TOKEN       "${homeDir}/.config/secrets/jira-api-token"       || true
           _setenv_mcp CONFLUENCE_API_TOKEN "${homeDir}/.config/secrets/confluence-api-token" || true
           # @aashari atlassian MCP servers read the account-wide token here.
