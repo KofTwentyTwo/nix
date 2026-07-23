@@ -15,3 +15,6 @@ result
 # durable content lands in home/ai/* via the ingestion rule
 learnings_to_process/*.md
 learnings_to_process/processed/
+
+# excalidraw-mcp writes this to its cwd when launched from the repo
+excalidraw.log
