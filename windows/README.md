@@ -59,7 +59,8 @@ result.
 | GUI / heavy apps | winget | `winget.json` | JetBrains Toolbox, Node LTS, Visual Studio 2026 |
 | CLI tools | scoop | `scoop.json` | bat, eza, fd, ripgrep, gh, git-crypt, temurin JDK |
 | JetBrains IDEs | **Toolbox** (not winget) | — | IDEA, GoLand, CLion, DataGrip, ... installs/updates/licenses live in the Toolbox app |
-| VS workloads | VS Installer | `vs2026.vsconfig` | ManagedDesktop, NetWeb, NativeDesktop |
+| VS workloads | VS Installer | `vs2026.vsconfig` | ManagedDesktop, NetWeb, NativeDesktop + explicit VC.Tools/Windows SDK (Rust's MSVC linker) |
+| Rust toolchain | rustup (via scoop) + `apply.ps1` | `scoop.json` + rust section | stable (MSVC host) + rustfmt/clippy/rust-analyzer; mirrors `home/rust` (mac) & `home/linux-cli` (WSL) |
 | Nerd fonts | scoop `nerd-fonts` bucket | ad hoc | deliberately not pinned (the full set is installed on LORE) |
 | WSL user env | Home Manager | `../flake.nix#james` | zsh, nvim, git, tmux, CLI parity via `home/linux-cli` |
 | PowerShell aliases | generated | `ps-aliases.ps1` | git/kubectl/docker/helm/terraform + shellAliases as PS functions |

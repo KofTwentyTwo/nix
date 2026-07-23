@@ -1,8 +1,11 @@
 {
   "version": "1.0",
+  "$comment": "Workloads install their REQUIRED components only; VC.Tools + the Windows SDK are merely 'recommended' under NativeDesktop, so they must be named explicitly. Both are also what rustup's MSVC toolchain needs (link.exe + kernel32.lib): scoop rustup (windows/scoop.json) links against these.",
   "components": [
     "Microsoft.VisualStudio.Workload.ManagedDesktop",
     "Microsoft.VisualStudio.Workload.NetWeb",
-    "Microsoft.VisualStudio.Workload.NativeDesktop"
+    "Microsoft.VisualStudio.Workload.NativeDesktop",
+    "Microsoft.VisualStudio.Component.VC.Tools.x86.x64",
+    "Microsoft.VisualStudio.Component.Windows11SDK.26100"
   ]
 }

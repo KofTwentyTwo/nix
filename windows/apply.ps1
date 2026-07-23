@@ -116,6 +116,31 @@ if ($Upgrade) {
     scoop update *
 }
 
+# ------------------------------------------------------------- rust toolchain
+# scoop's rustup package installs only the MANAGER (no toolchain: `rustup show`
+# says "no active toolchain" on a fresh install). Mirror home/rust (macOS) and
+# home/linux-cli (WSL): default to stable and add the standard components.
+# rust-analyzer/rustfmt/clippy must come from rustup (its PATH proxies shadow
+# any other copy). The MSVC linker + Windows SDK come from vs2026.vsconfig
+# (VC.Tools.x86.x64 + Windows11SDK — explicit, NOT implied by NativeDesktop).
+Refresh-ProcessPath
+Info "rust toolchain (rustup)"
+if (Get-Command rustup -ErrorAction SilentlyContinue) {
+    & rustup show active-toolchain 2>$null | Out-Null
+    if ($LASTEXITCODE -eq 0) {
+        Ok "default toolchain present: $(& rustup show active-toolchain 2>$null)"
+        if ($Upgrade) { rustup update stable }
+    } else {
+        Warn2 "no default toolchain; installing stable"
+        rustup default stable
+        if ($LASTEXITCODE -ne 0) { Warn2 "rustup default stable exited $LASTEXITCODE (offline?)" }
+    }
+    rustup component add rustfmt clippy rust-analyzer 2>$null | Out-Null
+    if ($LASTEXITCODE -ne 0) { Warn2 "rustup component add exited $LASTEXITCODE" }
+} else {
+    Warn2 "rustup not on PATH (scoop install failed?); skipping toolchain setup"
+}
+
 # ------------------------------------------------------------------ npm globals
 $npmManifest = Get-Content (Join-Path $repoWin 'npm.json') -Raw | ConvertFrom-Json
 Info "npm globals"
